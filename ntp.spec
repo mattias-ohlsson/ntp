@@ -3,12 +3,12 @@
 %define glibc21 %([ "%glibc_version" = glibc-2.1 ] && echo 1 || echo 0)
 %define glibc22 %([ "%glibc_version" = glibc-2.2 ] && echo 1 || echo 0)
 
-%define tarversion stable-4.2.0a-20040616
+%define tarversion stable-4.2.0a-20040617
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.2.0.a.20040616
-Release: 4
+Version: 4.2.0.a.20040617
+Release: 1
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -214,6 +214,9 @@ fi
 
 
 %changelog
+* Mon Sep 13 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040617-1
+- version ntp-stable-4.2.0a-20040617
+
 * Tue Aug 17 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040616-4
 - added ntp-4.2.0-sbinpath.patch (bug 130536)
 
