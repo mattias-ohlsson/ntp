@@ -31,20 +31,14 @@ start() {
 	tickers=''
 	if [ -s "$ntpstep" ]; then
                 tickers=`/bin/sed -e 's/\#.*$//g' $ntpstep`
-	fi
-        if [ -z "$tickers" ]; then
-                tickers=`/bin/sed \
-                         -n -e 's/\#.*$//;/127.*/d' \
-  	   -e 's/^[[:blank:]]*server[[:blank:]][[:blank:]]*\(.*\)/\1/p' \
-                         $ntpconf`
-        fi
-        if [ -z "$tickers" ]; then
-                echo $"$prog: No servers in $ntpconf and $ntpstep"
-        else
 		echo -n $"$prog: Synchronizing with time server: "
 		/usr/sbin/ntpdate -s -b -p 8 -u $tickers\
 		&& success || failure
 		echo
+	else
+		# -g can replace the grep for time servers
+		# as it permits ntpd to violate its 1000s limit once.
+		OPTIONS="$OPTIONS -g"
 	fi
         # Start daemons.
         echo -n $"Starting $prog: "

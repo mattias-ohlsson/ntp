@@ -5,12 +5,12 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.1.0b
-Release: 6
+Version: 4.1.1
+Release: 1
 License: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
-Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.0b-rc3.tar.gz
+Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.1.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
@@ -44,7 +44,7 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -n ntp-4.1.0b-rc3
+%setup -q -n ntp-4.1.1
 
 %patch1 -p1 -b .vsnprintf
 %patch3 -p1 -b .usegethost
@@ -136,6 +136,10 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Mon Apr 08 2002 Harald Hoyer <harald@redhat.de> 4.1.1-1
+- update to 4.1.1 (changes are minimal)
+- more examples in default configuration
+
 * Tue Apr 02 2002 Harald Hoyer <harald@redhat.de> 4.1.0b-6
 - more secure default configuration (#62238)
 
