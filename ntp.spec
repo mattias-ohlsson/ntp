@@ -2,19 +2,21 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.0.99j
-Release: 7
+Version: 4.0.99k
+Release: 15
 Copyright: distributable
 Group: System Environment/Daemons
 Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
-Source3: ntpd.rc
+Source3: ntpd.init
 Patch0: ntp-4.0.99j-glibc22.patch
 Patch1: ntp-4.0.99j-vsnprintf.patch
+Patch2: ntp-4.0.99k-typos.patch
+Patch3: ntp-4.0.99k-usegethost.patch
+Patch4: ntp-4.0.99k-security.patch
 URL: http://www.cis.udel.edu/~ntp
-Prereq: /sbin/chkconfig /etc/init.d
-#Conflicts: xntp3
+PreReq: /sbin/chkconfig
 Obsoletes: xntp3
 BuildRoot: %{_tmppath}/%{name}-root
 
@@ -34,18 +36,20 @@ time synchronized via the NTP protocol.
 %setup -q 
 
 %patch1 -p1 -b .vsnprintf
+%patch2 -p1 -b .typos
+%patch3 -p1 -b .usegethost
+%patch4 -p1 -b .security
 
 %build
 
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
-%configure
+CFLAGS="-g -DDEBUG" ./configure --prefix=/usr
 %undefine	_target_platform
 
 # XXX workaround glibc-2.1.90 lossage for now.
-%ifnarch ia64
+# XXX still broken with glibc-2.1.94-2 and glibc-2.1.95-1
 patch config.h < %PATCH0
-%endif
 
 make
 
@@ -58,9 +62,10 @@ rm -rf $RPM_BUILD_ROOT
 
   mkdir -p .%{_sysconfdir}/{ntp,rc.d/init.d}
   install -m644 $RPM_SOURCE_DIR/ntp.conf .%{_sysconfdir}/ntp.conf
+  touch .%{_sysconfdir}/ntp/drift
   install -m600 $RPM_SOURCE_DIR/ntp.keys .%{_sysconfdir}/ntp/keys
   touch .%{_sysconfdir}/ntp/step-tickers
-  install -m755 $RPM_SOURCE_DIR/ntpd.rc .%{_sysconfdir}/rc.d/init.d/ntpd
+  install -m755 $RPM_SOURCE_DIR/ntpd.init .%{_sysconfdir}/rc.d/init.d/ntpd
 
   strip .%{_bindir}/* || :
 }
@@ -86,12 +91,59 @@ fi
 %defattr(-,root,root)
 %doc html/* NEWS TODO 
 %{_bindir}/*
-%config		%{_sysconfdir}/rc.d/init.d/ntpd
+%config				%{_sysconfdir}/rc.d/init.d/ntpd
 %config(noreplace)		%{_sysconfdir}/ntp.conf
+%dir				%{_sysconfdir}/ntp/
+%ghost %config(missingok)	%{_sysconfdir}/ntp/drift
 %config(noreplace)		%{_sysconfdir}/ntp/keys
-%ghost %config(missingok) %{_sysconfdir}/ntp/step-tickers
+%ghost %config(missingok)	%{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Thu Apr  5 2001 Preston Brown <pbrown@redhat.com>
+- security patch for ntpd
+
+* Mon Mar 26 2001 Preston Brown <pbrown@redhat.com>
+- don't run configure macro twice (#32804)
+
+* Mon Mar  5 2001 Preston Brown <pbrown@redhat.com>
+- allow comments in /etc/ntp/step-tickers file (#28786).
+- need patch0 (glibc patch) on ia64 too
+
+* Tue Feb 13 2001 Florian La Roche <Florian.LaRoche@redhat.de>
+- also set prog=ntpd in initscript
+
+* Tue Feb 13 2001 Florian La Roche <Florian.LaRoche@redhat.de>
+- use "$prog" instead of "$0" for the init script
+
+* Thu Feb  8 2001 Preston Brown <pbrown@redhat.com>
+- i18n-neutral .init script (#26525)
+
+* Tue Feb  6 2001 Preston Brown <pbrown@redhat.com>
+- use gethostbyname on addresses in /etc/ntp.conf for ntptime command (#26250)
+
+* Mon Feb  5 2001 Preston Brown <pbrown@redhat.com>
+- start earlier and stop later (#23530)
+
+* Mon Feb  5 2001 Bernhard Rosenkraenzer <bero@redhat.com>
+- i18nize init script (#26078)
+
+* Sat Jan  6 2001 Jeff Johnson <jbj@redhat.com>
+- typo in ntp.conf (#23173).
+
+* Mon Dec 11 2000 Karsten Hopp <karsten@redhat.de>
+- rebuilt to fix permissions of /usr/share/doc/ntp-xxx
+
+* Thu Nov  2 2000 Jeff Johnson <jbj@redhat.com>
+- correct mis-spellings in ntpq.htm (#20007).
+
+* Thu Oct 19 2000 Jeff Johnson <jbj@redhat.com>
+- add %ghost /etc/ntp/drift (#15222).
+
+* Wed Oct 18 2000 Jeff Johnson <jbj@redhat.com>
+- comment out default values for keys, warn about starting with -A (#19316).
+- take out -A from ntpd startup as well.
+- update to 4.0.99k.
+
 * Wed Aug 23 2000 Jeff Johnson <jbj@redhat.com>
 - use vsnprintf rather than vsprintf (#16676).
 
