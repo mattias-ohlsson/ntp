@@ -2,19 +2,18 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.0.99k
-Release: 16
+Version: 4.0.99mrc2
+Release: 1
 Copyright: distributable
 Group: System Environment/Daemons
-Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
+#Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
+Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.0.99m-rc2.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
 Patch0: ntp-4.0.99j-glibc22.patch
 Patch1: ntp-4.0.99j-vsnprintf.patch
-Patch2: ntp-4.0.99k-typos.patch
-Patch3: ntp-4.0.99k-usegethost.patch
-Patch4: ntp-4.0.99k-security.patch
+Patch3: ntp-4.0.99m-usegethost.patch
 URL: http://www.cis.udel.edu/~ntp
 PreReq: /sbin/chkconfig
 Obsoletes: xntp3
@@ -33,12 +32,11 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q 
+%setup -q -n ntp-4.0.99m-rc2
 
 %patch1 -p1 -b .vsnprintf
-%patch2 -p1 -b .typos
 %patch3 -p1 -b .usegethost
-%patch4 -p1 -b .security
+libtoolize --copy --force
 
 %build
 
@@ -99,6 +97,14 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Mon Jun 18 2001 Harald Hoyer <harald@redhat.de>
+- new snapshot
+- removed typos and security patch (already there)
+- commented multicastclient in config file
+
+* Thu Jun 07 2001 Florian La Roche <Florian.LaRoche@redhat.de>
+- call libtoolize to compile on newer archs
+
 * Mon Apr  9 2001 Preston Brown <pbrown@redhat.com>
 - remove ghost files make RHN happy
 - modify initscript to match accordingly
