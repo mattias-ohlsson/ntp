@@ -12,6 +12,10 @@
 # Source networking configuration.
 . /etc/sysconfig/network
 
+if [ -f /etc/sysconfig/ntpd ];then
+        . /etc/sysconfig/ntpd
+fi
+
 # Check that networking is up.
 [ ${NETWORKING} = "no" ] && exit 0
 
@@ -31,7 +35,7 @@ start() {
 	fi
         # Start daemons.
         echo -n $"Starting $prog: "
-        daemon ntpd
+        daemon ntpd $OPTIONS
 	RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && touch /var/lock/subsys/ntpd
