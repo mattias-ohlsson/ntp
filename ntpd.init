@@ -27,8 +27,20 @@ ntpstep=/etc/ntp/step-tickers
 RETVAL=0
 prog="ntpd"
 
+# Is there a firewall running, and does it look like one we configured?
+FWACTIVE=
+if iptables -L 2>/dev/null | grep -q RH-Lokkit-0-50-INPUT ; then
+    FWACTIVE=1
+fi
+
 start() {
 	tickers=''
+	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
+	    echo -n $"$prog: Opening firewall for port 123"
+	    iptables -I RH-Lokkit-0-50-INPUT -m udp -p udp -s 0/0  --sport 123 -d 0/0 --dport 123 -j ACCEPT\
+		&& success || failure
+	    echo
+	fi
 	if [ -s "$ntpstep" ]; then
                 tickers=`/bin/sed -e 's/\#.*$//g' $ntpstep`
 		echo -n $"$prog: Synchronizing with time server: "
@@ -51,6 +63,12 @@ start() {
 
 stop() {
         # Stop daemons.
+	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
+	    echo -n $"$prog: Removing firewall opening for port 123"
+	    iptables -D RH-Lokkit-0-50-INPUT -m udp -p udp -s 0/0  --sport 123 -d 0/0 --dport 123 -j ACCEPT\
+		&& success || failure
+	    echo
+	fi
         echo -n $"Shutting down $prog: "
 	killproc ntpd
 	RETVAL=$?

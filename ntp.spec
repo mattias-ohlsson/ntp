@@ -6,7 +6,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.1.1a
-Release: 5
+Release: 6
 License: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
@@ -141,6 +141,12 @@ fi
 %config(noreplace) %{!?nocap:%attr(-,ntp,ntp)} %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Tue Aug 20 2002 Harald Hoyer <harald@redhat.de>
+- added two more 'echo's in the initscript
+
+* Thu Aug 15 2002 Harald Hoyer <harald@redhat.de>
+- added firewall opener in initscript
+
 * Tue Jul 23 2002 Harald Hoyer <harald@redhat.de>
 - removed libelf dependency
 - removed stripping
