@@ -5,20 +5,22 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.1.0
-Release: 4
+Version: 4.1.0b
+Release: 1
 License: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
-Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.0.tar.gz
+Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.0b-rc1.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
 Patch1: ntp-4.0.99j-vsnprintf.patch
 Patch3: ntp-4.0.99m-usegethost.patch
-Patch4: ntp-4.0.99m-rc2-droproot.patch
+#Patch4: ntp-4.0.99m-rc2-droproot.patch
 Patch5: ntp-4.1.0-multi.patch
+Patch6: ntp-4.1.0b-rc1-droproot.patch
+Patch7: ntp-4.1.0b-rc1-genkey.patch
 
 URL: http://www.cis.udel.edu/~ntp
 PreReq: /sbin/chkconfig
@@ -41,18 +43,21 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q 
+%setup -q -n ntp-4.1.0b-rc1
 
 %patch1 -p1 -b .vsnprintf
 %patch3 -p1 -b .usegethost
-%{!?nocap:%patch4 -p1 -b .droproot}
+%{!?nocap:%patch6 -p1 -b .droproot}
 %patch5 -p1 -b .multi
+%patch7 -p1 -b .genkey
 libtoolize --copy --force
 %build
 
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
-CFLAGS="-g -DDEBUG" ./configure --prefix=/usr
+export CFLAGS="-g -DDEBUG" 
+%configure --sysconfdir=/etc/ntp
+unset CFLAGS
 %undefine	_target_platform
 
 # XXX workaround glibc-2.1.90 lossage for now.
@@ -130,6 +135,11 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Tue Dec 13 2001 Harald Hoyer <harald@redhat.de> 4.1.0b-1
+- bumped version
+- fixed #57391, #44580
+- set startup position to 58 after named
+
 * Wed Sep 05 2001 Harald Hoyer <harald@redhat.de> 4.1.0-4
 - fixed #53184
 
