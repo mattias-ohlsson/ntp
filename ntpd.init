@@ -22,7 +22,7 @@ prog="ntpd"
 
 start() {
 	# Adjust time to make life easy for ntpd
-	if [ -f /etc/ntp/step-tickers ]; then
+	if [ -s /etc/ntp/step-tickers ]; then
 		echo -n $"Synchronizing with time server: "
 		/usr/sbin/ntpdate -s -b -p 8 -u \
 		    `/bin/sed -e 's/#.*//' /etc/ntp/step-tickers`
