@@ -6,7 +6,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.1.1a
-Release: 7
+Release: 9
 License: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
@@ -141,6 +141,9 @@ fi
 %config(noreplace) %{!?nocap:%attr(-,ntp,ntp)} %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Sat Aug 31 2002 Florian La Roche <Florian.LaRoche@redhat.de>
+- add option -n to initscript to avoid DNS lookups #72756
+
 * Fri Aug 23 2002 Jeremy Katz <katzj@redhat.com>
 - service should fail to start ntpd if running ntpdate fails
 
