@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20040617
-Release: 2
+Release: 3
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -41,9 +41,10 @@ Patch99: ntp-4.2.0-autofoo.patch
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
 Prereq: /usr/sbin/groupadd /usr/sbin/useradd
-PreReq: /bin/awk, sed
+PreReq: /bin/awk sed grep
 Requires: libcap
-BuildPreReq: libcap-devel, autoconf, automake, openssl-devel
+BuildRequires: libcap-devel autoconf automake openssl-devel
+BuildRequires: readline-devel
 Obsoletes: xntp3 ntpstat
 BuildRoot: %{_tmppath}/%{name}-root
 
@@ -159,22 +160,27 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add ntpd
-grep %{_sysconfdir}/ntp/drift %{_sysconfdir}/ntp.conf > /dev/null 2>&1
-olddrift=$?
-if [ "$1" -ge "1" -a $olddrift -eq 0 ]; then
-  service ntpd status > /dev/null 2>&1
-  wasrunning=$?
-  # let ntp save the actual drift
-  [ $wasrunning -eq 0 ] && service ntpd stop > /dev/null 2>&1
-  # copy the driftfile to the new location
-  [ -f %{_sysconfdir}/ntp/drift ] && cp %{_sysconfdir}/ntp/drift %{_var}/lib/ntp/drift
-  # change the path in the config file
-  sed -e 's#%{_sysconfdir}/ntp/drift#%{_var}/lib/ntp/drift#g' %{_sysconfdir}/ntp.conf > %{_sysconfdir}/ntp.conf.rpmupdate \
-  && mv %{_sysconfdir}/ntp.conf.rpmupdate %{_sysconfdir}/ntp.conf 
-  # remove the temp file
-  rm -f %{_sysconfdir}/ntp.conf.rpmupdate
-  # start ntp if it was running previously
-  [ $wasrunning -eq 0 ] && service ntpd start > /dev/null 2>&1
+
+if [ "$1" -ge "1" ]; then
+  grep %{_sysconfdir}/ntp/drift %{_sysconfdir}/ntp.conf > /dev/null 2>&1
+  olddrift=$?
+  if [ $olddrift -eq 0 ]; then
+    service ntpd status > /dev/null 2>&1
+    wasrunning=$?
+    # let ntp save the actual drift
+    [ $wasrunning -eq 0 ] && service ntpd stop > /dev/null 2>&1
+    # copy the driftfile to the new location
+    [ -f %{_sysconfdir}/ntp/drift ] \
+      && cp %{_sysconfdir}/ntp/drift %{_var}/lib/ntp/drift
+    # change the path in the config file
+    sed -e 's#%{_sysconfdir}/ntp/drift#%{_var}/lib/ntp/drift#g' \
+      %{_sysconfdir}/ntp.conf > %{_sysconfdir}/ntp.conf.rpmupdate \
+      && mv %{_sysconfdir}/ntp.conf.rpmupdate %{_sysconfdir}/ntp.conf 
+    # remove the temp file
+    rm -f %{_sysconfdir}/ntp.conf.rpmupdate
+    # start ntp if it was running previously
+    [ $wasrunning -eq 0 ] && service ntpd start > /dev/null 2>&1
+  fi
 fi
 
 
@@ -214,6 +220,11 @@ fi
 
 
 %changelog
+* Fri Oct  8 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040617-3
+- improved postsection
+- BuildRequires readline-devel
+- PreReq grep
+
 * Thu Sep 30 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040617-2
 - set pool.ntp.org as the default timeserver pool
 
