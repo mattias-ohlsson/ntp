@@ -44,7 +44,7 @@ start() {
         if [ -s "$ntpstep" ]; then
 	    tickers=`/bin/sed -e 's/\#.*$//g' $ntpstep`
         fi
-	timeservers=`/usr/bin/awk '$1=="peer"||$1=="server"{print $2}' $ntpconf`
+	timeservers=`/bin/awk '$1=="peer"||$1=="server"{print $2}' $ntpconf`
 
 	# check for -x
 	OPTIND=0

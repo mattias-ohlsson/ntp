@@ -1,40 +1,48 @@
+%define _use_internal_dependency_generator 0
 %define glibc_version %(rpm -q glibc | cut -d . -f 1-2 )
 %define glibc21 %([ "%glibc_version" = glibc-2.1 ] && echo 1 || echo 0)
 %define glibc22 %([ "%glibc_version" = glibc-2.2 ] && echo 1 || echo 0)
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.1.2
+Version: 4.2.0
 Release: 5
 License: distributable
 Group: System Environment/Daemons
-Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.1.2.tar.gz
+Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2.0.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
 Source5: ntpstat-0.2.tgz
 Source6: ntp-4.1.2-rh-manpages.tar.gz
+
+# new find-requires
+Source7: filter-requires-ntp.sh
+%define __find_requires %{SOURCE7}
+
 Patch1: ntp-4.0.99j-vsnprintf.patch
 Patch3: ntp-4.0.99m-usegethost.patch
 #Patch4: ntp-4.0.99m-rc2-droproot.patch
-Patch5: ntp-4.1.0-multi.patch
-Patch6: ntp-4.1.1rc2-droproot.patch
-Patch7: ntp-4.1.0b-rc1-genkey.patch
-Patch8: ntp-4.1.1a-genkey2.patch
-Patch9: ntp-4.1.1a-mfp.patch
-Patch10: ntp-4.1.1a-adjtime.patch
-Patch11: ntp-4.1.1-slewwarning.patch
-Patch12: ntp-4.1.73-limit.patch
-Patch13: ntp-4.1.1c-loopfilter.patch
+#Patch5: ntp-4.1.0-multi.patch
+Patch6: ntp-4.2.0-droproot.patch
+#Patch7: ntp-4.2.0-genkey.patch
+#Patch8: ntp-4.1.1a-genkey2.patch
+#Patch9: ntp-4.1.1a-mfp.patch
+#Patch10: ntp-4.1.1a-adjtime.patch
+#Patch11: ntp-4.1.1-slewwarning.patch
+Patch12: ntp-4.2.0-limit.patch
+Patch13: ntp-4.2.0-loopfilter.patch
 Patch15: ntp-4.1.1c-rc3-authkey.patch
+Patch16: ntp-4.2.0-md5.patch
+Patch99: ntp-4.2.0-autofoo.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
 Prereq: /usr/sbin/groupadd /usr/sbin/useradd
 PreReq: /bin/awk, sed
 Requires: libcap
-BuildPreReq: libcap-devel
+BuildPreReq: libcap-devel, autoconf, automake, openssl-devel
 Obsoletes: xntp3 ntpstat
 BuildRoot: %{_tmppath}/%{name}-root
 
@@ -51,35 +59,35 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -n ntp-4.1.2 -a 5 -a 6
+%setup -q -a 5 -a 6
 
 #%patch1 -p1 -b .vsnprintf
 %patch3 -p1 -b .usegethost
 %patch6 -p1 -b .droproot
-%patch5 -p1 -b .multi
-%patch7 -p1 -b .genkey
-%patch8 -p1 -b .genkey2
+#%patch5 -p1 -b .multi
+#%patch7 -p1 -b .genkey
+#%patch8 -p1 -b .genkey2
 #%patch9 -p1 -b .mfp
 #%patch10 -p1 -b .adjtime
 #%patch11 -p1 -b .slewwarning
 %patch12 -p1 -b .limit
 %patch13 -p1 -b .loop
 %patch15 -p1 -b .authkey
-aclocal
-automake -a ||:
-libtoolize --copy --force
+%patch16 -p1 -b .nomd5lib
+#autoreconf -fi
+%patch99 -p1 -b .autofoo
 %build
 
 
 perl -pi -e 's|INSTALL_STRIP_PROGRAM="\\\$\{SHELL\} \\\$\(install_sh\) -c -s|INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c|g' configure
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
-export CFLAGS="$RPM_OPT_FLAGS -g -DDEBUG"
+export CFLAGS="$RPM_OPT_FLAGS -g -DDEBUG" 
 if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev/null; then
-       rm -f pietest
-       export CFLAGS="$CFLAGS -pie -fPIE"
+	./pietest && export CFLAGS="$CFLAGS -pie -fPIE"
+	rm -f pietest
 fi
-%configure --sysconfdir=%{_sysconfdir}/ntp --bindir=%{_sbindir} --enable-all-clocks --enable-parse-clocks
+%configure --sysconfdir=%{_sysconfdir}/ntp --bindir=%{_sbindir} --enable-all-clocks --enable-parse-clocks --with-openssl-libdir=%{_libdir}
 unset CFLAGS
 %undefine	_target_platform
 
@@ -140,10 +148,8 @@ done
 
   mkdir -p .%{_sysconfdir}/sysconfig
   install -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
-  # clean up unwanted files
-  rm -f ./%{_sbindir}/ntp-wait
-  rm -f ./%{_sbindir}/ntptrace
 }
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -187,7 +193,15 @@ fi
 %files
 %defattr(-,root,root)
 %doc html/* NEWS TODO 
-%{_sbindir}/*
+%{_sbindir}/ntp-wait
+%{_sbindir}/ntptrace
+%{_sbindir}/ntp-keygen
+%{_sbindir}/ntpd
+%{_sbindir}/ntpdate
+%{_sbindir}/ntpdc
+%{_sbindir}/ntpq
+%{_sbindir}/ntptime
+%{_sbindir}/tickadj
 %config			%{_sysconfdir}/rc.d/init.d/ntpd
 %config(noreplace)	%{_sysconfdir}/sysconfig/ntpd
 %config(noreplace)	%{_sysconfdir}/ntp.conf
@@ -201,8 +215,12 @@ fi
 
 
 %changelog
-* Wed Oct 29 2003 Harald Hoyer <harald@redhat.de> 4.1.2-5
-- reverted to 4.1.2 (4.2.0 is unstable) #108369
+* Wed Jan 28 2004 Harald Hoyer <harald@faro.stuttgart.redhat.com> - 4.2.0-5
+- readded ntp-wait and ntptrace
+- new filter-requires to prevent perl dependency
+
+* Mon Jan 26 2004 Harald Hoyer <harald@redhat.de> 4.2.0-4
+- added autofoo patch
 
 * Tue Oct 28 2003 Harald Hoyer <harald@redhat.de> 4.2.0-3
 - removed libmd5 dependency
