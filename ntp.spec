@@ -6,7 +6,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.1.0b
-Release: 1
+Release: 2
 License: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
@@ -56,7 +56,7 @@ libtoolize --copy --force
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
 export CFLAGS="-g -DDEBUG" 
-%configure --sysconfdir=/etc/ntp
+%configure --sysconfdir=/etc/ntp --enable-all-clocks --enable-parse-clocks
 unset CFLAGS
 %undefine	_target_platform
 
@@ -135,6 +135,9 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Tue Jan 08 2002 Harald Hoyer <harald@redhat.de> 4.1.0b-2
+- added --enable-all-clocks --enable-parse-clocks (#57761)
+
 * Tue Dec 13 2001 Harald Hoyer <harald@redhat.de> 4.1.0b-1
 - bumped version
 - fixed #57391, #44580
