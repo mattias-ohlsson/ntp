@@ -1,23 +1,25 @@
 %define glibc_version %(rpm -q glibc | cut -d . -f 1-2 )
 %define glibc21 %([ "%glibc_version" = glibc-2.1 ] && echo 1 || echo 0)
+%define glibc22 %([ "%glibc_version" = glibc-2.2 ] && echo 1 || echo 0)
 %define	_bindir	%{_prefix}/sbin
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.0.99mrc2
+Version: 4.1.0
 Release: 3
-Copyright: distributable
+License: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
-Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.0.99m-rc2.tar.gz
+Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.0.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
-Patch0: ntp-4.0.99j-glibc22.patch
 Patch1: ntp-4.0.99j-vsnprintf.patch
 Patch3: ntp-4.0.99m-usegethost.patch
 Patch4: ntp-4.0.99m-rc2-droproot.patch
+Patch5: ntp-4.1.0-multi.patch
+
 URL: http://www.cis.udel.edu/~ntp
 PreReq: /sbin/chkconfig
 Prereq: /usr/sbin/groupadd /usr/sbin/useradd
@@ -28,8 +30,8 @@ BuildRoot: %{_tmppath}/%{name}-root
 
 %description
 The Network Time Protocol (NTP) is used to synchronize a computer's
-time with another reference time source.  The ntp package contains
-utilities and daemons which will synchronize your computer's time to
+time with another reference time source. The ntp package contains
+utilities and daemons that will synchronize your computer's time to
 Coordinated Universal Time (UTC) via the NTP protocol and NTP servers.
 The ntp package includes ntpdate (a program for retrieving the date
 and time from remote machines via a network) and ntpd (a daemon which
@@ -39,12 +41,12 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -n ntp-4.0.99m-rc2
+%setup -q 
 
 %patch1 -p1 -b .vsnprintf
 %patch3 -p1 -b .usegethost
 %{!?nocap:%patch4 -p1 -b .droproot}
-
+%patch5 -p1 -b .multi
 libtoolize --copy --force
 %build
 
@@ -55,8 +57,11 @@ CFLAGS="-g -DDEBUG" ./configure --prefix=/usr
 
 # XXX workaround glibc-2.1.90 lossage for now.
 # XXX still broken with glibc-2.1.94-2 and glibc-2.1.95-1
-%if ! %{glibc21}
-patch config.h < %PATCH0
+%if ! %{glibc21} && ! %{glibc22}
+( echo '#undef HAVE_CLOCK_SETTIME';
+echo '#undef HAVE_TIMER_CREATE';
+echo '#undef HAVE_TIMER_SETTIME';
+)>>config.h
 %endif
 
 # Remove -lreadline and -lrt from ntpd/Makefile
@@ -93,7 +98,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %{!?nocap:%pre}
 %{!?nocap:/usr/sbin/groupadd -g 38 ntp  2> /dev/null || :}
-%{!?nocap:/usr/sbin/useradd -u 38 -g 38 -s /bin/nologin -M -r -d /etc/ntp ntp 2>/dev/null || :}
+%{!?nocap:/usr/sbin/useradd -u 38 -g 38 -s /sbin/nologin -M -r -d /etc/ntp ntp 2>/dev/null || :}
 
 %post
 /sbin/chkconfig --add ntpd
@@ -125,6 +130,23 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Tue Sep 04 2001 Harald Hoyer <harald@redhat.de> 4.1.0-3
+- fixed #53089 /bin/nologin -> /sbin/nologin
+
+* Fri Aug 31 2001 Harald Hoyer <harald@redhat.de> 4.1.0-2
+- fixed #50247 thx to <enrico.scholz@informatik.tu-chemnitz.de>
+
+* Thu Aug 30 2001 Harald Hoyer <harald@redhat.de> 4.1.0-1
+- wow, how stupid can a man be ;).. fixed #50698 
+- updated to 4.1.0 (changes are small and in non-critical regions)
+
+* Wed Aug 29 2001 Harald Hoyer <harald@redhat.de> 4.0.99mrc2-5
+- really, really :) fixed #52763, #50698 and #50526
+
+* Mon Aug 27 2001 Tim Powers <timp@redhat.com> 4.0.99mrc2-4
+- rebuilt against newer libcap
+- Copyright -> license
+
 * Wed Jul 25 2001 Harald Hoyer <harald@redhat.com> 4.0.99mrc2-3
 - integrated droproot patch (#35653)
 - removed librt and libreadline dependency 
