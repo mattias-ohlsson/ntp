@@ -30,10 +30,12 @@ ntpstep=/etc/ntp/step-tickers
 RETVAL=0
 prog="ntpd"
 
+FWCHAIN="RH-Firewall-1-INPUT"
+
 # Is there a firewall running, and does it look like one we configured?
 FWACTIVE=''
 if [ -f /proc/net/ip_tables_names ]; then
-	if iptables -L -n 2>/dev/null | grep -q RH-Firewall-1-INPUT ; then
+	if iptables -L -n 2>/dev/null | grep -q $FWCHAIN ; then
 		FWACTIVE=1
 	fi
 fi
@@ -49,12 +51,16 @@ start() {
 	# check for -x
 	OPTIND=0
 	dostep=''
+	dropstr=''
 	while getopts ":aAbc:dD:f:gk:l:LmnN:p:P:qr:s:t:v:V:xU:T:" args $OPTIONS;
 	do 
 	  if [ "$args" = "x" ]; then
 	      dostep='yes' 
-	      break
 	  fi
+          if [ "$args" = "U" ]; then
+	      dropstr="-U $OPTARG"
+          fi
+
 	done
 	OPTIND=0
 
@@ -62,7 +68,7 @@ start() {
 	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
 	  for server in `echo $tickers $timeservers | tr ' ' '\n' | sort -u`; do
 	    echo -n $"$prog: Opening firewall for input from $server port 123"
-	    iptables -I RH-Firewall-1-INPUT -m udp -p udp -s $server/32  \
+	    iptables -I $FWCHAIN -m udp -p udp -s $server/32  \
 		--sport 123 -d 0/0 --dport 123 -j ACCEPT \
 		&& success || failure
 	    echo
@@ -77,7 +83,7 @@ start() {
 	    # Synchronize with servers if step-tickers exists
 	    # or the -x option is used
 	    echo -n $"$prog: Synchronizing with time server: "
-	    /usr/sbin/ntpdate -s -b -p 8 $tickers 2>/dev/null >/dev/null
+	    /usr/sbin/ntpdate $dropstr -s -b -p 8 $tickers 2>/dev/null >/dev/null
 	    RETVAL=$?
 	    [ $RETVAL -eq 0 ] && success || failure
 	    echo
@@ -112,7 +118,7 @@ stop() {
 	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
 	  for server in `echo $tickers $timeservers | tr ' ' '\n' | sort -u`; do
 	    echo -n $"$prog: Removing firewall opening for $server port 123"
-	    iptables -D RH-Firewall-1-INPUT -m udp -p udp -s $server/32  --sport 123 -d 0/0 --dport 123 -j ACCEPT \
+	    iptables -D $FWCHAIN -m udp -p udp -s $server/32  --sport 123 -d 0/0 --dport 123 -j ACCEPT \
 		&& success || failure
 	    echo
 	  done

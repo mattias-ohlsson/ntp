@@ -6,7 +6,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0
-Release: 5
+Release: 7
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2.0.tar.gz
@@ -35,6 +35,7 @@ Patch12: ntp-4.2.0-limit.patch
 Patch13: ntp-4.2.0-loopfilter.patch
 Patch15: ntp-4.1.1c-rc3-authkey.patch
 Patch16: ntp-4.2.0-md5.patch
+Patch17: ntp-4.2.0-genkey3.patch
 Patch99: ntp-4.2.0-autofoo.patch
 
 URL: http://www.ntp.org
@@ -74,6 +75,7 @@ time synchronized via the NTP protocol.
 %patch13 -p1 -b .loop
 %patch15 -p1 -b .authkey
 %patch16 -p1 -b .nomd5lib
+%patch17 -p1 -b .md5key
 #autoreconf -fi
 %patch99 -p1 -b .autofoo
 %build
@@ -215,6 +217,13 @@ fi
 
 
 %changelog
+* Thu Mar 11 2004 Harald Hoyer <harald@redhat.com> - 4.2.0-7
+- ntpgenkey fixed (117378)
+- fixed initscript to call ntpdate with -U (117894)
+
+* Fri Feb 13 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
 * Wed Jan 28 2004 Harald Hoyer <harald@faro.stuttgart.redhat.com> - 4.2.0-5
 - readded ntp-wait and ntptrace
 - new filter-requires to prevent perl dependency
