@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20040617
-Release: 4
+Release: 5
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -35,6 +35,8 @@ Patch15: ntp-4.1.1c-rc3-authkey.patch
 Patch16: ntp-4.2.0-md5.patch
 Patch17: ntp-4.2.0-genkey3.patch
 Patch18: ntp-4.2.0-sbinpath.patch
+
+Patch98: ntp-stable-4.2.0a-20040617-Wall.patch
 
 Patch99: ntp-4.2.0-autofoo.patch
 
@@ -72,8 +74,8 @@ time synchronized via the NTP protocol.
 %patch16 -p1 -b .nomd5lib
 %patch17 -p1 -b .md5key
 %patch18 -p1 -b .sbinpath
+%patch98 -p1 -b .wall
 #autoreconf -fi
-
 %patch99 -p1 -b .autofoo
 %build
 
@@ -81,7 +83,7 @@ time synchronized via the NTP protocol.
 perl -pi -e 's|INSTALL_STRIP_PROGRAM="\\\$\{SHELL\} \\\$\(install_sh\) -c -s|INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c|g' configure
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
-export CFLAGS="$RPM_OPT_FLAGS -g -DDEBUG" 
+export CFLAGS="$RPM_OPT_FLAGS -g -DDEBUG -D_FORTIFYSOURCE=2 -Wall" 
 if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev/null; then
 	./pietest && export CFLAGS="$CFLAGS -pie -fPIE"
 	rm -f pietest
@@ -111,6 +113,7 @@ perl -pi -e "s|LIBS = -lrt -lreadline|LIBS = |" ntpd/Makefile
 perl -pi -e "s|-lelf||" */Makefile
 perl -pi -e "s|-Wcast-qual||" */Makefile
 perl -pi -e "s|-Wconversion||" */Makefile
+find . -name Makefile -print0 | xargs -0 perl -pi -e "s|-Wall|-Wall -Wextra -Werror -Wno-unused|g"
 
 make
 pushd ntpstat-0.2
@@ -220,6 +223,9 @@ fi
 
 
 %changelog
+* Mon Dec 13 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040617-5
+- patched ntp to build with -D_FORTIFYSOURCE=2 -Wall -Wextra -Werror
+
 * Mon Oct 11 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040617-4
 - removed firewall hole punching from the initscript; rely on iptables
   ESTABLISHED,RELATED or manual firewall configuration
