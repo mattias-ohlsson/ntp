@@ -1,25 +1,25 @@
 %define glibc_version %(rpm -q glibc | cut -d . -f 1-2 )
 %define glibc21 %([ "%glibc_version" = glibc-2.1 ] && echo 1 || echo 0)
 %define glibc22 %([ "%glibc_version" = glibc-2.2 ] && echo 1 || echo 0)
-%define	_bindir	%{_prefix}/sbin
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.1.2
-Release: 0.rc1.2
+Release: 5
 License: distributable
 Group: System Environment/Daemons
-#Source0: http://www.ntp.org/ntp_spool/ntp4/ntp-%{version}.tar.gz
-Source0: http://www.ntp.org/ntp_spool/ntp4/ntp-4.1.1c-rc1.tar.gz
+Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.1.2.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
+Source5: ntpstat-0.2.tgz
+Source6: ntp-4.1.2-rh-manpages.tar.gz
 Patch1: ntp-4.0.99j-vsnprintf.patch
 Patch3: ntp-4.0.99m-usegethost.patch
 #Patch4: ntp-4.0.99m-rc2-droproot.patch
 Patch5: ntp-4.1.0-multi.patch
-Patch6: ntp-4.1.1-droproot.patch
+Patch6: ntp-4.1.1rc2-droproot.patch
 Patch7: ntp-4.1.0b-rc1-genkey.patch
 Patch8: ntp-4.1.1a-genkey2.patch
 Patch9: ntp-4.1.1a-mfp.patch
@@ -27,14 +27,15 @@ Patch10: ntp-4.1.1a-adjtime.patch
 Patch11: ntp-4.1.1-slewwarning.patch
 Patch12: ntp-4.1.73-limit.patch
 Patch13: ntp-4.1.1c-loopfilter.patch
+Patch15: ntp-4.1.1c-rc3-authkey.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
 Prereq: /usr/sbin/groupadd /usr/sbin/useradd
-PreReq: sed
+PreReq: /bin/awk, sed
 Requires: libcap
 BuildPreReq: libcap-devel
-Obsoletes: xntp3
+Obsoletes: xntp3 ntpstat
 BuildRoot: %{_tmppath}/%{name}-root
 
 %description
@@ -50,7 +51,7 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -n ntp-4.1.1c-rc1
+%setup -q -n ntp-4.1.2 -a 5 -a 6
 
 #%patch1 -p1 -b .vsnprintf
 %patch3 -p1 -b .usegethost
@@ -63,6 +64,7 @@ time synchronized via the NTP protocol.
 #%patch11 -p1 -b .slewwarning
 %patch12 -p1 -b .limit
 %patch13 -p1 -b .loop
+%patch15 -p1 -b .authkey
 aclocal
 automake -a ||:
 libtoolize --copy --force
@@ -72,8 +74,12 @@ libtoolize --copy --force
 perl -pi -e 's|INSTALL_STRIP_PROGRAM="\\\$\{SHELL\} \\\$\(install_sh\) -c -s|INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c|g' configure
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
-export CFLAGS="-g -DDEBUG" 
-%configure --sysconfdir=/etc/ntp --enable-all-clocks --enable-parse-clocks
+export CFLAGS="$RPM_OPT_FLAGS -g -DDEBUG"
+if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev/null; then
+       rm -f pietest
+       export CFLAGS="$CFLAGS -pie -fPIE"
+fi
+%configure --sysconfdir=%{_sysconfdir}/ntp --bindir=%{_sbindir} --enable-all-clocks --enable-parse-clocks
 unset CFLAGS
 %undefine	_target_platform
 
@@ -100,25 +106,43 @@ perl -pi -e "s|-Wcast-qual||" */Makefile
 perl -pi -e "s|-Wconversion||" */Makefile
 
 make
+pushd ntpstat-0.2
+make
+popd
+
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%makeinstall sysconfdir=/etc/ntp
+%makeinstall sysconfdir=%{_sysconfdir}/ntp bindir=${RPM_BUILD_ROOT}%{_sbindir}
+
+pushd ntpstat-0.2
+mkdir -p ${RPM_BUILD_ROOT}/%{_mandir}/man1
+mkdir -p ${RPM_BUILD_ROOT}/%{_bindir}
+
+install -m 755 ntpstat ${RPM_BUILD_ROOT}/%{_bindir}/
+install -m 644 ntpstat.1 ${RPM_BUILD_ROOT}/%{_mandir}/man1/
+popd
+pushd man
+for i in *.1; do 
+	install -m 644 $i ${RPM_BUILD_ROOT}/%{_mandir}/man1/
+done
 
 { cd $RPM_BUILD_ROOT
 
   mkdir -p .%{_sysconfdir}/{ntp,rc.d/init.d}
   install -m644 $RPM_SOURCE_DIR/ntp.conf .%{_sysconfdir}/ntp.conf
-  echo '0.0' >.%{_sysconfdir}/ntp/drift
+  mkdir -p .%{_var}/lib/ntp
+  echo '0.0' >.%{_var}/lib/ntp/drift
   install -m600 $RPM_SOURCE_DIR/ntp.keys .%{_sysconfdir}/ntp/keys
   touch .%{_sysconfdir}/ntp/step-tickers
   install -m755 $RPM_SOURCE_DIR/ntpd.init .%{_sysconfdir}/rc.d/init.d/ntpd
 
   mkdir -p .%{_sysconfdir}/sysconfig
   install -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
-
-  strip .%{_bindir}/* || :
+  # clean up unwanted files
+  rm -f ./%{_sbindir}/ntp-wait
+  rm -f ./%{_sbindir}/ntptrace
 }
 
 %clean
@@ -126,13 +150,28 @@ rm -rf $RPM_BUILD_ROOT
 
 %pre
 /usr/sbin/groupadd -g 38 ntp  2> /dev/null || :
-/usr/sbin/useradd -u 38 -g 38 -s /sbin/nologin -M -r -d /etc/ntp ntp 2>/dev/null || :
+/usr/sbin/useradd -u 38 -g 38 -s /sbin/nologin -M -r -d %{_sysconfdir}/ntp ntp 2>/dev/null || :
 
 %post
 /sbin/chkconfig --add ntpd
-if [ -f /etc/ntp/drift ]; then
-	chown ntp.ntp /etc/ntp/drift || :
+grep %{_sysconfdir}/ntp/drift %{_sysconfdir}/ntp.conf > /dev/null 2>&1
+olddrift=$?
+if [ "$1" -ge "1" -a $olddrift -eq 0 ]; then
+  service ntpd status > /dev/null 2>&1
+  wasrunning=$?
+  # let ntp save the actual drift
+  [ $wasrunning -eq 0 ] && service ntpd stop > /dev/null 2>&1
+  # copy the driftfile to the new location
+  [ -f %{_sysconfdir}/ntp/drift ] && cp %{_sysconfdir}/ntp/drift %{_var}/lib/ntp/drift
+  # change the path in the config file
+  sed -e 's#%{_sysconfdir}/ntp/drift#%{_var}/lib/ntp/drift#g' %{_sysconfdir}/ntp.conf > %{_sysconfdir}/ntp.conf.rpmupdate \
+  && mv %{_sysconfdir}/ntp.conf.rpmupdate %{_sysconfdir}/ntp.conf 
+  # remove the temp file
+  rm -f %{_sysconfdir}/ntp.conf.rpmupdate
+  # start ntp if it was running previously
+  [ $wasrunning -eq 0 ] && service ntpd start > /dev/null 2>&1
 fi
+
 
 %preun
 if [ $1 = 0 ]; then
@@ -148,16 +187,73 @@ fi
 %files
 %defattr(-,root,root)
 %doc html/* NEWS TODO 
-%{_bindir}/*
-%config				%{_sysconfdir}/rc.d/init.d/ntpd
+%{_sbindir}/*
+%config			%{_sysconfdir}/rc.d/init.d/ntpd
 %config(noreplace)	%{_sysconfdir}/sysconfig/ntpd
-%config(noreplace)		%{_sysconfdir}/ntp.conf
-%dir	%attr(-,ntp,ntp)   %{_sysconfdir}/ntp
-%config(noreplace) %attr(644,ntp,ntp) %verify(not md5 size mtime) %{_sysconfdir}/ntp/drift
-%config(noreplace) %attr(-,ntp,ntp) %{_sysconfdir}/ntp/keys
-%config(noreplace) %attr(-,ntp,ntp) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
+%config(noreplace)	%{_sysconfdir}/ntp.conf
+%dir 	%{_sysconfdir}/ntp
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
+%config(noreplace) %{_sysconfdir}/ntp/keys
+%dir	%attr(-,ntp,ntp)   %{_var}/lib/ntp
+%config(noreplace) %attr(644,ntp,ntp) %verify(not md5 size mtime) %{_var}/lib/ntp/drift
+%{_mandir}/man1/*
+%{_bindir}/ntpstat
+
 
 %changelog
+* Wed Oct 29 2003 Harald Hoyer <harald@redhat.de> 4.1.2-5
+- reverted to 4.1.2 (4.2.0 is unstable) #108369
+
+* Tue Oct 28 2003 Harald Hoyer <harald@redhat.de> 4.2.0-3
+- removed libmd5 dependency
+- removed perl dependency
+
+* Tue Oct 28 2003 Harald Hoyer <harald@redhat.de> 4.2.0-2
+- fixed initscript to use new FW chain name
+
+* Mon Oct 27 2003 Harald Hoyer <harald@redhat.de> 4.2.0-1
+- 4.2.0
+- added PIE
+
+* Thu Sep 11 2003 Harald Hoyer <harald@redhat.de> 4.1.2-4
+- changed ntp.conf driftfile path #104207
+
+* Fri Aug 29 2003 Florian La Roche <Florian.LaRoche@redhat.de>
+- also build as non-root
+
+* Thu Aug 28 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-2
+- added ntpstat
+- added manpages
+
+* Wed Jul 01 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-1.rc3.5
+- move driftfile to /var
+
+* Wed Jul 01 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-1.rc3.4
+- make a seperate directory for drift
+- security fix, patch ntp-4.1.1c-rc3-authkey.patch #96927
+ 
+* Wed Jun 18 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-1.rc3.3
+- %%{_sysconfdir}/ntp/drift.TEMP needs to be writable by ntp #97754
+- no duplicate fw entries #97624
+
+* Wed Jun 18 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-1.rc3.2
+- changed permissions of config files  
+
+* Tue Jun 17 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-1.rc3.1
+- updated to rc3 
+
+* Wed Jun 04 2003 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
+* Thu May 22 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-0.rc2.2
+- corrected pid file name in %%{_sysconfdir}/sysconfig/ntpd
+
+* Tue Apr 28 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-0.rc2.1
+- update to 4.1.1rc2
+
+* Tue Feb 25 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-0.rc1.3
+- better awk for timeservers #85090, #82713, #82714
+
 * Thu Feb 13 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-0.rc1.2
 - added loopfilter patch, -x should work now!
 - removed slew warning
@@ -297,7 +393,7 @@ fi
 - Remote groupdel commands, shouldn't be needed.
 - Removed -Wcast-qual and -Wconversion due to excessive warnings (hackish).
 - Make ntp compilable with both glibc 2.1 and 2.2.x (very dirty hack)
-- Add /etc/sysconfig/ntpd which drops root privs by default
+- Add %%{_sysconfdir}/sysconfig/ntpd which drops root privs by default
 
 * Thu Apr  5 2001 Preston Brown <pbrown@redhat.com>
 - security patch for ntpd
@@ -313,10 +409,10 @@ fi
 * Tue Mar 20 2001 Jarno Huuskonen <Jarno.Huuskonen@uku.fi>
 - droproot/caps patch
 - add ntpd user in pre
-- make /etc/ntp ntpd writable
+- make %%{_sysconfdir}/ntp ntpd writable
 
 * Mon Mar  5 2001 Preston Brown <pbrown@redhat.com>
-- allow comments in /etc/ntp/step-tickers file (#28786).
+- allow comments in %%{_sysconfdir}/ntp/step-tickers file (#28786).
 - need patch0 (glibc patch) on ia64 too
 
 * Tue Feb 13 2001 Florian La Roche <Florian.LaRoche@redhat.de>
@@ -329,7 +425,7 @@ fi
 - i18n-neutral .init script (#26525)
 
 * Tue Feb  6 2001 Preston Brown <pbrown@redhat.com>
-- use gethostbyname on addresses in /etc/ntp.conf for ntptime command (#26250)
+- use gethostbyname on addresses in %%{_sysconfdir}/ntp.conf for ntptime command (#26250)
 
 * Mon Feb  5 2001 Preston Brown <pbrown@redhat.com>
 - start earlier and stop later (#23530)
@@ -347,7 +443,7 @@ fi
 - correct mis-spellings in ntpq.htm (#20007).
 
 * Thu Oct 19 2000 Jeff Johnson <jbj@redhat.com>
-- add %ghost /etc/ntp/drift (#15222).
+- add %ghost %%{_sysconfdir}/ntp/drift (#15222).
 
 * Wed Oct 18 2000 Jeff Johnson <jbj@redhat.com>
 - comment out default values for keys, warn about starting with -A (#19316).
