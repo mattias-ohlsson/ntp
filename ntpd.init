@@ -15,17 +15,16 @@
 # Source networking configuration.
 . /etc/sysconfig/network
 
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 0
+
 if [ -f /etc/sysconfig/ntpd ];then
         . /etc/sysconfig/ntpd
 fi
 
-# Check that networking is up.
-[ ${NETWORKING} = "no" ] && exit 0
-
 ntpconf=/etc/ntp.conf
 ntpstep=/etc/ntp/step-tickers
 
-[ -x /usr/sbin/ntpd -a -f $ntpconf ] || exit 0
 
 RETVAL=0
 prog="ntpd"
@@ -40,7 +39,7 @@ if [ -f /proc/net/ip_tables_names ]; then
 	fi
 fi
 
-start() {
+readconf() {
 	# get the servers from step-ticker
         tickers=''
         if [ -s "$ntpstep" ]; then
@@ -52,10 +51,17 @@ start() {
 	OPTIND=0
 	dostep=''
 	dropstr=''
+	ntpchroot=''
 	while getopts ":46aAbc:dD:f:gk:l:LmnN:p:P:qr:s:t:v:V:xU:T:" args $OPTIONS;
 	do 
 	  if [ "$args" = "x" ]; then
 	      dostep='yes' 
+	  fi
+	  if [ "x${args}" = xT ]; then
+	      ntpchroot="${OPTARG}"
+              ntpconf="${ntpchroot}/etc/ntp.conf"
+	      ntpstep="${ntpchroot}/etc/ntp/step-tickers"
+	      break
 	  fi
           if [ "$args" = "U" ]; then
         	# correct the options string
@@ -71,7 +77,11 @@ start() {
 	done
 	OPTIND=0
 
+	[ -x /usr/sbin/ntpd -a -f $ntpconf ] || exit 0
+}
 
+start() {
+	readconf;
         # Open the firewall for ntp
 	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
 	  for server in `echo $tickers $timeservers | tr ' ' '\n' | sort -u`; do
@@ -114,7 +124,7 @@ start() {
 
 stop() {
         # Stop daemons.
-
+	readconf;
 	# get the servers from step-ticker
         tickers=''
         if [ -s "$ntpstep" ]; then
