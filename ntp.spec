@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.0.99mrc2
-Release: 1
+Release: 2
 Copyright: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
@@ -97,6 +97,9 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Sat Jul  7 2001 Tim Powers <timp@redhat.com>
+- don't build build sgid root dirs
+
 * Mon Jun 18 2001 Harald Hoyer <harald@redhat.de>
 - new snapshot
 - removed typos and security patch (already there)
