@@ -3,19 +3,21 @@
 %define glibc21 %([ "%glibc_version" = glibc-2.1 ] && echo 1 || echo 0)
 %define glibc22 %([ "%glibc_version" = glibc-2.2 ] && echo 1 || echo 0)
 
+%define tarversion stable-4.2.0a-20040616
+
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.2.0
-Release: 8
+Version: 4.2.0.a.20040616
+Release: 1
 License: distributable
 Group: System Environment/Daemons
-Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2.0.tar.gz
+Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
 Source5: ntpstat-0.2.tgz
-Source6: ntp-4.1.2-rh-manpages.tar.gz
+Source6: ntp-4.2.0-rh-manpages.tar.gz
 
 # new find-requires
 Source7: filter-requires-ntp.sh
@@ -23,19 +25,15 @@ Source7: filter-requires-ntp.sh
 
 Patch1: ntp-4.0.99j-vsnprintf.patch
 Patch3: ntp-4.0.99m-usegethost.patch
-#Patch4: ntp-4.0.99m-rc2-droproot.patch
-#Patch5: ntp-4.1.0-multi.patch
+
 Patch6: ntp-4.2.0-droproot.patch
-#Patch7: ntp-4.2.0-genkey.patch
-#Patch8: ntp-4.1.1a-genkey2.patch
-#Patch9: ntp-4.1.1a-mfp.patch
-#Patch10: ntp-4.1.1a-adjtime.patch
-#Patch11: ntp-4.1.1-slewwarning.patch
-Patch12: ntp-4.2.0-limit.patch
-Patch13: ntp-4.2.0-loopfilter.patch
+
+#Patch12: ntp-4.2.0-limit.patch
+#Patch13: ntp-4.2.0-loopfilter.patch
 Patch15: ntp-4.1.1c-rc3-authkey.patch
 Patch16: ntp-4.2.0-md5.patch
 Patch17: ntp-4.2.0-genkey3.patch
+
 Patch99: ntp-4.2.0-autofoo.patch
 
 URL: http://www.ntp.org
@@ -60,23 +58,17 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -a 5 -a 6
+%setup -q -n ntp-%{tarversion} -a 5 -a 6
 
-#%patch1 -p1 -b .vsnprintf
 %patch3 -p1 -b .usegethost
 %patch6 -p1 -b .droproot
-#%patch5 -p1 -b .multi
-#%patch7 -p1 -b .genkey
-#%patch8 -p1 -b .genkey2
-#%patch9 -p1 -b .mfp
-#%patch10 -p1 -b .adjtime
-#%patch11 -p1 -b .slewwarning
-%patch12 -p1 -b .limit
-%patch13 -p1 -b .loop
+#%patch12 -p1 -b .limit
+#%patch13 -p1 -b .loop
 %patch15 -p1 -b .authkey
 %patch16 -p1 -b .nomd5lib
 %patch17 -p1 -b .md5key
 #autoreconf -fi
+
 %patch99 -p1 -b .autofoo
 %build
 
@@ -89,7 +81,7 @@ if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev
 	./pietest && export CFLAGS="$CFLAGS -pie -fPIE"
 	rm -f pietest
 fi
-%configure --sysconfdir=%{_sysconfdir}/ntp --bindir=%{_sbindir} --enable-all-clocks --enable-parse-clocks --with-openssl-libdir=%{_libdir}
+%configure --sysconfdir=%{_sysconfdir}/ntp --bindir=%{_sbindir} --enable-all-clocks --enable-parse-clocks --with-openssl-libdir=%{_libdir} --enable-linuxcaps
 unset CFLAGS
 %undefine	_target_platform
 
@@ -217,6 +209,10 @@ fi
 
 
 %changelog
+* Fri Jul 23 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040616-1
+- new version ntp-stable-4.2.0a-20040616
+- removed most patches
+
 * Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
 - rebuilt
 

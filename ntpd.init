@@ -52,17 +52,25 @@ start() {
 	OPTIND=0
 	dostep=''
 	dropstr=''
-	while getopts ":aAbc:dD:f:gk:l:LmnN:p:P:qr:s:t:v:V:xU:T:" args $OPTIONS;
+	while getopts ":46aAbc:dD:f:gk:l:LmnN:p:P:qr:s:t:v:V:xU:T:" args $OPTIONS;
 	do 
 	  if [ "$args" = "x" ]; then
 	      dostep='yes' 
 	  fi
           if [ "$args" = "U" ]; then
-	      dropstr="-U $OPTARG"
+        	# correct the options string
+		OPTIONS=$(echo $OPTIONS|sed -e 's#-U#-u#g')
+		echo "Please change -U to -u in /etc/sysconfig/ntpd"
+	  fi
+
+          if [ "$args" = "u" ]; then
+              dropstr="-U $OPTARG"
           fi
+
 
 	done
 	OPTIND=0
+
 
         # Open the firewall for ntp
 	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
