@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20040617
-Release: 3
+Release: 4
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -220,6 +220,10 @@ fi
 
 
 %changelog
+* Mon Oct 11 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040617-4
+- removed firewall hole punching from the initscript; rely on iptables
+  ESTABLISHED,RELATED or manual firewall configuration
+
 * Fri Oct  8 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040617-3
 - improved postsection
 - BuildRequires readline-devel

@@ -29,23 +29,13 @@ ntpstep=/etc/ntp/step-tickers
 RETVAL=0
 prog="ntpd"
 
-FWCHAIN="RH-Firewall-1-INPUT"
-
-# Is there a firewall running, and does it look like one we configured?
-FWACTIVE=''
-if [ -f /proc/net/ip_tables_names ]; then
-	if iptables -L -n 2>/dev/null | grep -q $FWCHAIN ; then
-		FWACTIVE=1
-	fi
-fi
-
 readconf() {
 	# get the servers from step-ticker
         tickers=''
         if [ -s "$ntpstep" ]; then
 	    tickers=`/bin/sed -e 's/\#.*$//g' $ntpstep`
         fi
-	timeservers=`/bin/awk '$1=="peer"||$1=="server"{print $2}' $ntpconf`
+	timeservers=`/bin/awk '$1=="peer"||$1=="server"{print $2}' $ntpconf|fgrep -v 127.127.1.0`
 
 	# check for -x
 	OPTIND=0
@@ -82,16 +72,6 @@ readconf() {
 
 start() {
 	readconf;
-        # Open the firewall for ntp
-	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
-	  for server in `echo $tickers $timeservers | tr ' ' '\n' | sort -u`; do
-	    echo -n $"$prog: Opening firewall for input from $server port 123"
-	    iptables -I $FWCHAIN -m udp -p udp -s $server/32  \
-		--sport 123 -d 0/0 --dport 123 -j ACCEPT \
-		&& success || failure
-	    echo
-	  done
-	fi
 
         if [ -z "$tickers" ]; then
 	    tickers=$timeservers
@@ -123,24 +103,6 @@ start() {
 }
 
 stop() {
-        # Stop daemons.
-	readconf;
-	# get the servers from step-ticker
-        tickers=''
-        if [ -s "$ntpstep" ]; then
-	    tickers=`/bin/sed -e 's/\#.*$//g' $ntpstep`
-        fi
-        timeservers=`/usr/bin/awk '$1=="peer"||$1=="server"{print $2}' $ntpconf`
-
-        # Remove the firewall opening for ntp
-	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
-	  for server in `echo $tickers $timeservers | tr ' ' '\n' | sort -u`; do
-	    echo -n $"$prog: Removing firewall opening for $server port 123"
-	    iptables -D $FWCHAIN -m udp -p udp -s $server/32  --sport 123 -d 0/0 --dport 123 -j ACCEPT \
-		&& success || failure
-	    echo
-	  done
-	fi
         echo -n $"Shutting down $prog: "
 	killproc ntpd
 	RETVAL=$?
