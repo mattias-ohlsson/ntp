@@ -5,12 +5,12 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.1.1a
-Release: 9
+Version: 4.1.2
+Release: 0.rc1.2
 License: distributable
 Group: System Environment/Daemons
-#Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
-Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.1a.tar.gz
+#Source0: http://www.ntp.org/ntp_spool/ntp4/ntp-%{version}.tar.gz
+Source0: http://www.ntp.org/ntp_spool/ntp4/ntp-4.1.1c-rc1.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
@@ -19,16 +19,21 @@ Patch1: ntp-4.0.99j-vsnprintf.patch
 Patch3: ntp-4.0.99m-usegethost.patch
 #Patch4: ntp-4.0.99m-rc2-droproot.patch
 Patch5: ntp-4.1.0-multi.patch
-Patch6: ntp-4.1.0b-rc1-droproot.patch
+Patch6: ntp-4.1.1-droproot.patch
 Patch7: ntp-4.1.0b-rc1-genkey.patch
 Patch8: ntp-4.1.1a-genkey2.patch
+Patch9: ntp-4.1.1a-mfp.patch
+Patch10: ntp-4.1.1a-adjtime.patch
+Patch11: ntp-4.1.1-slewwarning.patch
+Patch12: ntp-4.1.73-limit.patch
+Patch13: ntp-4.1.1c-loopfilter.patch
 
-URL: http://www.cis.udel.edu/~ntp
+URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
 Prereq: /usr/sbin/groupadd /usr/sbin/useradd
 PreReq: sed
-%{!?nocap:Requires: libcap}
-%{!?nocap:BuildPreReq: libcap-devel}
+Requires: libcap
+BuildPreReq: libcap-devel
 Obsoletes: xntp3
 BuildRoot: %{_tmppath}/%{name}-root
 
@@ -45,14 +50,21 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -n ntp-4.1.1a
+%setup -q -n ntp-4.1.1c-rc1
 
-%patch1 -p1 -b .vsnprintf
+#%patch1 -p1 -b .vsnprintf
 %patch3 -p1 -b .usegethost
-%{!?nocap:%patch6 -p1 -b .droproot}
+%patch6 -p1 -b .droproot
 %patch5 -p1 -b .multi
 %patch7 -p1 -b .genkey
 %patch8 -p1 -b .genkey2
+#%patch9 -p1 -b .mfp
+#%patch10 -p1 -b .adjtime
+#%patch11 -p1 -b .slewwarning
+%patch12 -p1 -b .limit
+%patch13 -p1 -b .loop
+aclocal
+automake -a ||:
 libtoolize --copy --force
 %build
 
@@ -73,6 +85,11 @@ echo '#undef HAVE_TIMER_CREATE';
 echo '#undef HAVE_TIMER_SETTIME';
 )>>config.h
 %endif
+
+make Makefile
+for dir in *; do 
+	[ -d $dir ] && make -C $dir Makefile || :
+done
 
 # Remove -lreadline and -lrt from ntpd/Makefile
 # I don't see them used...
@@ -98,8 +115,8 @@ rm -rf $RPM_BUILD_ROOT
   touch .%{_sysconfdir}/ntp/step-tickers
   install -m755 $RPM_SOURCE_DIR/ntpd.init .%{_sysconfdir}/rc.d/init.d/ntpd
 
-  %{!?nocap:mkdir -p .%{_sysconfdir}/sysconfig}
-  %{!?nocap:install -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd}
+  mkdir -p .%{_sysconfdir}/sysconfig
+  install -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
 
   strip .%{_bindir}/* || :
 }
@@ -107,15 +124,15 @@ rm -rf $RPM_BUILD_ROOT
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%{!?nocap:%pre}
-%{!?nocap:/usr/sbin/groupadd -g 38 ntp  2> /dev/null || :}
-%{!?nocap:/usr/sbin/useradd -u 38 -g 38 -s /sbin/nologin -M -r -d /etc/ntp ntp 2>/dev/null || :}
+%pre
+/usr/sbin/groupadd -g 38 ntp  2> /dev/null || :
+/usr/sbin/useradd -u 38 -g 38 -s /sbin/nologin -M -r -d /etc/ntp ntp 2>/dev/null || :
 
 %post
 /sbin/chkconfig --add ntpd
-%{!?nocap:if [ -f /etc/ntp/drift ]; then}
-%{!?nocap:	chown ntp.ntp /etc/ntp/drift || :}
-%{!?nocap:fi}
+if [ -f /etc/ntp/drift ]; then
+	chown ntp.ntp /etc/ntp/drift || :
+fi
 
 %preun
 if [ $1 = 0 ]; then
@@ -133,14 +150,54 @@ fi
 %doc html/* NEWS TODO 
 %{_bindir}/*
 %config				%{_sysconfdir}/rc.d/init.d/ntpd
-%{!?nocap:%config(noreplace)	%{_sysconfdir}/sysconfig/ntpd}
+%config(noreplace)	%{_sysconfdir}/sysconfig/ntpd
 %config(noreplace)		%{_sysconfdir}/ntp.conf
-%dir	%{!?nocap:%attr(-,ntp,ntp)}   %{_sysconfdir}/ntp
-%config(noreplace) %{!?nocap:%attr(644,ntp,ntp)} %verify(not md5 size mtime) %{_sysconfdir}/ntp/drift
-%config(noreplace) %{!?nocap:%attr(-,ntp,ntp)} %{_sysconfdir}/ntp/keys
-%config(noreplace) %{!?nocap:%attr(-,ntp,ntp)} %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
+%dir	%attr(-,ntp,ntp)   %{_sysconfdir}/ntp
+%config(noreplace) %attr(644,ntp,ntp) %verify(not md5 size mtime) %{_sysconfdir}/ntp/drift
+%config(noreplace) %attr(-,ntp,ntp) %{_sysconfdir}/ntp/keys
+%config(noreplace) %attr(-,ntp,ntp) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Thu Feb 13 2003 Harald Hoyer <harald@redhat.de> 0:4.1.2-0.rc1.2
+- added loopfilter patch, -x should work now!
+- removed slew warning
+
+* Mon Feb 10 2003 Harald Hoyer <harald@redhat.de> 1:4.1.1-2
+- ok, messed up with the versions... added epoch :(
+
+* Fri Feb 07 2003 Harald Hoyer <harald@redhat.de> 4.1.1-1
+- going back to stable 4.1.1 with the limit patch
+- added limit patch
+- added slew warning
+
+* Thu Jan 30 2003 Harald Hoyer <harald@redhat.de> 4.1.73-2
+- removed exit on ntpdate fail, better add '-g' option
+
+* Wed Jan 29 2003 Harald Hoyer <harald@redhat.de> 4.1.73-1
+- update to version 4.1.73
+- removed most of the patches
+- limit ntp_adjtime parameters
+
+* Wed Jan 22 2003 Tim Powers <timp@redhat.com>
+- rebuilt
+
+* Wed Nov 20 2002 Harald Hoyer <harald@redhat.de> 4.1.1b-1
+- updated to version 4.1.1b
+- improved initscript - use ntpdate on -x
+- improved initscript - open firewall only for timeservers
+- ntp-4.1.1a-adjtime.patch removed (already in source)
+- ntp-4.1.1a-mfp.patch removed (already in source)
+- ntp-4.0.99j-vsnprintf.patch removed (already in source)
+
+* Tue Nov 19 2002 Harald Hoyer <harald@redhat.de> 4.1.1a-12
+- added adjtime patch #75558
+
+* Wed Nov 13 2002 Harald Hoyer <harald@redhat.de>
+- more ntpd.init service description #77715
+
+* Mon Nov 11 2002 Harald Hoyer <harald@redhat.de>
+- ntp-4.1.1a-mfp.patch fixes #77086
+
 * Sat Aug 31 2002 Florian La Roche <Florian.LaRoche@redhat.de>
 - add option -n to initscript to avoid DNS lookups #72756
 

@@ -1,10 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 #
 # ntpd		This shell script takes care of starting and stopping
 #		ntpd (NTPv4 daemon).
 #
 # chkconfig: - 58 74
-# description: ntpd is the NTPv4 daemon.
+# description: ntpd is the NTPv4 daemon. \
+# The Network Time Protocol (NTP) is used to synchronize the time of \
+# a computer client or server to another server or reference time source, \
+# such as a radio or satellite receiver or modem.
 
 # Source function library.
 . /etc/init.d/functions
@@ -28,31 +31,66 @@ RETVAL=0
 prog="ntpd"
 
 # Is there a firewall running, and does it look like one we configured?
-FWACTIVE=
+FWACTIVE=''
 if iptables -L -n 2>/dev/null | grep -q RH-Lokkit-0-50-INPUT ; then
     FWACTIVE=1
 fi
 
 start() {
-	tickers=''
+	# get the servers from step-ticker
+        tickers=''
+        if [ -s "$ntpstep" ]; then
+	    tickers=`/bin/sed -e 's/\#.*$//g' $ntpstep`
+        fi
+	timeservers=`/bin/sed \
+                 -n -e 's/\#.*$//;/127.*/d' \
+                 -e 's/^[[:blank:]]*server[[:blank:]][[:blank:]]*\(.*\)/\1/p' \
+                 -e 's/^[[:blank:]]*server[[:blank:]]+\([[:alnum:].]+\)[[:blank:]]*.*/\1/p' \
+                 -e 's/^[[:blank:]]*peer[[:blank:]]+\([[:alnum:].]+\)[[:blank:]]*.*/\1/p' \
+                 $ntpconf`
+
+	# check for -x
+	OPTIND=0
+	dostep=''
+	while getopts ":aAbc:dD:f:gk:l:LmnN:p:P:qr:s:t:v:V:xU:T:" args $OPTIONS;
+	do 
+	  if [ "$args" = "x" ]; then
+	      dostep='yes' 
+	      break
+	  fi
+	done
+	OPTIND=0
+
+        # Open the firewall for ntp
 	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
-	    echo -n $"$prog: Opening firewall for port 123"
-	    iptables -I RH-Lokkit-0-50-INPUT -m udp -p udp -s 0/0  --sport 123 -d 0/0 --dport 123 -j ACCEPT\
+	  for server in $tickers $timeservers; do
+	    echo -n $"$prog: Opening firewall for input from $server port 123"
+	    iptables -I RH-Lokkit-0-50-INPUT -m udp -p udp -s $server/32  \
+		--sport 123 -d 0/0 --dport 123 -j ACCEPT \
 		&& success || failure
 	    echo
+	  done
 	fi
-	if [ -s "$ntpstep" ]; then
-                tickers=`/bin/sed -e 's/\#.*$//g' $ntpstep`
-		echo -n $"$prog: Synchronizing with time server: "
-		/usr/sbin/ntpdate -s -b -p 8 $tickers
-		RETVAL=$?
-		[ $RETVAL -eq 0 ] && success || failure
-		echo
-		[ ! $RETVAL -eq 0 ] && return $RETVAL
+
+        if [ -z "$tickers" ]; then
+	    tickers=$timeservers
+        fi
+
+	if [ -s "$ntpstep" -o -n "$dostep" ]; then
+	    # Synchronize with servers if step-tickers exists
+	    # or the -x option is used
+	    echo -n $"$prog: Synchronizing with time server: "
+	    /usr/sbin/ntpdate -s -b -p 8 $tickers
+	    RETVAL=$?
+	    [ $RETVAL -eq 0 ] && success || failure
+	    echo
+	    if [ $RETVAL -ne 0 ]; then
+	            OPTIONS="$OPTIONS -g"
+	    fi
 	else
-		# -g can replace the grep for time servers
-		# as it permits ntpd to violate its 1000s limit once.
-		OPTIONS="$OPTIONS -g"
+	    # -g can replace the grep for time servers
+	    # as it permits ntpd to violate its 1000s limit once.
+	    OPTIONS="$OPTIONS -g"
 	fi
         # Start daemons.
         echo -n $"Starting $prog: "
@@ -65,11 +103,25 @@ start() {
 
 stop() {
         # Stop daemons.
+
+	# get the servers from step-ticker
+        tickers=''
+        if [ -s "$ntpstep" ]; then
+	    tickers=`/bin/sed -e 's/\#.*$//g' $ntpstep`
+        fi
+	timeservers=`/bin/sed \
+                 -n -e 's/\#.*$//;/127.*/d' \
+                 -e 's/^[[:blank:]]*server[[:blank:]][[:blank:]]*\(.*\)/\1/p' \
+                 $ntpconf`
+
+        # Remove the firewall opening for ntp
 	if [ -n "$FWACTIVE" -a "$FIREWALL_MODS" != "no" ]; then
-	    echo -n $"$prog: Removing firewall opening for port 123"
-	    iptables -D RH-Lokkit-0-50-INPUT -m udp -p udp -s 0/0  --sport 123 -d 0/0 --dport 123 -j ACCEPT\
+	  for server in $tickers $timeservers; do
+	    echo -n $"$prog: Removing firewall opening for $server port 123"
+	    iptables -D RH-Lokkit-0-50-INPUT -m udp -p udp -s $server/32  --sport 123 -d 0/0 --dport 123 -j ACCEPT\
 		&& success || failure
 	    echo
+	  done
 	fi
         echo -n $"Shutting down $prog: "
 	killproc ntpd
