@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.0.99k
-Release: 15
+Release: 15a
 Copyright: distributable
 Group: System Environment/Daemons
 Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
@@ -41,6 +41,14 @@ time synchronized via the NTP protocol.
 %patch4 -p1 -b .security
 
 %build
+# like libtoolize, but different
+%ifarch s390 s390x
+for file in config.sub config.guess ; do
+  for place in `find . -type f -name $file` ; do
+     cp -f /usr/share/libtool/$file $place
+  done
+done
+%endif
 
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
@@ -99,6 +107,9 @@ fi
 %ghost %config(missingok)	%{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Fri May  4 2001 Oliver Paukstadt <oliver.paukstadt@millenux.com>
+- ported to IBM zSeries (s390x, 64 bit)
+
 * Thu Apr  5 2001 Preston Brown <pbrown@redhat.com>
 - security patch for ntpd
 
