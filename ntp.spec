@@ -6,7 +6,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0
-Release: 7
+Release: 8
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2.0.tar.gz
@@ -217,6 +217,9 @@ fi
 
 
 %changelog
+* Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
 * Thu Mar 11 2004 Harald Hoyer <harald@redhat.com> - 4.2.0-7
 - ntpgenkey fixed (117378)
 - fixed initscript to call ntpdate with -U (117894)
