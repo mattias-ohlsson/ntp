@@ -3,7 +3,7 @@
 # ntpd		This shell script takes care of starting and stopping
 #		ntpd (NTPv4 daemon).
 #
-# chkconfig: - 26 74
+# chkconfig: - 58 74
 # description: ntpd is the NTPv4 daemon.
 
 # Source function library.

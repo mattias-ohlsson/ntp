@@ -5,12 +5,12 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.1.1
-Release: 1
+Version: 4.1.1a
+Release: 5
 License: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
-Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.1.tar.gz
+Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.1a.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
@@ -21,6 +21,7 @@ Patch3: ntp-4.0.99m-usegethost.patch
 Patch5: ntp-4.1.0-multi.patch
 Patch6: ntp-4.1.0b-rc1-droproot.patch
 Patch7: ntp-4.1.0b-rc1-genkey.patch
+Patch8: ntp-4.1.1a-genkey2.patch
 
 URL: http://www.cis.udel.edu/~ntp
 PreReq: /sbin/chkconfig
@@ -44,20 +45,23 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -n ntp-4.1.1
+%setup -q -n ntp-4.1.1a
 
 %patch1 -p1 -b .vsnprintf
 %patch3 -p1 -b .usegethost
 %{!?nocap:%patch6 -p1 -b .droproot}
 %patch5 -p1 -b .multi
 %patch7 -p1 -b .genkey
+%patch8 -p1 -b .genkey2
 libtoolize --copy --force
 %build
 
+
+perl -pi -e 's|INSTALL_STRIP_PROGRAM="\\\$\{SHELL\} \\\$\(install_sh\) -c -s|INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c|g' configure
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
 export CFLAGS="-g -DDEBUG" 
-%configure --sysconfdir=/etc/ntp
+%configure --sysconfdir=/etc/ntp --enable-all-clocks --enable-parse-clocks
 unset CFLAGS
 %undefine	_target_platform
 
@@ -74,6 +78,7 @@ echo '#undef HAVE_TIMER_SETTIME';
 # I don't see them used...
 perl -pi -e "s|LIBS = -lrt -lreadline|LIBS = |" ntpd/Makefile 
 
+perl -pi -e "s|-lelf||" */Makefile
 perl -pi -e "s|-Wcast-qual||" */Makefile
 perl -pi -e "s|-Wconversion||" */Makefile
 
@@ -82,7 +87,7 @@ make
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%makeinstall
+%makeinstall sysconfdir=/etc/ntp
 
 { cd $RPM_BUILD_ROOT
 
@@ -132,10 +137,24 @@ fi
 %config(noreplace)		%{_sysconfdir}/ntp.conf
 %dir	%{!?nocap:%attr(-,ntp,ntp)}   %{_sysconfdir}/ntp
 %config(noreplace) %{!?nocap:%attr(644,ntp,ntp)} %verify(not md5 size mtime) %{_sysconfdir}/ntp/drift
-%config(noreplace)		%{_sysconfdir}/ntp/keys
-%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
+%config(noreplace) %{!?nocap:%attr(-,ntp,ntp)} %{_sysconfdir}/ntp/keys
+%config(noreplace) %{!?nocap:%attr(-,ntp,ntp)} %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Tue Jul 23 2002 Harald Hoyer <harald@redhat.de>
+- removed libelf dependency
+- removed stripping
+
+* Fri Jun 21 2002 Tim Powers <timp@redhat.com>
+- automated rebuild
+
+* Tue Jun 11 2002 Harald Hoyer <harald@redhat.de> 4.1.1a-3
+- refixed #46464
+- another genkeys/snprintf bugfix
+
+* Wed May 22 2002 Harald Hoyer <harald@redhat.de> 4.1.1a-1
+- update to version 4.1.1a
+
 * Mon Apr 08 2002 Harald Hoyer <harald@redhat.de> 4.1.1-1
 - update to 4.1.1 (changes are minimal)
 - more examples in default configuration
