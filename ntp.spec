@@ -6,11 +6,11 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.1.0b
-Release: 2
+Release: 6
 License: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
-Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.0b-rc1.tar.gz
+Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-4.1.0b-rc3.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
@@ -25,6 +25,7 @@ Patch7: ntp-4.1.0b-rc1-genkey.patch
 URL: http://www.cis.udel.edu/~ntp
 PreReq: /sbin/chkconfig
 Prereq: /usr/sbin/groupadd /usr/sbin/useradd
+PreReq: sed
 %{!?nocap:Requires: libcap}
 %{!?nocap:BuildPreReq: libcap-devel}
 Obsoletes: xntp3
@@ -43,7 +44,7 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -n ntp-4.1.0b-rc1
+%setup -q -n ntp-4.1.0b-rc3
 
 %patch1 -p1 -b .vsnprintf
 %patch3 -p1 -b .usegethost
@@ -56,7 +57,7 @@ libtoolize --copy --force
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
 export CFLAGS="-g -DDEBUG" 
-%configure --sysconfdir=/etc/ntp --enable-all-clocks --enable-parse-clocks
+%configure --sysconfdir=/etc/ntp
 unset CFLAGS
 %undefine	_target_platform
 
@@ -87,7 +88,7 @@ rm -rf $RPM_BUILD_ROOT
 
   mkdir -p .%{_sysconfdir}/{ntp,rc.d/init.d}
   install -m644 $RPM_SOURCE_DIR/ntp.conf .%{_sysconfdir}/ntp.conf
-  touch .%{_sysconfdir}/ntp/drift
+  echo '0.0' >.%{_sysconfdir}/ntp/drift
   install -m600 $RPM_SOURCE_DIR/ntp.keys .%{_sysconfdir}/ntp/keys
   touch .%{_sysconfdir}/ntp/step-tickers
   install -m755 $RPM_SOURCE_DIR/ntpd.init .%{_sysconfdir}/rc.d/init.d/ntpd
@@ -135,6 +136,20 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Tue Apr 02 2002 Harald Hoyer <harald@redhat.de> 4.1.0b-6
+- more secure default configuration (#62238)
+
+* Mon Jan 28 2002 Harald Hoyer <harald@redhat.de> 4.1.0b-5
+- more regex magic for the grep (#57837)
+
+* Mon Jan 28 2002 Harald Hoyer <harald@redhat.de> 4.1.0b-4
+- created drift with dummy value #58294
+- grep for timeservers in ntp.conf also for ntpdate #57837
+- check return value of ntpdate #58836
+
+* Wed Jan 09 2002 Tim Powers <timp@redhat.com> 4.1.0b-3
+- automated rebuild
+
 * Tue Jan 08 2002 Harald Hoyer <harald@redhat.de> 4.1.0b-2
 - added --enable-all-clocks --enable-parse-clocks (#57761)
 
