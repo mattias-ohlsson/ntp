@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20040616
-Release: 2
+Release: 3
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -27,6 +27,7 @@ Patch1: ntp-4.0.99j-vsnprintf.patch
 Patch3: ntp-4.0.99m-usegethost.patch
 
 Patch6: ntp-4.2.0-droproot.patch
+Patch7: ntp-stable-4.2.0a-20040616-groups.patch
 
 #Patch12: ntp-4.2.0-limit.patch
 #Patch13: ntp-4.2.0-loopfilter.patch
@@ -62,6 +63,7 @@ time synchronized via the NTP protocol.
 
 %patch3 -p1 -b .usegethost
 %patch6 -p1 -b .droproot
+%patch7 -p1 -b .groups
 #%patch12 -p1 -b .limit
 #%patch13 -p1 -b .loop
 %patch15 -p1 -b .authkey
@@ -209,6 +211,9 @@ fi
 
 
 %changelog
+* Tue Aug 17 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040616-3
+- added ntp-stable-4.2.0a-20040616-groups.patch (bug 130112)
+
 * Thu Jul 29 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040616-2
 - take chroot in account (bug 127252)
 
