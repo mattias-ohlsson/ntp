@@ -113,7 +113,7 @@ perl -pi -e "s|LIBS = -lrt -lreadline|LIBS = |" ntpd/Makefile
 perl -pi -e "s|-lelf||" */Makefile
 perl -pi -e "s|-Wcast-qual||" */Makefile
 perl -pi -e "s|-Wconversion||" */Makefile
-find . -name Makefile -print0 | xargs -0 perl -pi -e "s|-Wall|-Wall -Wextra -Werror -Wno-unused|g"
+find . -name Makefile -print0 | xargs -0 perl -pi -e "s|-Wall|-Wall -Wextra -Wno-unused|g"
 
 make
 pushd ntpstat-0.2
@@ -224,6 +224,7 @@ fi
 
 %changelog
 * Tue Mar 08 2005 Jiri Ryska <jryska@redhat.com>
+- removed -Werror
 - patched for gcc4 and rebuilt
 
 * Wed Jan 12 2005 Tim Waugh <twaugh@redhat.com> - 4.2.0.a.20040617-6
