@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20040616
-Release: 3
+Release: 4
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -34,6 +34,7 @@ Patch7: ntp-stable-4.2.0a-20040616-groups.patch
 Patch15: ntp-4.1.1c-rc3-authkey.patch
 Patch16: ntp-4.2.0-md5.patch
 Patch17: ntp-4.2.0-genkey3.patch
+Patch18: ntp-4.2.0-sbinpath.patch
 
 Patch99: ntp-4.2.0-autofoo.patch
 
@@ -69,6 +70,7 @@ time synchronized via the NTP protocol.
 %patch15 -p1 -b .authkey
 %patch16 -p1 -b .nomd5lib
 %patch17 -p1 -b .md5key
+%patch18 -p1 -b .sbinpath
 #autoreconf -fi
 
 %patch99 -p1 -b .autofoo
@@ -134,13 +136,14 @@ done
 
 { cd $RPM_BUILD_ROOT
 
-  mkdir -p .%{_sysconfdir}/{ntp,rc.d/init.d}
+  mkdir -p .%{_sysconfdir}/ntp
+  mkdir -p .%{_initrddir}
   install -m644 $RPM_SOURCE_DIR/ntp.conf .%{_sysconfdir}/ntp.conf
   mkdir -p .%{_var}/lib/ntp
   echo '0.0' >.%{_var}/lib/ntp/drift
   install -m600 $RPM_SOURCE_DIR/ntp.keys .%{_sysconfdir}/ntp/keys
   touch .%{_sysconfdir}/ntp/step-tickers
-  install -m755 $RPM_SOURCE_DIR/ntpd.init .%{_sysconfdir}/rc.d/init.d/ntpd
+  install -m755 $RPM_SOURCE_DIR/ntpd.init .%{_initrddir}/ntpd
 
   mkdir -p .%{_sysconfdir}/sysconfig
   install -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
@@ -198,7 +201,7 @@ fi
 %{_sbindir}/ntpq
 %{_sbindir}/ntptime
 %{_sbindir}/tickadj
-%config			%{_sysconfdir}/rc.d/init.d/ntpd
+%config			%{_initrddir}/ntpd
 %config(noreplace)	%{_sysconfdir}/sysconfig/ntpd
 %config(noreplace)	%{_sysconfdir}/ntp.conf
 %dir 	%{_sysconfdir}/ntp
@@ -211,6 +214,9 @@ fi
 
 
 %changelog
+* Tue Aug 17 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040616-4
+- added ntp-4.2.0-sbinpath.patch (bug 130536)
+
 * Tue Aug 17 2004 Harald Hoyer <harald@redhat.com> - 4.2.0.a.20040616-3
 - added ntp-stable-4.2.0a-20040616-groups.patch (bug 130112)
 
