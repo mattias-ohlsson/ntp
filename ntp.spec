@@ -6,7 +6,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.1.0
-Release: 3
+Release: 4
 License: distributable
 Group: System Environment/Daemons
 #Source0: ftp://ftp.udel.edu/pub/ntp/ntp4/ntp-%{version}.tar.gz
@@ -130,6 +130,9 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 
 %changelog
+* Wed Sep 05 2001 Harald Hoyer <harald@redhat.de> 4.1.0-4
+- fixed #53184
+
 * Tue Sep 04 2001 Harald Hoyer <harald@redhat.de> 4.1.0-3
 - fixed #53089 /bin/nologin -> /sbin/nologin
 

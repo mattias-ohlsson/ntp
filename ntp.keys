@@ -1,7 +1,7 @@
 #
 # PLEASE DO NOT USE THE DEFAULT VALUES HERE. Pick your own, or remote
 # systems might be able to reset your clock at will. Note also that
-* ntpd is started with a -A flag, disabling authentication, that
+# ntpd is started with a -A flag, disabling authentication, that
 # will have to be removed as well.
 #
 #65535	M	akey
