@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20040617
-Release: 6
+Release: 7
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -35,10 +35,9 @@ Patch15: ntp-4.1.1c-rc3-authkey.patch
 Patch16: ntp-4.2.0-md5.patch
 Patch17: ntp-4.2.0-genkey3.patch
 Patch18: ntp-4.2.0-sbinpath.patch
-
-Patch98: ntp-stable-4.2.0a-20040617-Wall.patch
-
-Patch99: ntp-4.2.0-autofoo.patch
+Patch19: ntp-stable-4.2.0a-20040617-Wall.patch
+Patch20: ntp-4.2.0-autofoo.patch
+Patch21: ntp-4.2.0-gcc4.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -74,9 +73,10 @@ time synchronized via the NTP protocol.
 %patch16 -p1 -b .nomd5lib
 %patch17 -p1 -b .md5key
 %patch18 -p1 -b .sbinpath
-%patch98 -p1 -b .wall
+%patch19 -p1 -b .wall
 #autoreconf -fi
-%patch99 -p1 -b .autofoo
+%patch20 -p1 -b .autofoo
+%patch21 -p1 -b .gcc4
 %build
 
 
@@ -223,6 +223,9 @@ fi
 
 
 %changelog
+* Tue Mar 08 2005 Jiri Ryska <jryska@redhat.com>
+- patched for gcc4 and rebuilt
+
 * Wed Jan 12 2005 Tim Waugh <twaugh@redhat.com> - 4.2.0.a.20040617-6
 - Rebuilt for new readline.
 
