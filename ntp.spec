@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20040617
-Release: 7
+Release: 8
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -38,6 +38,7 @@ Patch18: ntp-4.2.0-sbinpath.patch
 Patch19: ntp-stable-4.2.0a-20040617-Wall.patch
 Patch20: ntp-4.2.0-autofoo.patch
 Patch21: ntp-4.2.0-gcc4.patch
+Patch22: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -77,6 +78,7 @@ time synchronized via the NTP protocol.
 #autoreconf -fi
 %patch20 -p1 -b .autofoo
 %patch21 -p1 -b .gcc4
+%patch22 -p1 -b .noguid
 %build
 
 
@@ -223,7 +225,10 @@ fi
 
 
 %changelog
-* Tue Mar 08 2005 Jiri Ryska <jryska@redhat.com>
+* Thu Apr 14 2005 Jiri Ryska <jryska@redhat.com> 4.2.0.a.20040617-8
+- fixed gid setting when ntpd started with -u flag
+
+* Tue Mar 08 2005 Jiri Ryska <jryska@redhat.com> 4.2.0.a.20040617-7
 - removed -Werror
 - patched for gcc4 and rebuilt
 
