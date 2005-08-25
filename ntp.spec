@@ -3,12 +3,12 @@
 %define glibc21 %([ "%glibc_version" = glibc-2.1 ] && echo 1 || echo 0)
 %define glibc22 %([ "%glibc_version" = glibc-2.2 ] && echo 1 || echo 0)
 
-%define tarversion stable-4.2.0a-20040617
+%define tarversion stable-4.2.0a-20050816
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.2.0.a.20040617
-Release: 8
+Version: 4.2.0.a.20050816
+Release: 1
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -23,22 +23,15 @@ Source6: ntp-4.2.0-rh-manpages.tar.gz
 Source7: filter-requires-ntp.sh
 %define __find_requires %{SOURCE7}
 
-Patch1: ntp-4.0.99j-vsnprintf.patch
-Patch3: ntp-4.0.99m-usegethost.patch
-
-Patch6: ntp-4.2.0-droproot.patch
-Patch7: ntp-stable-4.2.0a-20040616-groups.patch
-
-#Patch12: ntp-4.2.0-limit.patch
-#Patch13: ntp-4.2.0-loopfilter.patch
-Patch15: ntp-4.1.1c-rc3-authkey.patch
-Patch16: ntp-4.2.0-md5.patch
-Patch17: ntp-4.2.0-genkey3.patch
-Patch18: ntp-4.2.0-sbinpath.patch
-Patch19: ntp-stable-4.2.0a-20040617-Wall.patch
-Patch20: ntp-4.2.0-autofoo.patch
-Patch21: ntp-4.2.0-gcc4.patch
-Patch22: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
+Patch1: ntp-4.0.99m-usegethost.patch
+Patch2: ntp-4.2.0-droproot.patch
+Patch3: ntp-stable-4.2.0a-20040616-groups.patch
+Patch4: ntp-4.1.1c-rc3-authkey.patch
+Patch5: ntp-4.2.0-md5.patch
+Patch6: ntp-4.2.0-genkey3.patch
+Patch7: ntp-4.2.0-sbinpath.patch
+Patch8: ntp-stable-4.2.0a-20040617-Wall.patch
+Patch9: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -65,20 +58,15 @@ time synchronized via the NTP protocol.
 %prep 
 %setup -q -n ntp-%{tarversion} -a 5 -a 6
 
-%patch3 -p1 -b .usegethost
-%patch6 -p1 -b .droproot
-%patch7 -p1 -b .groups
-#%patch12 -p1 -b .limit
-#%patch13 -p1 -b .loop
-%patch15 -p1 -b .authkey
-%patch16 -p1 -b .nomd5lib
-%patch17 -p1 -b .md5key
-%patch18 -p1 -b .sbinpath
-%patch19 -p1 -b .wall
-#autoreconf -fi
-%patch20 -p1 -b .autofoo
-%patch21 -p1 -b .gcc4
-%patch22 -p1 -b .noguid
+%patch1 -p1 -b .usegethost
+%patch2 -p1
+%patch3 -p1 -b .groups
+%patch4 -p1 -b .authkey
+%patch5 -p1 -b .nomd5lib
+%patch6 -p1 -b .genkey3
+%patch7 -p1 -b .sbinpath
+%patch8 -p1 -b .wall
+%patch9 -p1 -b .noguid
 %build
 
 
@@ -225,6 +213,13 @@ fi
 
 
 %changelog
+* Thu Aug 25 2005 Jindrich Novy <jnovy@redhat.com> 4.2.0.a.20050816-1
+- update to the latest stable 4.2.0.a.20050816
+- drop upstreamed .gcc4, .vsnprintf patches
+- remove obsolete .autofoo patch
+- make patch numbering less chaotic
+- don't package backup for .droproot patch
+
 * Thu Apr 14 2005 Jiri Ryska <jryska@redhat.com> 4.2.0.a.20040617-8
 - fixed gid setting when ntpd started with -u flag
 
