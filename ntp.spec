@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20050816
-Release: 1
+Release: 2
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -32,6 +32,7 @@ Patch6: ntp-4.2.0-genkey3.patch
 Patch7: ntp-4.2.0-sbinpath.patch
 Patch8: ntp-stable-4.2.0a-20040617-Wall.patch
 Patch9: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
+Patch10: ntp-stable-4.2.0a-20040617-C-Frame-121.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -67,6 +68,7 @@ time synchronized via the NTP protocol.
 %patch7 -p1 -b .sbinpath
 %patch8 -p1 -b .wall
 %patch9 -p1 -b .noguid
+%patch10 -p1 -b .cframe121
 %build
 
 
@@ -172,7 +174,7 @@ if [ "$1" -ge "1" ]; then
     # remove the temp file
     rm -f %{_sysconfdir}/ntp.conf.rpmupdate
     # start ntp if it was running previously
-    [ $wasrunning -eq 0 ] && service ntpd start > /dev/null 2>&1
+    [ $wasrunning -eq 0 ] && service ntpd start > /dev/null 2>&1 || :
   fi
 fi
 
@@ -213,6 +215,12 @@ fi
 
 
 %changelog
+* Tue Sep 27 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-2
+- A cosmetic patch. There are some comments and braces '{' '}' added.
+- One unprintable character was converted to octal-form .
+- It can be removed anytime (conversion of the cvs-projets for C-Frame 121,
+- (auto-debug, auto-trace for cfr-printnet server).
+
 * Thu Aug 25 2005 Jindrich Novy <jnovy@redhat.com> 4.2.0.a.20050816-1
 - update to the latest stable 4.2.0.a.20050816
 - drop upstreamed .gcc4, .vsnprintf patches
