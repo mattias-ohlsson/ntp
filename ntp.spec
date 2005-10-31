@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20050816
-Release: 2
+Release: 3
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -33,6 +33,7 @@ Patch7: ntp-4.2.0-sbinpath.patch
 Patch8: ntp-stable-4.2.0a-20040617-Wall.patch
 Patch9: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
 Patch10: ntp-stable-4.2.0a-20040617-C-Frame-121.patch
+Patch11: ntp-stable-4.2.0a-20050816-vsnprintf.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -69,6 +70,7 @@ time synchronized via the NTP protocol.
 %patch8 -p1 -b .wall
 %patch9 -p1 -b .noguid
 %patch10 -p1 -b .cframe121
+%patch11 -p1 -b .vsnprintf
 %build
 
 
@@ -215,6 +217,10 @@ fi
 
 
 %changelog
+* Mon Oct 31 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-3
+- A similar patch as ntp-4.0.99j-vsnprintf.patch in FEDORA CORE 4
+- (current patch is ntp-stable-4.2.0a-20050816-vsnprintf.patch)
+
 * Tue Sep 27 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-2
 - A cosmetic patch. There are some comments and braces '{' '}' added.
 - One unprintable character was converted to octal-form .
