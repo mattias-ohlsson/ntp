@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20050816
-Release: 4
+Release: 5
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -219,8 +219,11 @@ fi
 
 
 %changelog
-* Wed Nov  2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-4
-- Wrong parameter (-T  <-->  -i)
+* Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-5
+- Rebuild
+
+* Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-4
+- Wrong parameter -T   -i
 - Patch ntp-stable-4.2.0a-20040617-minusT.patch
 
 * Mon Oct 31 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-3
