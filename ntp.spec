@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20050816
-Release: 5
+Release: 6
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -34,7 +34,7 @@ Patch8: ntp-stable-4.2.0a-20040617-Wall.patch
 Patch9: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
 Patch10: ntp-stable-4.2.0a-20040617-C-Frame-121.patch
 Patch11: ntp-stable-4.2.0a-20050816-vsnprintf.patch
-Patch12: ntp-stable-4.2.0a-20040617-minusT.patch
+Patch12: ntp-stable-4.2.0a-20050816-minusT.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -219,6 +219,9 @@ fi
 
 
 %changelog
+* Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-6
+- Rebuild
+
 * Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-5
 - Rebuild
 
