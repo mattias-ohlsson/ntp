@@ -42,12 +42,12 @@ readconf() {
 	dostep=''
 	dropstr=''
 	ntpchroot=''
-	while getopts ":46aAbc:dD:f:gk:l:LmnN:p:P:qr:s:t:v:V:xU:T:" args $OPTIONS;
+	while getopts ":46aAbc:dD:f:gi:k:l:LmnN:p:P:qr:s:t:v:V:xU:" args $OPTIONS;
 	do 
 	  if [ "$args" = "x" ]; then
 	      dostep='yes' 
 	  fi
-	  if [ "x${args}" = xT ]; then
+	  if [ "x${args}" = xi ]; then
 	      ntpchroot="${OPTARG}"
               ntpconf="${ntpchroot}/etc/ntp.conf"
 	      ntpstep="${ntpchroot}/etc/ntp/step-tickers"
