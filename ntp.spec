@@ -8,7 +8,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20050816
-Release: 9
+Release: 10
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -35,6 +35,7 @@ Patch9: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
 Patch10: ntp-stable-4.2.0a-20040617-C-Frame-121.patch
 Patch11: ntp-stable-4.2.0a-20050816-vsnprintf.patch
 Patch12: ntp-stable-4.2.0a-20050816-minusTi.patch
+Patch13: ntp-stable-4.2.0a-20050816-loconly.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -73,6 +74,7 @@ time synchronized via the NTP protocol.
 %patch10 -p1 -b .cframe121
 %patch11 -p1 -b .vsnprintf
 %patch12 -p1 -b .minusTi
+%patch13 -p1 -b .loconly
 %build
 
 
@@ -219,6 +221,10 @@ fi
 
 
 %changelog
+* Wed Nov 9 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-10
+- ntpd does not submit his local clock (if there is no peer).
+  ntpdate->ntpd #163862 , Patch13: ntp-stable-4.2.0a-20050816-loconly.patch
+
 * Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-9
 - Rebuild
 
