@@ -1,14 +1,11 @@
 %define _use_internal_dependency_generator 0
-%define glibc_version %(rpm -q glibc | cut -d . -f 1-2 )
-%define glibc21 %([ "%glibc_version" = glibc-2.1 ] && echo 1 || echo 0)
-%define glibc22 %([ "%glibc_version" = glibc-2.2 ] && echo 1 || echo 0)
 
 %define tarversion stable-4.2.0a-20050816
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20050816
-Release: 10.2.1
+Release: 11
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -17,7 +14,7 @@ Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
 Source5: ntpstat-0.2.tgz
-Source6: ntp-4.2.0-rh-manpages.tar.gz
+Source6: ntp-stable-4.2.0a-20050816-manpages.tar.gz
 
 # new find-requires
 Source7: filter-requires-ntp.sh
@@ -32,10 +29,7 @@ Patch6: ntp-4.2.0-genkey3.patch
 Patch7: ntp-4.2.0-sbinpath.patch
 Patch8: ntp-stable-4.2.0a-20040617-Wall.patch
 Patch9: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
-Patch10: ntp-stable-4.2.0a-20040617-C-Frame-121.patch
-Patch11: ntp-stable-4.2.0a-20050816-vsnprintf.patch
-Patch12: ntp-stable-4.2.0a-20050816-minusTi.patch
-Patch13: ntp-stable-4.2.0a-20050816-loconly.patch
+Patch10: ntp-stable-4.2.0a-20050816-loopback.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -71,13 +65,9 @@ time synchronized via the NTP protocol.
 %patch7 -p1 -b .sbinpath
 %patch8 -p1 -b .wall
 %patch9 -p1 -b .noguid
-%patch10 -p1 -b .cframe121
-%patch11 -p1 -b .vsnprintf
-%patch12 -p1 -b .minusTi
-%patch13 -p1 -b .loconly
+%patch10 -p1 -b .loopback
+
 %build
-
-
 perl -pi -e 's|INSTALL_STRIP_PROGRAM="\\\$\{SHELL\} \\\$\(install_sh\) -c -s|INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c|g' configure
 # XXX work around for anal ntp configure
 %define	_target_platform	%{nil}
@@ -89,15 +79,6 @@ fi
 %configure --sysconfdir=%{_sysconfdir}/ntp --bindir=%{_sbindir} --enable-all-clocks --enable-parse-clocks --with-openssl-libdir=%{_libdir} --enable-linuxcaps
 unset CFLAGS
 %undefine	_target_platform
-
-# XXX workaround glibc-2.1.90 lossage for now.
-# XXX still broken with glibc-2.1.94-2 and glibc-2.1.95-1
-%if ! %{glibc21} && ! %{glibc22}
-( echo '#undef HAVE_CLOCK_SETTIME';
-echo '#undef HAVE_TIMER_CREATE';
-echo '#undef HAVE_TIMER_SETTIME';
-)>>config.h
-%endif
 
 make Makefile
 for dir in *; do 
@@ -117,7 +98,6 @@ make
 pushd ntpstat-0.2
 make
 popd
-
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -221,6 +201,12 @@ fi
 
 
 %changelog
+* Thu Feb 23 2006 Miroslav Lichvar <mlichvar@redhat.com> - 4.2.0.a.20050816-11
+- update man pages (#153195, #162856)
+- drop C-Frame-121, vsnprintf, minusTi and loconly patch
+- prevent segfault when loopback interface is not configured (#159056)
+- spec cleanup
+
 * Fri Feb 10 2006 Jesse Keating <jkeating@redhat.com> - 4.2.0.a.20050816-10.2.1
 - bump again for double-long bug on ppc(64)
 
@@ -235,29 +221,15 @@ fi
   ntpdate->ntpd #163862 , Patch13: ntp-stable-4.2.0a-20050816-loconly.patch
 
 * Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-9
-- Rebuild
-
-* Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-8
-- Rebuild
-
-* Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-7
-- Rebuild
-
-* Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-6
-- Rebuild
-
-* Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-5
-- Rebuild
-
-* Wed Nov 2 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-4
 - Wrong parameter -T   -i
-- Patch ntp-stable-4.2.0a-20040617-minusTi.patch
+- Patch ntp-stable-4.2.0a-20050816-minusTi.patch
 
 * Mon Oct 31 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-3
 - A similar patch as ntp-4.0.99j-vsnprintf.patch in FEDORA CORE 4
 - (current patch is ntp-stable-4.2.0a-20050816-vsnprintf.patch)
 
 * Tue Sep 27 2005 Petr Raszyk <praszyk@redhat.com> 4.2.0.a.20050816-2
+- Fix fails on upgrade, if ntpd is disabled (#166773)
 - A cosmetic patch. There are some comments and braces '{' '}' added.
 - One unprintable character was converted to octal-form .
 - It can be removed anytime (conversion of the cvs-projets for C-Frame 121,
@@ -271,7 +243,7 @@ fi
 - don't package backup for .droproot patch
 
 * Thu Apr 14 2005 Jiri Ryska <jryska@redhat.com> 4.2.0.a.20040617-8
-- fixed gid setting when ntpd started with -u flag
+- fixed gid setting when ntpd started with -u flag (#147743)
 
 * Tue Mar 08 2005 Jiri Ryska <jryska@redhat.com> 4.2.0.a.20040617-7
 - removed -Werror
