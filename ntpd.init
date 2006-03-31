@@ -30,58 +30,39 @@ RETVAL=0
 prog="ntpd"
 
 readconf() {
-	# get the servers from step-ticker
-        tickers=''
-        if [ -s "$ntpstep" ]; then
-	    tickers=`/bin/sed -e 's/\#.*$//g' $ntpstep`
-        fi
-	timeservers=`/bin/awk '$1=="peer"||$1=="server"{print $2}' $ntpconf|fgrep -v 127.127.1.0`
-
-	# check for -x
-	OPTIND=0
 	dostep=''
 	dropstr=''
-	ntpchroot=''
-	while getopts ":46aAbc:dD:f:gi:k:l:LmnN:p:P:qr:s:t:v:V:xU:" args $OPTIONS;
+	OPTIND=1
+	while getopts ":aAbc:dD:f:gi:k:l:LmnN:p:P:qr:s:t:u:v:V:x" args $OPTIONS;
 	do 
-	  if [ "$args" = "x" ]; then
-	      dostep='yes' 
-	  fi
-	  if [ "x${args}" = xi ]; then
-	      ntpchroot="${OPTARG}"
-              ntpconf="${ntpchroot}/etc/ntp.conf"
-	      ntpstep="${ntpchroot}/etc/ntp/step-tickers"
-	      break
-	  fi
-          if [ "$args" = "U" ]; then
-        	# correct the options string
-		OPTIONS=$(echo $OPTIONS|sed -e 's#-U#-u#g')
-		echo "Please change '-U ntp' to '-u ntp' in /etc/sysconfig/ntpd"
-	  fi
-
-          if [ "$args" = "u" ]; then
-              dropstr="-U $OPTARG"
-          fi
-
-
+	  case "$args" in
+	    x) dostep=yes;;
+	    c) ntpconf="$OPTARG";;
+	    u) dropstr="-U $(echo $OPTARG | sed 's/:.*//')";;
+	  esac
 	done
-	OPTIND=0
 
 	[ -x /usr/sbin/ntpd -a -f $ntpconf ] || exit 0
+
+	tickers=''
+	if [ -s "$ntpstep" ]; then
+	    tickers=$(sed 's/#.*//' $ntpstep)
+	    echo "$tickers" | grep -qi '[a-z0-9]' && dostep=yes || tickers=''
+	fi
+	if [ -n "$dostep" -a -z "$tickers" ]; then
+	    # -x option is used, but step-tickers doesn't exist or contain
+	    # anything useful, use servers from ntp.conf instead
+	    tickers=$(awk '$1=="peer"||$1=="server"{print $2}' $ntpconf | \
+	        fgrep -v 127.127.1.0)
+	fi
 }
 
 start() {
 	readconf;
 
-        if [ -z "$tickers" ]; then
-	    tickers=$timeservers
-        fi
-
-	if [ -s "$ntpstep" -o -n "$dostep" ]; then
-	    # Synchronize with servers if step-tickers exists
-	    # or the -x option is used
+	if [ -n "$dostep" ]; then
 	    echo -n $"$prog: Synchronizing with time server: "
-	    /usr/sbin/ntpdate $dropstr -s -b -p 8 $tickers 2>/dev/null >/dev/null
+	    /usr/sbin/ntpdate $dropstr -s -b $tickers 2>/dev/null >/dev/null
 	    RETVAL=$?
 	    [ $RETVAL -eq 0 ] && success || failure
 	    echo
