@@ -5,7 +5,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20050816
-Release: 11
+Release: 12
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -30,6 +30,7 @@ Patch7: ntp-4.2.0-sbinpath.patch
 Patch8: ntp-stable-4.2.0a-20040617-Wall.patch
 Patch9: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
 Patch10: ntp-stable-4.2.0a-20050816-loopback.patch
+Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -66,6 +67,7 @@ time synchronized via the NTP protocol.
 %patch8 -p1 -b .wall
 %patch9 -p1 -b .noguid
 %patch10 -p1 -b .loopback
+%patch11 -p1 -b .keyfile
 
 %build
 perl -pi -e 's|INSTALL_STRIP_PROGRAM="\\\$\{SHELL\} \\\$\(install_sh\) -c -s|INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c|g' configure
@@ -201,6 +203,16 @@ fi
 
 
 %changelog
+* Fri Mar 31 2006 Miroslav Lichvar <mlichvar@redhat.com> - 4.2.0.a.20050816-12
+- fix initscript:
+  - replace -U with -u in getopts (#187003)
+  - don't pass group to ntpdate -U argument and ignore -i in options (#142926)
+  - set ntpconf for -c
+  - remove -p 8 from ntpdate arguments
+  - don't call ntpdate when step-tickers doesn't contain anything useful
+    and -x isn't in options
+- fix default keyfile for ntpdate (#183196)
+
 * Thu Feb 23 2006 Miroslav Lichvar <mlichvar@redhat.com> - 4.2.0.a.20050816-11
 - update man pages (#153195, #162856)
 - drop C-Frame-121, vsnprintf, minusTi and loconly patch
