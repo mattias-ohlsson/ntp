@@ -5,7 +5,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20050816
-Release: 12
+Release: 13
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -203,6 +203,9 @@ fi
 
 
 %changelog
+* Fri Apr 07 2006 Miroslav Lichvar <mlichvar@redhat.com> - 4.2.0.a.20050816-13
+- add option to sync hwclock after ntpdate (#179571)
+
 * Fri Mar 31 2006 Miroslav Lichvar <mlichvar@redhat.com> - 4.2.0.a.20050816-12
 - fix initscript:
   - replace -U with -u in getopts (#187003)
