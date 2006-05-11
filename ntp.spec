@@ -5,7 +5,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.0.a.20050816
-Release: 13
+Release: 14
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
@@ -14,7 +14,7 @@ Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
 Source5: ntpstat-0.2.tgz
-Source6: ntp-stable-4.2.0a-20050816-manpages.tar.gz
+Source6: ntp-stable-4.2.0a-20050816-manpages-2.tar.gz
 
 # new find-requires
 Source7: filter-requires-ntp.sh
@@ -124,7 +124,7 @@ done
   mkdir -p .%{_initrddir}
   install -m644 $RPM_SOURCE_DIR/ntp.conf .%{_sysconfdir}/ntp.conf
   mkdir -p .%{_var}/lib/ntp
-  echo '0.0' >.%{_var}/lib/ntp/drift
+  touch .%{_var}/lib/ntp/drift
   install -m600 $RPM_SOURCE_DIR/ntp.keys .%{_sysconfdir}/ntp/keys
   touch .%{_sysconfdir}/ntp/step-tickers
   install -m755 $RPM_SOURCE_DIR/ntpd.init .%{_initrddir}/ntpd
@@ -197,12 +197,19 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 %config(noreplace) %{_sysconfdir}/ntp/keys
 %dir	%attr(-,ntp,ntp)   %{_var}/lib/ntp
-%config(noreplace) %attr(644,ntp,ntp) %verify(not md5 size mtime) %{_var}/lib/ntp/drift
+%ghost %attr(644,ntp,ntp) %{_var}/lib/ntp/drift
 %{_mandir}/man1/*
 %{_bindir}/ntpstat
 
 
 %changelog
+* Thu May 11 2006 Miroslav Lichvar <mlichvar@redhat.com> - 4.2.0.a.20050816-14
+- modify ntp.conf, change default restrict, remove broadcastdelay,
+  use fedora.pool.ntp.org (#189667)
+- don't install drift file
+- remove unsupported options from ntptrace manpage (#137717)
+- fix default paths in manpages for ntp-keygen and ntpdate
+
 * Fri Apr 07 2006 Miroslav Lichvar <mlichvar@redhat.com> - 4.2.0.a.20050816-13
 - add option to sync hwclock after ntpdate (#179571)
 
