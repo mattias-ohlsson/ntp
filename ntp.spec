@@ -1,14 +1,12 @@
 %define _use_internal_dependency_generator 0
 
-%define tarversion stable-4.2.0a-20050816
-
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.2.0.a.20050816
-Release: 14
+Version: 4.2.2
+Release: 1
 License: distributable
 Group: System Environment/Daemons
-Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-%{tarversion}.tar.gz
+Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
@@ -20,15 +18,10 @@ Source6: ntp-stable-4.2.0a-20050816-manpages-2.tar.gz
 Source7: filter-requires-ntp.sh
 %define __find_requires %{SOURCE7}
 
-Patch1: ntp-4.0.99m-usegethost.patch
-Patch2: ntp-4.2.0-droproot.patch
+Patch2: ntp-4.2.2-droproot.patch
 Patch3: ntp-stable-4.2.0a-20040616-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
-Patch5: ntp-4.2.0-md5.patch
-Patch6: ntp-4.2.0-genkey3.patch
 Patch7: ntp-4.2.0-sbinpath.patch
-Patch8: ntp-stable-4.2.0a-20040617-Wall.patch
-Patch9: ntp-stable-4.2.0a-20040617-ntpd_guid.patch
 Patch10: ntp-stable-4.2.0a-20050816-loopback.patch
 Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
 
@@ -37,8 +30,7 @@ PreReq: /sbin/chkconfig
 Prereq: /usr/sbin/groupadd /usr/sbin/useradd
 PreReq: /bin/awk sed grep
 Requires: libcap
-BuildRequires: libcap-devel autoconf automake openssl-devel
-BuildRequires: readline-devel
+BuildRequires: libcap-devel openssl-devel readline-devel
 Obsoletes: xntp3 ntpstat
 BuildRoot: %{_tmppath}/%{name}-root
 
@@ -55,56 +47,36 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -n ntp-%{tarversion} -a 5 -a 6
+%setup -q -a 5 -a 6
 
-%patch1 -p1 -b .usegethost
 %patch2 -p1
 %patch3 -p1 -b .groups
 %patch4 -p1 -b .authkey
-%patch5 -p1 -b .nomd5lib
-%patch6 -p1 -b .genkey3
 %patch7 -p1 -b .sbinpath
-%patch8 -p1 -b .wall
-%patch9 -p1 -b .noguid
 %patch10 -p1 -b .loopback
 %patch11 -p1 -b .keyfile
 
 %build
-perl -pi -e 's|INSTALL_STRIP_PROGRAM="\\\$\{SHELL\} \\\$\(install_sh\) -c -s|INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c|g' configure
-# XXX work around for anal ntp configure
-%define	_target_platform	%{nil}
-export CFLAGS="$RPM_OPT_FLAGS -g -DDEBUG -D_FORTIFYSOURCE=2 -Wall" 
+export CFLAGS="$RPM_OPT_FLAGS"
 if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev/null; then
 	./pietest && export CFLAGS="$CFLAGS -pie -fPIE"
 	rm -f pietest
 fi
-%configure --sysconfdir=%{_sysconfdir}/ntp --bindir=%{_sbindir} --enable-all-clocks --enable-parse-clocks --with-openssl-libdir=%{_libdir} --enable-linuxcaps
-unset CFLAGS
-%undefine	_target_platform
-
-make Makefile
-for dir in *; do 
-	[ -d $dir ] && make -C $dir Makefile || :
-done
-
-# Remove -lreadline and -lrt from ntpd/Makefile
-# I don't see them used...
-perl -pi -e "s|LIBS = -lrt -lreadline|LIBS = |" ntpd/Makefile 
+%configure \
+	--sysconfdir=%{_sysconfdir}/ntp \
+	--enable-all-clocks --enable-parse-clocks \
+	--enable-linuxcaps --without-sntp
 
 perl -pi -e "s|-lelf||" */Makefile
-perl -pi -e "s|-Wcast-qual||" */Makefile
-perl -pi -e "s|-Wconversion||" */Makefile
-find . -name Makefile -print0 | xargs -0 perl -pi -e "s|-Wall|-Wall -Wextra -Wno-unused|g"
 
 make
-pushd ntpstat-0.2
-make
-popd
+
+make -C ntpstat-0.2 CFLAGS="$CFLAGS"
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%makeinstall sysconfdir=%{_sysconfdir}/ntp bindir=${RPM_BUILD_ROOT}%{_sbindir}
+%makeinstall bindir=${RPM_BUILD_ROOT}%{_sbindir}
 
 pushd ntpstat-0.2
 mkdir -p ${RPM_BUILD_ROOT}/%{_mandir}/man1
@@ -144,29 +116,6 @@ rm -rf $RPM_BUILD_ROOT
 %post
 /sbin/chkconfig --add ntpd
 
-if [ "$1" -ge "1" ]; then
-  grep %{_sysconfdir}/ntp/drift %{_sysconfdir}/ntp.conf > /dev/null 2>&1
-  olddrift=$?
-  if [ $olddrift -eq 0 ]; then
-    service ntpd status > /dev/null 2>&1
-    wasrunning=$?
-    # let ntp save the actual drift
-    [ $wasrunning -eq 0 ] && service ntpd stop > /dev/null 2>&1
-    # copy the driftfile to the new location
-    [ -f %{_sysconfdir}/ntp/drift ] \
-      && cp %{_sysconfdir}/ntp/drift %{_var}/lib/ntp/drift
-    # change the path in the config file
-    sed -e 's#%{_sysconfdir}/ntp/drift#%{_var}/lib/ntp/drift#g' \
-      %{_sysconfdir}/ntp.conf > %{_sysconfdir}/ntp.conf.rpmupdate \
-      && mv %{_sysconfdir}/ntp.conf.rpmupdate %{_sysconfdir}/ntp.conf 
-    # remove the temp file
-    rm -f %{_sysconfdir}/ntp.conf.rpmupdate
-    # start ntp if it was running previously
-    [ $wasrunning -eq 0 ] && service ntpd start > /dev/null 2>&1 || :
-  fi
-fi
-
-
 %preun
 if [ $1 = 0 ]; then
     service ntpd stop > /dev/null 2>&1
@@ -203,6 +152,11 @@ fi
 
 
 %changelog
+* Mon Jun 12 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2-1
+- update to ntp-4.2.2
+- drop drift file upgrade script
+- use proper CFLAGS for ntpstat
+
 * Thu May 11 2006 Miroslav Lichvar <mlichvar@redhat.com> - 4.2.0.a.20050816-14
 - modify ntp.conf, change default restrict, remove broadcastdelay,
   use fedora.pool.ntp.org (#189667)
