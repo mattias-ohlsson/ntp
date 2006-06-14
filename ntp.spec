@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.2
-Release: 1
+Release: 2
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -12,7 +12,7 @@ Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
 Source5: ntpstat-0.2.tgz
-Source6: ntp-stable-4.2.0a-20050816-manpages-2.tar.gz
+Source6: ntp-4.2.2-manpages-1.tar.gz
 
 # new find-requires
 Source7: filter-requires-ntp.sh
@@ -65,7 +65,7 @@ fi
 %configure \
 	--sysconfdir=%{_sysconfdir}/ntp \
 	--enable-all-clocks --enable-parse-clocks \
-	--enable-linuxcaps --without-sntp
+	--enable-linuxcaps
 
 perl -pi -e "s|-lelf||" */Makefile
 
@@ -138,6 +138,7 @@ fi
 %{_sbindir}/ntpdc
 %{_sbindir}/ntpq
 %{_sbindir}/ntptime
+%{_sbindir}/sntp
 %{_sbindir}/tickadj
 %config			%{_initrddir}/ntpd
 %config(noreplace)	%{_sysconfdir}/sysconfig/ntpd
@@ -152,6 +153,10 @@ fi
 
 
 %changelog
+* Wed Jun 14 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2-2
+- update initscript, ntp.conf, man pages
+- package sntp
+
 * Mon Jun 12 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2-1
 - update to ntp-4.2.2
 - drop drift file upgrade script

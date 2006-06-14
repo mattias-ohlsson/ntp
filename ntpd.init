@@ -65,7 +65,7 @@ readconf() {
 	dostep=''
 	dropstr=''
 	OPTIND=1
-	while getopts ":aAbc:dD:f:gi:k:l:LmnN:p:P:qr:s:t:u:v:V:x" args $OPTIONS;
+	while getopts ":46aAbc:dD:f:gi:k:l:LnN:p:P:qr:s:t:u:v:V:x" args $OPTIONS;
 	do 
 	  case "$args" in
 	    x) dostep=yes;;
