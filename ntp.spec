@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.2
-Release: 2
+Release: 3
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -12,7 +12,7 @@ Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
 Source5: ntpstat-0.2.tgz
-Source6: ntp-4.2.2-manpages-1.tar.gz
+Source6: ntp-4.2.2-manpages-2.tar.gz
 
 # new find-requires
 Source7: filter-requires-ntp.sh
@@ -22,6 +22,8 @@ Patch2: ntp-4.2.2-droproot.patch
 Patch3: ntp-stable-4.2.0a-20040616-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
 Patch7: ntp-4.2.0-sbinpath.patch
+Patch8: ntp-4.2.2-manycast.patch
+Patch9: ntp-4.2.2-mlockall.patch
 Patch10: ntp-stable-4.2.0a-20050816-loopback.patch
 Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
 
@@ -53,6 +55,8 @@ time synchronized via the NTP protocol.
 %patch3 -p1 -b .groups
 %patch4 -p1 -b .authkey
 %patch7 -p1 -b .sbinpath
+%patch8 -p1 -b .manycast
+%patch9 -p1 -b .mlockall
 %patch10 -p1 -b .loopback
 %patch11 -p1 -b .keyfile
 
@@ -153,6 +157,12 @@ fi
 
 
 %changelog
+* Thu Jul 06 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2-3
+- fix manycast support in ntpdate (#194329)
+- reply to manycast requests with null refid
+- enable mlockall (#195617)
+- correct threshold value in ntpdate manpage
+
 * Wed Jun 14 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2-2
 - update initscript, ntp.conf, man pages
 - package sntp
