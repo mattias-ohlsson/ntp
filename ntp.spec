@@ -2,8 +2,8 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.2.2
-Release: 3
+Version: 4.2.2p1
+Release: 1
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -157,6 +157,10 @@ fi
 
 
 %changelog
+* Tue Jul 18 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2p1-1
+- update to 4.2.2p1
+- add more examples to ntp.conf
+
 * Thu Jul 06 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2-3
 - fix manycast support in ntpdate (#194329)
 - reply to manycast requests with null refid
