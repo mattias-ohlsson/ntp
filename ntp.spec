@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.2p1
-Release: 2
+Release: 3
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -22,6 +22,7 @@ Patch2: ntp-4.2.2-droproot.patch
 Patch3: ntp-stable-4.2.0a-20040616-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
 Patch5: ntp-4.2.2-linkfastmath.patch
+Patch6: ntp-4.2.2-loopfilter.patch
 Patch7: ntp-4.2.0-sbinpath.patch
 Patch8: ntp-4.2.2-manycast.patch
 Patch9: ntp-4.2.2-mlockall.patch
@@ -55,6 +56,7 @@ time synchronized via the NTP protocol.
 %patch2 -p1
 %patch3 -p1 -b .groups
 %patch4 -p1 -b .authkey
+%patch6 -p1 -b .loopfilter
 %patch7 -p1 -b .sbinpath
 %patch8 -p1 -b .manycast
 %patch9 -p1 -b .mlockall
@@ -162,6 +164,9 @@ fi
 
 
 %changelog
+* Fri Aug 18 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2p1-3
+- use adjtime when offset is more than 0.5s (#154625)
+
 * Mon Jul 24 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2p1-2
 - link ntpd with -ffast-math on ia64 (#147980)
 
