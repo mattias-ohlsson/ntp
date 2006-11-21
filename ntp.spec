@@ -2,8 +2,8 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.2.2p1
-Release: 3
+Version: 4.2.2p4
+Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -28,6 +28,7 @@ Patch8: ntp-4.2.2-manycast.patch
 Patch9: ntp-4.2.2-mlockall.patch
 Patch10: ntp-stable-4.2.0a-20050816-loopback.patch
 Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
+Patch12: ntp-4.2.2-sprintf.patch
 
 URL: http://www.ntp.org
 PreReq: /sbin/chkconfig
@@ -62,6 +63,7 @@ time synchronized via the NTP protocol.
 %patch9 -p1 -b .mlockall
 %patch10 -p1 -b .loopback
 %patch11 -p1 -b .keyfile
+%patch12 -p1 -b .sprintf
 
 %ifarch ia64
 %patch5 -p1 -b .linkfastmath
@@ -151,7 +153,7 @@ fi
 %{_sbindir}/ntptime
 %{_sbindir}/sntp
 %{_sbindir}/tickadj
-%config			%{_initrddir}/ntpd
+%{_initrddir}/ntpd
 %config(noreplace)	%{_sysconfdir}/sysconfig/ntpd
 %config(noreplace)	%{_sysconfdir}/ntp.conf
 %dir 	%{_sysconfdir}/ntp
@@ -164,6 +166,11 @@ fi
 
 
 %changelog
+* Tue Nov 21 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2p4-1
+- update to 4.2.2p4
+- fix buffer overflow in WWV Audio driver (#216309)
+- don't mark init script as config
+
 * Fri Aug 18 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2p1-3
 - use adjtime when offset is more than 0.5s (#154625)
 
