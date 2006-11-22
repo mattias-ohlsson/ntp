@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.2p4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -166,6 +166,9 @@ fi
 
 
 %changelog
+* Wed Nov 22 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2p4-2
+- pass additional options to ntpdate (#202204)
+
 * Tue Nov 21 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2p4-1
 - update to 4.2.2p4
 - fix buffer overflow in WWV Audio driver (#216309)

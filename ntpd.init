@@ -94,7 +94,7 @@ start() {
 
 	if [ -n "$dostep" ]; then
 	    echo -n $"$prog: Synchronizing with time server: "
-	    /usr/sbin/ntpdate $dropstr -s -b $tickers 2>/dev/null >/dev/null
+	    /usr/sbin/ntpdate $dropstr -s -b $NTPDATE_OPTIONS $tickers &>/dev/null
 	    RETVAL=$?
 	    [ $RETVAL -eq 0 ] && success || failure
 	    echo
