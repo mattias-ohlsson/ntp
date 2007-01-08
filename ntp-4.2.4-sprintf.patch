@@ -1,0 +1,65 @@
+--- ntp-4.2.4/ntpd/refclock_wwv.c.sprintf	2006-12-28 13:03:49.000000000 +0100
++++ ntp-4.2.4/ntpd/refclock_wwv.c	2007-01-02 17:52:10.000000000 +0100
+@@ -1364,7 +1364,7 @@
+ 		else
+ 			sp->metric = wwv_metric(sp);
+ 		if (pp->sloppyclockflag & CLK_FLAG4) {
+-			sprintf(tbuf,
++ 			snprintf(tbuf, sizeof (tbuf),
+ 			    "wwv8 %04x %3d %s %04x %.0f %.0f/%.1f %4ld %4ld",
+ 			    up->status, up->gain, sp->refid,
+ 			    sp->reach & 0xffff, sp->metric, sp->synmax,
+@@ -1491,7 +1491,7 @@
+ 	}
+ 	if ((pp->sloppyclockflag & CLK_FLAG4) && !(up->status & MSYNC))
+ 	    {
+-		sprintf(tbuf,
++ 		snprintf(tbuf, sizeof (tbuf),
+ 		    "wwv1 %04x %3d %4d %5.0f %5.1f %5d %4d %4d %4d",
+ 		    up->status, up->gain, tepoch, up->epomax,
+ 		    up->eposnr, tmp2, avgcnt, syncnt,
+@@ -1582,7 +1582,7 @@
+ 		}
+ 	}
+ 	if (pp->sloppyclockflag & CLK_FLAG4) {
+-		sprintf(tbuf,
++ 		snprintf(tbuf, sizeof (tbuf),
+ 		    "wwv2 %04x %5.0f %5.1f %5d %4d %4d %4d %4.0f %7.2f",
+ 		    up->status, up->epomax, up->eposnr, mepoch,
+ 		    up->avgint, maxrun, mcount - zcount, dtemp,
+@@ -1768,7 +1768,7 @@
+ 	struct wwvunit *up;
+ 	struct chan *cp;
+ 	struct sync *sp, *rp;
+-	char	tbuf[80];	/* monitor buffer */
++	char	tbuf[128];	/* monitor buffer */
+ 	int	sw, arg, nsec;
+ 
+ 	pp = peer->procptr;
+@@ -1869,7 +1869,7 @@
+ 		}
+ 		rp->metric = wwv_metric(rp);
+ 		if (pp->sloppyclockflag & CLK_FLAG4) {
+-			sprintf(tbuf,
++			snprintf(tbuf, sizeof (tbuf),
+ 			    "wwv5 %04x %3d %4d %.0f/%.1f %.0f/%.1f %s %04x %.0f %.0f/%.1f %s %04x %.0f %.0f/%.1f",
+ 			    up->status, up->gain, up->yepoch,
+ 			    up->epomax, up->eposnr, up->datsig,
+@@ -2041,7 +2041,7 @@
+ 	}
+ 	if ((pp->sloppyclockflag & CLK_FLAG4) && !(up->status &
+ 	    DSYNC)) {
+-		sprintf(tbuf,
++		snprintf(tbuf, sizeof (tbuf),
+ 		    "wwv3 %2d %04x %3d %4d %5.0f %5.1f %5.0f %5.1f %5.0f",
+ 		    nsec, up->status, up->gain, up->yepoch, up->epomax,
+ 		    up->eposnr, up->datsig, up->datsnr, bit);
+@@ -2212,7 +2212,7 @@
+ 	}
+ 	if ((pp->sloppyclockflag & CLK_FLAG4) && !(up->status &
+ 	    INSYNC)) {
+-		sprintf(tbuf,
++		snprintf(tbuf, sizeof (tbuf),
+ 		    "wwv4 %2d %04x %3d %4d %5.0f %2d %d %d %d %5.0f %5.1f",
+ 		    up->rsec - 1, up->status, up->gain, up->yepoch,
+ 		    up->epomax, vp->radix, vp->digit, vp->mldigit,

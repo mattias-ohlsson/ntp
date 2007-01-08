@@ -1,0 +1,35 @@
+--- ntp-4.2.4/ntpd/ntpd.c.groups	2006-12-29 00:02:02.000000000 +0100
++++ ntp-4.2.4/ntpd/ntpd.c	2007-01-02 16:24:21.000000000 +0100
+@@ -874,10 +874,18 @@
+ 				sw_uid = (uid_t)strtoul(user, &endp, 0);
+ 				if (*endp != '\0') 
+ 					goto getuser;
++
++                                if ((pw = getpwuid(sw_uid)) != NULL) {
++                                        user = strdup(pw->pw_name);
++                                } else {
++					user = (char *)-1;
++                                }
++
+ 			} else {
+ getuser:	
+ 				if ((pw = getpwnam(user)) != NULL) {
+ 					sw_uid = pw->pw_uid;
++					sw_gid = pw->pw_gid;
+ 				} else {
+ 					errno = 0;
+ 					msyslog(LOG_ERR, "Cannot find user `%s'", user);
+@@ -913,6 +921,13 @@
+ 				exit (-1);
+ 			}
+ 		}
++
++		if (user && (user != (char *)-1) && initgroups(user, sw_gid)) {
++                        msyslog(LOG_ERR, "Cannot initgroups() to user `%s': %m", user);
++                        exit (-1);
++                }
++	
++
+ 		if (group && setgid(sw_gid)) {
+ 			msyslog(LOG_ERR, "Cannot setgid() to group `%s': %m", group);
+ 			exit (-1);

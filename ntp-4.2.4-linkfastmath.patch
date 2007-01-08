@@ -1,0 +1,11 @@
+--- ntp-4.2.4/ntpd/Makefile.in.linkfastmath	2006-12-29 00:58:57.000000000 +0100
++++ ntp-4.2.4/ntpd/Makefile.in	2007-01-02 17:56:48.000000000 +0100
+@@ -281,7 +281,7 @@
+ # sqrt                                ntp_control.o
+ # floor                               refclock_wwv.o
+ # which are (usually) provided by -lm.
+-ntpd_LDADD = $(LDADD) -lm @LCRYPTO@ $(LIBOPTS_LDADD) ../libntp/libntp.a
++ntpd_LDADD = $(LDADD) -lm -ffast-math @LCRYPTO@ $(LIBOPTS_LDADD) ../libntp/libntp.a
+ ntpdsim_LDADD = $(LDADD) ../libntp/libntpsim.a -lm @LCRYPTO@ $(LIBOPTS_LDADD)
+ ntpdsim_CFLAGS = $(CFLAGS) -DSIM
+ check_y2k_LDADD = $(LDADD) ../libntp/libntp.a

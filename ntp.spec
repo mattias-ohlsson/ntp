@@ -2,8 +2,8 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
-Version: 4.2.2p4
-Release: 2%{?dist}
+Version: 4.2.4
+Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -12,32 +12,31 @@ Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
 Source5: ntpstat-0.2.tgz
-Source6: ntp-4.2.2-manpages-2.tar.gz
 
 # new find-requires
 Source7: filter-requires-ntp.sh
 %define __find_requires %{SOURCE7}
 
-Patch2: ntp-4.2.2-droproot.patch
-Patch3: ntp-stable-4.2.0a-20040616-groups.patch
+Patch2: ntp-4.2.4-droproot.patch
+Patch3: ntp-4.2.4-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
-Patch5: ntp-4.2.2-linkfastmath.patch
-Patch6: ntp-4.2.2-loopfilter.patch
-Patch7: ntp-4.2.0-sbinpath.patch
-Patch8: ntp-4.2.2-manycast.patch
-Patch9: ntp-4.2.2-mlockall.patch
-Patch10: ntp-stable-4.2.0a-20050816-loopback.patch
+Patch5: ntp-4.2.4-linkfastmath.patch
+Patch6: ntp-4.2.4-allowbind.patch
+Patch7: ntp-4.2.4-revert452.patch
+Patch8: ntp-4.2.4-intresflags.patch
+Patch9: ntp-4.2.4-html2man.patch
+Patch10: ntp-4.2.4-htmldoc.patch
 Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
-Patch12: ntp-4.2.2-sprintf.patch
+Patch12: ntp-4.2.4-sprintf.patch
 
 URL: http://www.ntp.org
-PreReq: /sbin/chkconfig
-Prereq: /usr/sbin/groupadd /usr/sbin/useradd
-PreReq: /bin/awk sed grep
-Requires: libcap
-BuildRequires: libcap-devel openssl-devel readline-devel
+Requires(pre): shadow-utils 
+Requires(post): /sbin/chkconfig
+Requires(preun): /sbin/chkconfig /sbin/service
+Requires(postun): /sbin/service
+BuildRequires: libcap-devel openssl-devel readline-devel perl-HTML-Parser
 Obsoletes: xntp3 ntpstat
-BuildRoot: %{_tmppath}/%{name}-root
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 The Network Time Protocol (NTP) is used to synchronize a computer's
@@ -52,16 +51,16 @@ Install the ntp package if you need tools for keeping your system's
 time synchronized via the NTP protocol.
 
 %prep 
-%setup -q -a 5 -a 6
+%setup -q -a 5
 
-%patch2 -p1
+%patch2 -p1 -b .droproot
 %patch3 -p1 -b .groups
 %patch4 -p1 -b .authkey
-%patch6 -p1 -b .loopfilter
-%patch7 -p1 -b .sbinpath
-%patch8 -p1 -b .manycast
-%patch9 -p1 -b .mlockall
-%patch10 -p1 -b .loopback
+%patch6 -p1 -b .allowbind
+%patch7 -p1 -b .revert452
+%patch8 -p1 -b .intresflags
+%patch9 -p1 -b .html2man
+%patch10 -p1 -b .htmldoc
 %patch11 -p1 -b .keyfile
 %patch12 -p1 -b .sprintf
 
@@ -79,45 +78,51 @@ fi
 	--sysconfdir=%{_sysconfdir}/ntp \
 	--enable-all-clocks --enable-parse-clocks \
 	--enable-linuxcaps
-
-perl -pi -e "s|-lelf||" */Makefile
-
 make
+
+sed -i 's|$ntpq = "ntpq"|$ntpq = "%{_sbindir}/ntpq"|' scripts/ntptrace
+
+pushd html
+../scripts/html2man
+# remove adjacent blank lines
+sed -i 's/^[\t\ ]*$//;/./,/^$/!d' man/man*/*.[58]
+popd 
 
 make -C ntpstat-0.2 CFLAGS="$CFLAGS"
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%makeinstall bindir=${RPM_BUILD_ROOT}%{_sbindir}
+make DESTDIR=$RPM_BUILD_ROOT bindir=%{_sbindir} install
+
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man{5,8}
+mv $RPM_BUILD_ROOT%{_mandir}/man1/sntp.1 $RPM_BUILD_ROOT%{_mandir}/man8/sntp.8
+rm -rf $RPM_BUILD_ROOT%{_mandir}/man1
 
 pushd ntpstat-0.2
-mkdir -p ${RPM_BUILD_ROOT}/%{_mandir}/man1
-mkdir -p ${RPM_BUILD_ROOT}/%{_bindir}
-
-install -m 755 ntpstat ${RPM_BUILD_ROOT}/%{_bindir}/
-install -m 644 ntpstat.1 ${RPM_BUILD_ROOT}/%{_mandir}/man1/
+mkdir -p $RPM_BUILD_ROOT%{_bindir}
+install -m 755 ntpstat $RPM_BUILD_ROOT%{_bindir}
+install -m 644 ntpstat.1 $RPM_BUILD_ROOT%{_mandir}/man8/ntpstat.8
 popd
-pushd man
-for i in *.1; do 
-	install -m 644 $i ${RPM_BUILD_ROOT}/%{_mandir}/man1/
-done
 
-{ cd $RPM_BUILD_ROOT
+# fix section numbers
+sed -i 's/\(\.TH[a-zA-Z ]*\)[1-9]\(.*\)/\18\2/' $RPM_BUILD_ROOT%{_mandir}/man8/*.8
+cp -r html/man/man[58] $RPM_BUILD_ROOT%{_mandir}
 
-  mkdir -p .%{_sysconfdir}/ntp
-  mkdir -p .%{_initrddir}
-  install -m644 $RPM_SOURCE_DIR/ntp.conf .%{_sysconfdir}/ntp.conf
-  mkdir -p .%{_var}/lib/ntp
-  touch .%{_var}/lib/ntp/drift
-  install -m600 $RPM_SOURCE_DIR/ntp.keys .%{_sysconfdir}/ntp/keys
-  touch .%{_sysconfdir}/ntp/step-tickers
-  install -m755 $RPM_SOURCE_DIR/ntpd.init .%{_initrddir}/ntpd
+# prepare html documentation
+find html | egrep '\.(html|css|txt|jpg|gif)$' | grep -v '/build/' | cpio -pmd htmldoc
+find htmldoc -type f | xargs chmod 644
+find htmldoc -type d | xargs chmod 755
 
-  mkdir -p .%{_sysconfdir}/sysconfig
-  install -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
-}
-
+pushd $RPM_BUILD_ROOT
+mkdir -p .%{_sysconfdir}/{ntp,sysconfig} .%{_initrddir}
+mkdir -p .%{_localstatedir}/lib/ntp
+touch .%{_localstatedir}/lib/ntp/drift .%{_sysconfdir}/ntp/step-tickers
+install -m644 %{SOURCE1} .%{_sysconfdir}
+install -m600 %{SOURCE2} .%{_sysconfdir}/ntp/keys
+install -m755 %{SOURCE3} .%{_initrddir}/ntpd
+install -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
+popd
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -128,21 +133,24 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add ntpd
+:
 
 %preun
-if [ $1 = 0 ]; then
-    service ntpd stop > /dev/null 2>&1
-    /sbin/chkconfig --del ntpd
+if [ "$1" -eq 0 ]; then
+	/sbin/service ntpd stop &> /dev/null
+	/sbin/chkconfig --del ntpd
 fi
+:
 
 %postun
-if [ "$1" -ge "1" ]; then
-  service ntpd condrestart > /dev/null 2>&1
+if [ "$1" -ge 1 ]; then
+	/sbin/service ntpd condrestart &> /dev/null
 fi
+:
 
 %files
 %defattr(-,root,root)
-%doc html/* NEWS TODO 
+%doc htmldoc/html/* NEWS TODO 
 %{_sbindir}/ntp-wait
 %{_sbindir}/ntptrace
 %{_sbindir}/ntp-keygen
@@ -159,13 +167,19 @@ fi
 %dir 	%{_sysconfdir}/ntp
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 %config(noreplace) %{_sysconfdir}/ntp/keys
-%dir	%attr(-,ntp,ntp)   %{_var}/lib/ntp
-%ghost %attr(644,ntp,ntp) %{_var}/lib/ntp/drift
-%{_mandir}/man1/*
+%dir %attr(-,ntp,ntp) %{_localstatedir}/lib/ntp
+%ghost %attr(644,ntp,ntp) %{_localstatedir}/lib/ntp/drift
+%{_mandir}/man[58]/*.[58]*
 %{_bindir}/ntpstat
 
 
 %changelog
+* Mon Jan 08 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4-1
+- update to 4.2.4 (#146884)
+- don't use local clock in default config
+- autogenerate man pages from HTML
+- clean up spec a bit
+
 * Wed Nov 22 2006 Miroslav Lichvar <mlichvar@redhat.com> 4.2.2p4-2
 - pass additional options to ntpdate (#202204)
 
