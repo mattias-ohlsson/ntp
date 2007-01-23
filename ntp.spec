@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -28,6 +28,7 @@ Patch9: ntp-4.2.4-html2man.patch
 Patch10: ntp-4.2.4-htmldoc.patch
 Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
 Patch12: ntp-4.2.4-sprintf.patch
+Patch13: ntp-4.2.4-autoopts.patch
 
 URL: http://www.ntp.org
 Requires(pre): shadow-utils 
@@ -63,6 +64,7 @@ time synchronized via the NTP protocol.
 %patch10 -p1 -b .htmldoc
 %patch11 -p1 -b .keyfile
 %patch12 -p1 -b .sprintf
+%patch13 -p1 -b .autoopts
 
 %ifarch ia64
 %patch5 -p1 -b .linkfastmath
@@ -174,6 +176,10 @@ fi
 
 
 %changelog
+* Tue Jan 23 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4-2
+- disable autoopts option preset mechanisms for ntpd
+- document -I option of ntpd
+
 * Mon Jan 08 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4-1
 - update to 4.2.4 (#146884)
 - don't use local clock in default config
