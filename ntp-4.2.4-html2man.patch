@@ -47,12 +47,15 @@
      print MANOUT ".SH NAME\n";
      $pat = $fileinfo->[0];
      if ($name =~ /$pat/) {
-@@ -83,8 +74,10 @@
+@@ -81,10 +72,12 @@
+ 	# Add the manpage name, if not in the HTML title already
+ 	print MANOUT "$fileinfo->[0] - ";
      }
-     print MANOUT "$name\n\n";
- 
--    print MANOUT "$top_disclaimer\n";
+-    print MANOUT "$name\n\n";
 -
+-    print MANOUT "$top_disclaimer\n";
++    print MANOUT "$name\n.SH\n\n";
+ 
 +    @fontstack = ();
 +    $deflevel = 0;
 +    $pre = 0;

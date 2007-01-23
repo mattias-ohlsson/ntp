@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP).
 Name: ntp
 Version: 4.2.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -176,9 +176,10 @@ fi
 
 
 %changelog
-* Tue Jan 23 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4-2
+* Tue Jan 23 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4-3
 - disable autoopts option preset mechanisms for ntpd
 - document -I option of ntpd
+- generate makewhatis friendly man pages
 
 * Mon Jan 08 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4-1
 - update to 4.2.4 (#146884)
