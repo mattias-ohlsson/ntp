@@ -64,13 +64,15 @@ sync_hwclock() {
 readconf() {
 	dostep=''
 	dropstr=''
+	hasg=''
 	OPTIND=1
-	while getopts ":46aAbc:dD:f:gi:k:l:LnN:p:P:qr:s:t:u:v:V:x" args $OPTIONS;
+	while getopts ":46aAbc:dD:f:gi:I:k:l:LmnN:p:P:qr:s:t:u:U:v:V:x" args $OPTIONS;
 	do 
 	  case "$args" in
 	    x) dostep=yes;;
 	    c) ntpconf="$OPTARG";;
 	    u) dropstr="-U $(echo $OPTARG | sed 's/:.*//')";;
+	    g) hasg=yes;;
 	  esac
 	done
 
@@ -85,7 +87,7 @@ readconf() {
 	    # -x option is used, but step-tickers doesn't exist or contain
 	    # anything useful, use servers from ntp.conf instead
 	    tickers=$(awk '$1=="peer"||$1=="server"{print $2}' $ntpconf | \
-	        fgrep -v 127.127.1.0)
+	        egrep -v '127\.127\.[0-9]+\.[0-9]+')
 	fi
 }
 
@@ -100,10 +102,10 @@ start() {
 	    echo
 	    if [ $RETVAL -eq 0 ]; then
 	        [ "$SYNC_HWCLOCK" = "yes" ] && sync_hwclock
-	    else
+	    elif [ -z "$hasg" ]; then
 	        OPTIONS="$OPTIONS -g"
 	    fi
-	else
+	elif [ -z "$hasg" ]; then
 	    # -g can replace the grep for time servers
 	    # as it permits ntpd to violate its 1000s limit once.
 	    OPTIONS="$OPTIONS -g"

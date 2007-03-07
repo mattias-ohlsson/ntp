@@ -1,9 +1,9 @@
 %define _use_internal_dependency_generator 0
 
-Summary: Synchronizes system time using the Network Time Protocol (NTP).
+Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
-Version: 4.2.4
-Release: 4%{?dist}
+Version: 4.2.4p0
+Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -17,21 +17,17 @@ Source5: ntpstat-0.2.tgz
 Source7: filter-requires-ntp.sh
 %define __find_requires %{SOURCE7}
 
-Patch2: ntp-4.2.4-droproot.patch
+Patch2: ntp-4.2.4p0-droproot.patch
 Patch3: ntp-4.2.4-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
 Patch5: ntp-4.2.4-linkfastmath.patch
-Patch6: ntp-4.2.4-allowbind.patch
 Patch7: ntp-4.2.4-revert452.patch
-Patch8: ntp-4.2.4-intresflags.patch
 Patch9: ntp-4.2.4-html2man.patch
 Patch10: ntp-4.2.4-htmldoc.patch
 Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
 Patch12: ntp-4.2.4-sprintf.patch
 Patch13: ntp-4.2.4-autoopts.patch
-Patch14: ntp-4.2.4-mlock.patch
-Patch15: ntp-4.2.4-optvalues.patch
-Patch16: ntp-4.2.4-bcast.patch
+Patch14: ntp-4.2.4p0-mlock.patch
 Patch17: ntp-4.2.4-sleep.patch
 
 URL: http://www.ntp.org
@@ -40,7 +36,6 @@ Requires(post): /sbin/chkconfig
 Requires(preun): /sbin/chkconfig /sbin/service
 Requires(postun): /sbin/service
 BuildRequires: libcap-devel openssl-devel readline-devel perl-HTML-Parser
-Obsoletes: xntp3 ntpstat
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -61,17 +56,13 @@ time synchronized via the NTP protocol.
 %patch2 -p1 -b .droproot
 %patch3 -p1 -b .groups
 %patch4 -p1 -b .authkey
-%patch6 -p1 -b .allowbind
 %patch7 -p1 -b .revert452
-%patch8 -p1 -b .intresflags
 %patch9 -p1 -b .html2man
 %patch10 -p1 -b .htmldoc
 %patch11 -p1 -b .keyfile
 %patch12 -p1 -b .sprintf
 %patch13 -p1 -b .autoopts
 %patch14 -p1 -b .mlock
-%patch15 -p1 -b .optvalues
-%patch16 -p1 -b .bcast
 %patch17 -p1 -b .sleep
 
 %ifarch ia64
@@ -184,6 +175,14 @@ fi
 
 
 %changelog
+* Wed Mar 07 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p0-1
+- update to 4.2.4p0
+- fix init script
+  - don't add second -g to ntpd options (#228424)
+  - update getopts
+  - skip all refclocks when parsing ntp.conf
+- spec cleanup
+
 * Mon Jan 29 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4-4
 - don't wake up every second (#204748)
 - add option to enable memory locking (#195617)
@@ -593,7 +592,7 @@ fi
 - correct mis-spellings in ntpq.htm (#20007).
 
 * Thu Oct 19 2000 Jeff Johnson <jbj@redhat.com>
-- add %ghost %%{_sysconfdir}/ntp/drift (#15222).
+- add %%ghost %%{_sysconfdir}/ntp/drift (#15222).
 
 * Wed Oct 18 2000 Jeff Johnson <jbj@redhat.com>
 - comment out default values for keys, warn about starting with -A (#19316).
