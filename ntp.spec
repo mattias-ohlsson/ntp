@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -28,7 +28,7 @@ Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
 Patch12: ntp-4.2.4-sprintf.patch
 Patch13: ntp-4.2.4-autoopts.patch
 Patch14: ntp-4.2.4p0-mlock.patch
-Patch17: ntp-4.2.4-sleep.patch
+Patch17: ntp-4.2.4p0-sleep.patch
 
 URL: http://www.ntp.org
 Requires(pre): shadow-utils 
@@ -77,6 +77,7 @@ if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev
 fi
 %configure \
 	--sysconfdir=%{_sysconfdir}/ntp \
+	--with-openssl-libdir=%{_libdir} \
 	--enable-all-clocks --enable-parse-clocks \
 	--enable-linuxcaps
 make
@@ -175,6 +176,10 @@ fi
 
 
 %changelog
+* Wed May 09 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p0-2
+- compile with crypto support on 64bit architectures (#239576)
+- update sleep patch
+
 * Wed Mar 07 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p0-1
 - update to 4.2.4p0
 - fix init script

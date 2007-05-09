@@ -1,5 +1,5 @@
---- ntp-4.2.4/include/ntp_stdlib.h.sleep	2006-12-28 13:03:05.000000000 +0100
-+++ ntp-4.2.4/include/ntp_stdlib.h	2007-01-29 13:31:38.000000000 +0100
+--- ntp-4.2.4p0/include/ntp_stdlib.h.sleep	2006-12-28 13:03:05.000000000 +0100
++++ ntp-4.2.4p0/include/ntp_stdlib.h	2007-03-26 17:53:15.000000000 +0200
 @@ -101,6 +101,7 @@
  extern	void	signal_no_reset P((int, RETSIGTYPE (*func)(int)));
  
@@ -8,8 +8,8 @@
  extern	void	auth_agekeys	P((void));
  extern	void	rereadkeys	P((void));
  
---- ntp-4.2.4/include/ntpd.h.sleep	2006-12-28 13:03:06.000000000 +0100
-+++ ntp-4.2.4/include/ntpd.h	2007-01-29 13:31:38.000000000 +0100
+--- ntp-4.2.4p0/include/ntpd.h.sleep	2006-12-28 13:03:06.000000000 +0100
++++ ntp-4.2.4p0/include/ntpd.h	2007-03-26 17:53:15.000000000 +0200
 @@ -118,8 +118,10 @@
  /* ntp_loopfilter.c */
  extern	void	init_loopfilter P((void));
@@ -32,8 +32,8 @@
  extern	void	timer_clr_stats P((void));
  extern  void    timer_interfacetimeout P((u_long));
  extern  volatile int interface_interval;
---- ntp-4.2.4/libntp/authkeys.c.sleep	2004-02-25 06:58:03.000000000 +0100
-+++ ntp-4.2.4/libntp/authkeys.c	2007-01-29 13:31:38.000000000 +0100
+--- ntp-4.2.4p0/libntp/authkeys.c.sleep	2004-02-25 06:58:03.000000000 +0100
++++ ntp-4.2.4p0/libntp/authkeys.c	2007-03-26 17:53:15.000000000 +0200
 @@ -394,6 +394,24 @@
  	}
  }
@@ -59,20 +59,20 @@
  /*
   * auth_agekeys - delete keys whose lifetimes have expired
   */
---- ntp-4.2.4/ntpd/ntp_loopfilter.c.sleep	2007-01-29 13:31:38.000000000 +0100
-+++ ntp-4.2.4/ntpd/ntp_loopfilter.c	2007-01-29 13:42:05.000000000 +0100
-@@ -765,6 +765,10 @@
+--- ntp-4.2.4p0/ntpd/ntp_loopfilter.c.sleep	2007-03-26 17:53:15.000000000 +0200
++++ ntp-4.2.4p0/ntpd/ntp_loopfilter.c	2007-03-26 17:53:15.000000000 +0200
+@@ -757,6 +757,10 @@
  #endif /* LOCKCLOCK */
  }
  
 +int adj_host_clock_is_needed() {
 +	return !(!ntp_enable || mode_ntpdate || (pll_control &&
-+	    kern_enable && clock_max < 0.5));
++	    kern_enable));
 +}
  
  /*
   * adj_host_clock - Called once every second to update the local clock.
-@@ -774,7 +778,7 @@
+@@ -766,7 +770,7 @@
   */
  void
  adj_host_clock(
@@ -81,19 +81,17 @@
  	)
  {
  	double	adjustment;
-@@ -789,7 +793,10 @@
+@@ -781,7 +785,8 @@
  	 * maximum error and the local clock driver will pick it up and
  	 * pass to the common refclock routines. Very elegant.
  	 */
 -	sys_rootdispersion += clock_phi;
 +	sys_rootdispersion += clock_phi * time_elapsed;
-+#if 0
-+	printf("loopfilter: %d\n", time_elapsed);
-+#endif
++	DPRINTF(2, ("loopfilter: %d\n", time_elapsed));
  
  #ifndef LOCKCLOCK
  	/*
-@@ -849,6 +856,11 @@
+@@ -841,6 +846,11 @@
  }
  
  
@@ -105,8 +103,8 @@
  /*
   * huff-n'-puff filter
   */
---- ntp-4.2.4/ntpd/ntpd.c.sleep	2007-01-29 13:31:38.000000000 +0100
-+++ ntp-4.2.4/ntpd/ntpd.c	2007-01-29 13:31:38.000000000 +0100
+--- ntp-4.2.4p0/ntpd/ntpd.c.sleep	2007-03-26 17:53:15.000000000 +0200
++++ ntp-4.2.4p0/ntpd/ntpd.c	2007-03-26 18:06:34.000000000 +0200
 @@ -188,8 +188,6 @@
  
  char const *progname;
@@ -134,7 +132,7 @@
  	struct recvbuf *rbuf;
  #ifdef _AIX			/* HMS: ifdef SIGDANGER? */
  	struct sigaction sa;
-@@ -1012,7 +1014,11 @@
+@@ -1014,7 +1016,11 @@
  #else /* normal I/O */
  
  	BLOCK_IO_AND_ALARM();
@@ -147,7 +145,7 @@
  	for (;;)
  	{
  # if !defined(HAVE_SIGNALED_IO) 
-@@ -1023,39 +1029,61 @@
+@@ -1025,39 +1031,58 @@
  		int nfound;
  # endif
  
@@ -185,9 +183,7 @@
 +
 +			L_SUB(&ts2, &ts);
 +			LFPTOD(&ts2, d);
-+#if 0
-+			printf("%f ", d);
-+#endif
++			DPRINTF(2, ("next in %f\n", d));
 +			if (d >= 0.0) {
  				struct timeval t1;
  
@@ -210,17 +206,16 @@
  				get_systime(&ts);
 +			} else
 +				nfound = 0;
- 
++
 +			ts2 = ts;
 +			L_SUB(&ts2, &timer_base);
 +			time_elapsed += ts2.l_ui;
 +			timer_base.l_ui += ts2.l_ui;
-+#if 0
-+			ts2 = ts;
-+			ts2.l_ui = 0;
++#ifdef DEBUG 
 +			LFPTOD(&ts2, d);
-+			printf("%f\n", d);
++			DPRINTF(2, ("elapsed %f\n", d));
 +#endif
+ 
 +			if (nfound > 0)
 +			{
  				(void)input_handler(&ts);
@@ -229,7 +224,7 @@
  			}
  			else if (nfound == -1 && errno != EINTR)
  				netsyslog(LOG_ERR, "select() error: %m");
-@@ -1067,22 +1095,17 @@
+@@ -1069,22 +1094,17 @@
                          
  			wait_for_signal();
  # endif /* HAVE_SIGNALED_IO */
@@ -255,8 +250,8 @@
                          BLOCK_IO_AND_ALARM();
  		}
  
---- ntp-4.2.4/ntpd/ntp_timer.c.sleep	2006-12-28 13:03:34.000000000 +0100
-+++ ntp-4.2.4/ntpd/ntp_timer.c	2007-01-29 13:40:38.000000000 +0100
+--- ntp-4.2.4p0/ntpd/ntp_timer.c.sleep	2006-12-28 13:03:34.000000000 +0100
++++ ntp-4.2.4p0/ntpd/ntp_timer.c	2007-03-26 17:53:15.000000000 +0200
 @@ -63,6 +63,7 @@
  #define HOUR	(60*60)
  
