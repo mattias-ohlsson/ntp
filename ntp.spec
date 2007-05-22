@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p0
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -21,7 +21,8 @@ Patch2: ntp-4.2.4p0-droproot.patch
 Patch3: ntp-4.2.4-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
 Patch5: ntp-4.2.4-linkfastmath.patch
-Patch7: ntp-4.2.4-revert452.patch
+Patch6: ntp-4.2.4p0-ifupdate.patch
+Patch8: ntp-4.2.4p0-multilisten.patch
 Patch9: ntp-4.2.4-html2man.patch
 Patch10: ntp-4.2.4-htmldoc.patch
 Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
@@ -29,6 +30,8 @@ Patch12: ntp-4.2.4-sprintf.patch
 Patch13: ntp-4.2.4-autoopts.patch
 Patch14: ntp-4.2.4p0-mlock.patch
 Patch17: ntp-4.2.4p0-sleep.patch
+Patch18: ntp-4.2.4p0-bcast.patch
+Patch19: ntp-4.2.4p0-retcode.patch
 
 URL: http://www.ntp.org
 Requires(pre): shadow-utils 
@@ -56,7 +59,8 @@ time synchronized via the NTP protocol.
 %patch2 -p1 -b .droproot
 %patch3 -p1 -b .groups
 %patch4 -p1 -b .authkey
-%patch7 -p1 -b .revert452
+%patch6 -p1 -b .ifupdate
+%patch8 -p1 -b .multilisten
 %patch9 -p1 -b .html2man
 %patch10 -p1 -b .htmldoc
 %patch11 -p1 -b .keyfile
@@ -64,6 +68,8 @@ time synchronized via the NTP protocol.
 %patch13 -p1 -b .autoopts
 %patch14 -p1 -b .mlock
 %patch17 -p1 -b .sleep
+%patch18 -p1 -b .bcast
+%patch19 -p1 -b .retcode
 
 %ifarch ia64
 %patch5 -p1 -b .linkfastmath
@@ -80,7 +86,7 @@ fi
 	--with-openssl-libdir=%{_libdir} \
 	--enable-all-clocks --enable-parse-clocks \
 	--enable-linuxcaps
-make
+make %{?_smp_mflags}
 
 sed -i 's|$ntpq = "ntpq"|$ntpq = "%{_sbindir}/ntpq"|' scripts/ntptrace
 
@@ -176,6 +182,16 @@ fi
 
 
 %changelog
+* Tue May 22 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p0-3
+- fix interface updates with -I or -L option (#240254)
+- accept multiple -I options
+- fix broadcast client/server to accept/allow sending
+  broadcasts on 255.255.255.255 (#226958)
+- fix return codes in init script (#240120)
+- exit with nonzero code if ntpd -q did not set clock (#240134)
+- drop revert452 patch, fixed in kernel 2.6.19
+- make with _smp_mflags
+
 * Wed May 09 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p0-2
 - compile with crypto support on 64bit architectures (#239576)
 - update sleep patch

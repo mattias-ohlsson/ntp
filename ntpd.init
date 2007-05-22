@@ -15,9 +15,6 @@
 # Source networking configuration.
 . /etc/sysconfig/network
 
-# Check that networking is up.
-[ ${NETWORKING} = "no" ] && exit 0
-
 if [ -f /etc/sysconfig/ntpd ];then
         . /etc/sysconfig/ntpd
 fi
@@ -92,6 +89,9 @@ readconf() {
 }
 
 start() {
+	# Check that networking is up.
+	[ "$NETWORKING" = "no" ] && exit 1
+
 	readconf;
 
 	if [ -n "$dostep" ]; then
@@ -154,7 +154,7 @@ case "$1" in
 	;;
   *)
         echo $"Usage: $0 {start|stop|restart|condrestart|status}"
-        exit 1
+        RETVAL=3
 esac
 
 exit $RETVAL
