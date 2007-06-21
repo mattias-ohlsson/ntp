@@ -2,8 +2,8 @@
 
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
-Version: 4.2.4p0
-Release: 3%{?dist}
+Version: 4.2.4p2
+Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -21,14 +21,12 @@ Patch2: ntp-4.2.4p0-droproot.patch
 Patch3: ntp-4.2.4-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
 Patch5: ntp-4.2.4-linkfastmath.patch
-Patch6: ntp-4.2.4p0-ifupdate.patch
-Patch8: ntp-4.2.4p0-multilisten.patch
+Patch8: ntp-4.2.4p2-multilisten.patch
 Patch9: ntp-4.2.4-html2man.patch
 Patch10: ntp-4.2.4-htmldoc.patch
 Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
 Patch12: ntp-4.2.4-sprintf.patch
-Patch13: ntp-4.2.4-autoopts.patch
-Patch14: ntp-4.2.4p0-mlock.patch
+Patch14: ntp-4.2.4p2-mlock.patch
 Patch17: ntp-4.2.4p0-sleep.patch
 Patch18: ntp-4.2.4p0-bcast.patch
 Patch19: ntp-4.2.4p0-retcode.patch
@@ -59,13 +57,11 @@ time synchronized via the NTP protocol.
 %patch2 -p1 -b .droproot
 %patch3 -p1 -b .groups
 %patch4 -p1 -b .authkey
-%patch6 -p1 -b .ifupdate
 %patch8 -p1 -b .multilisten
 %patch9 -p1 -b .html2man
 %patch10 -p1 -b .htmldoc
 %patch11 -p1 -b .keyfile
 %patch12 -p1 -b .sprintf
-%patch13 -p1 -b .autoopts
 %patch14 -p1 -b .mlock
 %patch17 -p1 -b .sleep
 %patch18 -p1 -b .bcast
@@ -182,6 +178,9 @@ fi
 
 
 %changelog
+* Thu Jun 21 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-1
+- update to 4.2.4p2
+
 * Tue May 22 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p0-3
 - fix interface updates with -I or -L option (#240254)
 - accept multiple -I options

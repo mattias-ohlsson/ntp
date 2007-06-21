@@ -1,5 +1,5 @@
---- ntp-4.2.4p0/html/ntpd.html.mlock	2007-03-07 16:17:07.000000000 +0100
-+++ ntp-4.2.4p0/html/ntpd.html	2007-03-07 16:17:07.000000000 +0100
+--- ntp-4.2.4p2/html/ntpd.html.mlock	2007-06-21 10:37:31.000000000 +0200
++++ ntp-4.2.4p2/html/ntpd.html	2007-06-21 10:37:31.000000000 +0200
 @@ -34,7 +34,7 @@
  		</ul>
  		<hr>
@@ -18,9 +18,9 @@
  			<dt><tt>-n</tt>
  			<dd>Don't fork.
  			<dt><tt>-N</tt>
---- ntp-4.2.4p0/ntpd/ntpd.c.mlock	2007-03-07 16:17:07.000000000 +0100
-+++ ntp-4.2.4p0/ntpd/ntpd.c	2007-03-07 16:17:07.000000000 +0100
-@@ -704,7 +704,8 @@
+--- ntp-4.2.4p2/ntpd/ntpd.c.mlock	2007-06-21 10:37:31.000000000 +0200
++++ ntp-4.2.4p2/ntpd/ntpd.c	2007-06-21 10:37:31.000000000 +0200
+@@ -699,7 +699,8 @@ ntpdmain(
  	}
  #endif
  
@@ -30,7 +30,7 @@
  # ifdef HAVE_SETRLIMIT
  	/*
  	 * Set the stack limit to something smaller, so that we don't lock a lot
-@@ -742,6 +743,7 @@
+@@ -737,6 +738,7 @@ ntpdmain(
  	 */
  	if (mlockall(MCL_CURRENT|MCL_FUTURE) < 0)
  		msyslog(LOG_ERR, "mlockall(): %m");
@@ -38,9 +38,9 @@
  #else /* not (HAVE_MLOCKALL && MCL_CURRENT && MCL_FUTURE) */
  # ifdef HAVE_PLOCK
  #  ifdef PROCLOCK
---- ntp-4.2.4p0/ntpd/ntpd-opts.c.mlock	2007-03-07 16:17:07.000000000 +0100
-+++ ntp-4.2.4p0/ntpd/ntpd-opts.c	2007-03-07 16:17:07.000000000 +0100
-@@ -265,6 +265,15 @@
+--- ntp-4.2.4p2/ntpd/ntpd-opts.c.mlock	2007-06-20 13:37:21.000000000 +0200
++++ ntp-4.2.4p2/ntpd/ntpd-opts.c	2007-06-21 10:38:43.000000000 +0200
+@@ -265,6 +265,15 @@ tSCC    zNice_Name[]               = "ni
  #define NICE_FLAGS       (OPTST_DISABLED)
  
  /*
@@ -56,9 +56,9 @@
   *  Pidfile option description:
   */
  tSCC    zPidfileText[] =
-@@ -796,6 +805,18 @@
-      /* desc, NAME, name */ zSlewText, zSlew_NAME, zSlew_Name,
-      /* disablement strs */ NULL, NULL },
+@@ -790,6 +799,18 @@ static tOptDesc optDesc[ OPTION_CT ] = {
+                                 OPTST_ARG_OPTIONAL | OPTST_IMM | OPTST_NO_INIT
+ #endif
  
 +  {  /* entry idx, value */ 29, VALUE_OPT_MLOCK,
 +     /* equiv idx, value */ 29, VALUE_OPT_MLOCK,
@@ -75,40 +75,36 @@
    {  /* entry idx, value */ INDEX_OPT_VERSION, VALUE_OPT_VERSION,
       /* equiv idx value  */ NO_EQUIVALENT, 0,
       /* equivalenced to  */ NO_EQUIVALENT,
-@@ -913,7 +934,7 @@
+@@ -882,7 +903,7 @@ tOptions ntpdOptions = {
        NO_EQUIVALENT /* index of '-#' option */,
        NO_EQUIVALENT /* index of default opt */
      },
--    OPTION_CT, 29 /* user option count */
-+    OPTION_CT, 30 /* user option count */
+-    32 /* full option count */, 29 /* user option count */
++    33 /* full option count */, 30 /* user option count */
  };
  
  /*
---- ntp-4.2.4p0/ntpd/ntpd-opts.h.mlock	2007-03-07 12:37:35.000000000 +0100
-+++ ntp-4.2.4p0/ntpd/ntpd-opts.h	2007-03-07 16:17:07.000000000 +0100
-@@ -82,14 +82,15 @@
+--- ntp-4.2.4p2/ntpd/ntpd-opts.h.mlock	2007-06-20 13:37:21.000000000 +0200
++++ ntp-4.2.4p2/ntpd/ntpd-opts.h	2007-06-21 10:42:28.000000000 +0200
+@@ -82,12 +82,13 @@ typedef enum {
          INDEX_OPT_VAR              = 26,
          INDEX_OPT_DVAR             = 27,
          INDEX_OPT_SLEW             = 28,
 -        INDEX_OPT_VERSION          = 29,
 -        INDEX_OPT_HELP             = 30,
--        INDEX_OPT_MORE_HELP        = 31,
--        INDEX_OPT_SAVE_OPTS        = 32,
--        INDEX_OPT_LOAD_OPTS        = 33
+-        INDEX_OPT_MORE_HELP        = 31
 +        INDEX_OPT_MLOCK            = 29,
 +        INDEX_OPT_VERSION          = 30,
 +        INDEX_OPT_HELP             = 31,
-+        INDEX_OPT_MORE_HELP        = 32,
-+        INDEX_OPT_SAVE_OPTS        = 33,
-+        INDEX_OPT_LOAD_OPTS        = 34
++        INDEX_OPT_MORE_HELP        = 32
  } teOptIndex;
  
--#define OPTION_CT    34
-+#define OPTION_CT    35
- #define NTPD_VERSION       "4.2.4p0"
- #define NTPD_FULL_VERSION  "ntpd - NTP daemon program - Ver. 4.2.4p0"
+-#define OPTION_CT    32
++#define OPTION_CT    33
+ #define NTPD_VERSION       "4.2.4p2"
+ #define NTPD_FULL_VERSION  "ntpd - NTP daemon program - Ver. 4.2.4p2"
  
-@@ -182,6 +183,10 @@
+@@ -180,6 +181,10 @@ typedef enum {
  #  warning undefining MODIFYMMTIMER due to option name conflict
  #  undef   MODIFYMMTIMER
  # endif
@@ -119,7 +115,7 @@
  # ifdef    NOFORK
  #  warning undefining NOFORK due to option name conflict
  #  undef   NOFORK
-@@ -251,6 +256,7 @@
+@@ -249,6 +254,7 @@ typedef enum {
  # undef LOGFILE
  # undef NOVIRTUALIPS
  # undef MODIFYMMTIMER
@@ -127,7 +123,7 @@
  # undef NOFORK
  # undef NICE
  # undef PIDFILE
-@@ -293,6 +299,7 @@
+@@ -291,6 +297,7 @@ typedef enum {
  #ifdef SYS_WINNT
  #define VALUE_OPT_MODIFYMMTIMER  'M'
  #endif /* SYS_WINNT */

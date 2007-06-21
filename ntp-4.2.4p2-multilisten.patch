@@ -1,6 +1,6 @@
---- ntp-4.2.4p0/include/ntpd.h.multilisten	2007-05-17 19:26:58.000000000 +0200
-+++ ntp-4.2.4p0/include/ntpd.h	2007-05-17 19:28:09.000000000 +0200
-@@ -79,6 +79,8 @@
+--- ntp-4.2.4p2/include/ntpd.h.multilisten	2006-12-28 13:03:06.000000000 +0100
++++ ntp-4.2.4p2/include/ntpd.h	2007-06-21 10:31:38.000000000 +0200
+@@ -79,6 +79,8 @@ extern  void	enable_broadcast P((struct 
  extern  void	enable_multicast_if P((struct interface *, struct sockaddr_storage *));
  extern	void	interface_dump	 P((struct interface *));
  
@@ -9,8 +9,8 @@
  extern  void    interface_update P((interface_receiver_t, void *));
  extern	void	init_io 	P((void));
  extern	void	input_handler	P((l_fp *));
---- ntp-4.2.4p0/ntpd/ntp_io.c.multilisten	2007-05-17 19:26:58.000000000 +0200
-+++ ntp-4.2.4p0/ntpd/ntp_io.c	2007-05-17 19:27:25.000000000 +0200
+--- ntp-4.2.4p2/ntpd/ntp_io.c.multilisten	2007-05-29 13:02:33.000000000 +0200
++++ ntp-4.2.4p2/ntpd/ntp_io.c	2007-06-21 10:33:58.000000000 +0200
 @@ -66,7 +66,15 @@
  #endif  /* IPv6 Support */
  
@@ -28,25 +28,31 @@
  
  #if defined(SO_TIMESTAMP) && defined(SCM_TIMESTAMP)
  #if defined(CMSG_FIRSTHDR)
-@@ -921,11 +929,12 @@
+@@ -924,14 +932,15 @@ address_okay(struct interface *iface) {
  	/*
  	 * Check if the interface is specified
  	 */
 -	if (specific_interface != NULL) {
--		if (strcasecmp(isc_if->name, specific_interface) == 0)
+-		if (strcasecmp(iface->name, specific_interface) == 0) {
+-			DPRINTF(4, ("address_okay: specific interface name matched - OK\n"));
 -			return (ISC_TRUE);
--		else
+-		} else {
+-			DPRINTF(4, ("address_okay: specific interface name NOT matched - FAIL\n"));
 -			return (ISC_FALSE);
-+	if (ISC_LIST_HEAD(specific_interface_list)) {
-+		struct specific_interface *iface;
-+		for (iface = ISC_LIST_HEAD(specific_interface_list); iface != NULL; iface = ISC_LIST_NEXT(iface, link))
-+			if (strcasecmp(isc_if->name, iface->name) == 0)
-+				return (ISC_TRUE);
-+		return (ISC_FALSE);
+-		}
++ 	if (ISC_LIST_HEAD(specific_interface_list)) {
++ 		struct specific_interface *iface_;
++ 		for (iface_ = ISC_LIST_HEAD(specific_interface_list); iface_ != NULL; iface_ = ISC_LIST_NEXT(iface_, link))
++ 			if (strcasecmp(iface->name, iface_->name) == 0) {
++				DPRINTF(4, ("address_okay: specific interface name matched - OK\n"));
++ 				return (ISC_TRUE);
++			}
++		DPRINTF(4, ("address_okay: specific interface name NOT matched - FAIL\n"));
++ 		return (ISC_FALSE);
  	}
  	else {
  		if (listen_to_virtual_ips == 0  && 
-@@ -1037,6 +1046,23 @@
+@@ -1044,6 +1053,23 @@ refresh_interface(struct interface * int
  #endif /* !OS_MISSES_SPECIFIC_ROUTE_UPDATES */
  }
  
@@ -70,8 +76,8 @@
  /*
   * interface_update - externally callable update function
   */
---- ntp-4.2.4p0/ntpd/cmd_args.c.multilisten	2006-12-28 13:03:26.000000000 +0100
-+++ ntp-4.2.4p0/ntpd/cmd_args.c	2007-05-17 19:29:04.000000000 +0200
+--- ntp-4.2.4p2/ntpd/cmd_args.c.multilisten	2006-12-28 13:03:26.000000000 +0100
++++ ntp-4.2.4p2/ntpd/cmd_args.c	2007-06-21 10:31:38.000000000 +0200
 @@ -22,7 +22,6 @@
   * Definitions of things either imported from or exported to outside
   */
@@ -80,9 +86,9 @@
  extern int default_ai_family;
  
  #ifdef HAVE_NETINFO
---- ntp-4.2.4p0/ntpd/ntpd.c.multilisten	2007-05-17 19:26:58.000000000 +0200
-+++ ntp-4.2.4p0/ntpd/ntpd.c	2007-05-17 19:27:25.000000000 +0200
-@@ -156,7 +156,6 @@
+--- ntp-4.2.4p2/ntpd/ntpd.c.multilisten	2007-06-21 10:31:38.000000000 +0200
++++ ntp-4.2.4p2/ntpd/ntpd.c	2007-06-21 10:31:38.000000000 +0200
+@@ -156,7 +156,6 @@ volatile int debug = 0;		/* No debugging
  #endif
  
  int	listen_to_virtual_ips = 1;
@@ -90,7 +96,7 @@
  
  /*
   * No-fork flag.  If set, we do not become a background daemon.
-@@ -539,18 +538,14 @@
+@@ -537,18 +536,14 @@ ntpdmain(
  	if (HAVE_OPT( NOVIRTUALIPS ))
  		listen_to_virtual_ips = 0;
  
