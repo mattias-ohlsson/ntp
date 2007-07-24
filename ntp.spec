@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -12,6 +12,8 @@ Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
 Source5: ntpstat-0.2.tgz
+Source6: ntp.step-tickers
+Source8: ntp.cryptopw
 
 # new find-requires
 Source7: filter-requires-ntp.sh
@@ -21,10 +23,12 @@ Patch2: ntp-4.2.4p0-droproot.patch
 Patch3: ntp-4.2.4-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
 Patch5: ntp-4.2.4-linkfastmath.patch
+Patch6: ntp-4.2.4p2-tentative.patch
+Patch7: ntp-4.2.4p2-noseed.patch
 Patch8: ntp-4.2.4p2-multilisten.patch
 Patch9: ntp-4.2.4-html2man.patch
 Patch10: ntp-4.2.4-htmldoc.patch
-Patch11: ntp-stable-4.2.0a-20050816-keyfile.patch
+Patch11: ntp-4.2.4p2-filegen.patch
 Patch12: ntp-4.2.4-sprintf.patch
 Patch14: ntp-4.2.4p2-mlock.patch
 Patch17: ntp-4.2.4p0-sleep.patch
@@ -57,10 +61,12 @@ time synchronized via the NTP protocol.
 %patch2 -p1 -b .droproot
 %patch3 -p1 -b .groups
 %patch4 -p1 -b .authkey
+%patch6 -p1 -b .tentative
+%patch7 -p1 -b .noseed
 %patch8 -p1 -b .multilisten
 %patch9 -p1 -b .html2man
 %patch10 -p1 -b .htmldoc
-%patch11 -p1 -b .keyfile
+%patch11 -p1 -b .filegen
 %patch12 -p1 -b .sprintf
 %patch14 -p1 -b .mlock
 %patch17 -p1 -b .sleep
@@ -78,10 +84,13 @@ if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev
 	rm -f pietest
 fi
 %configure \
-	--sysconfdir=%{_sysconfdir}/ntp \
+	--sysconfdir=%{_sysconfdir}/ntp/crypto \
 	--with-openssl-libdir=%{_libdir} \
 	--enable-all-clocks --enable-parse-clocks \
 	--enable-linuxcaps
+echo '#define KEYFILE "%{_sysconfdir}/ntp/keys"' >> config.h
+echo '#define NTP_VAR "%{_localstatedir}/log/ntpstats/"' >> config.h
+
 make %{?_smp_mflags}
 
 sed -i 's|$ntpq = "ntpq"|$ntpq = "%{_sbindir}/ntpq"|' scripts/ntptrace
@@ -119,13 +128,17 @@ find htmldoc -type f | xargs chmod 644
 find htmldoc -type d | xargs chmod 755
 
 pushd $RPM_BUILD_ROOT
-mkdir -p .%{_sysconfdir}/{ntp,sysconfig} .%{_initrddir}
-mkdir -p .%{_localstatedir}/lib/ntp
-touch .%{_localstatedir}/lib/ntp/drift .%{_sysconfdir}/ntp/step-tickers
-install -m644 %{SOURCE1} .%{_sysconfdir}
-install -m600 %{SOURCE2} .%{_sysconfdir}/ntp/keys
-install -m755 %{SOURCE3} .%{_initrddir}/ntpd
-install -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
+mkdir -p .%{_sysconfdir}/{ntp,ntp/crypto,sysconfig} .%{_initrddir}
+mkdir -p .%{_localstatedir}/{lib/ntp,log/ntpstats}
+touch .%{_localstatedir}/lib/ntp/drift
+sed -e 's|ETCNTP|%{_sysconfdir}/ntp|' -e 's|VARNTP|%{_localstatedir}/lib/ntp|' \
+	< %{SOURCE1} > .%{_sysconfdir}/ntp.conf
+touch -r %{SOURCE1} .%{_sysconfdir}/ntp.conf
+install -p -m600 %{SOURCE2} .%{_sysconfdir}/ntp/keys
+install -p -m755 %{SOURCE3} .%{_initrddir}/ntpd
+install -p -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
+install -p -m644 %{SOURCE6} .%{_sysconfdir}/ntp/step-tickers
+install -p -m600 %{SOURCE8} .%{_sysconfdir}/ntp/crypto/pw
 popd
 
 %clean
@@ -154,7 +167,7 @@ fi
 
 %files
 %defattr(-,root,root)
-%doc htmldoc/html/* NEWS TODO 
+%doc htmldoc/html/* COPYRIGHT ChangeLog NEWS TODO 
 %{_sbindir}/ntp-wait
 %{_sbindir}/ntptrace
 %{_sbindir}/ntp-keygen
@@ -166,18 +179,33 @@ fi
 %{_sbindir}/sntp
 %{_sbindir}/tickadj
 %{_initrddir}/ntpd
-%config(noreplace)	%{_sysconfdir}/sysconfig/ntpd
-%config(noreplace)	%{_sysconfdir}/ntp.conf
-%dir 	%{_sysconfdir}/ntp
+%config(noreplace) %{_sysconfdir}/sysconfig/ntpd
+%dir %{_sysconfdir}/ntp
+%config(noreplace) %{_sysconfdir}/ntp.conf
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 %config(noreplace) %{_sysconfdir}/ntp/keys
+%dir %attr(750,root,ntp) %{_sysconfdir}/ntp/crypto
+%config(noreplace) %{_sysconfdir}/ntp/crypto/pw
 %dir %attr(-,ntp,ntp) %{_localstatedir}/lib/ntp
 %ghost %attr(644,ntp,ntp) %{_localstatedir}/lib/ntp/drift
+%dir %attr(-,ntp,ntp) %{_localstatedir}/log/ntpstats
 %{_mandir}/man[58]/*.[58]*
 %{_bindir}/ntpstat
 
 
 %changelog
+* Tue Jul 24 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-2
+- ignore tentative addresses (#246297)
+- improve init script (#247003)
+- fix sleep patch
+- ease Autokey setup (#139673)
+  - change default keysdir to /etc/ntp/crypto
+  - set crypto password in /etc/ntp/crypto/pw
+  - don't use randfile if /dev/urandom is used by OpenSSL
+- change default statsdir to /var/log/ntpstats/, use statistics type
+  as default filename
+- package more doc files
+
 * Thu Jun 21 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-1
 - update to 4.2.4p2
 

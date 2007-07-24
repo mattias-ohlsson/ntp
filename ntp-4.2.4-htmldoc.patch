@@ -34,10 +34,37 @@
 +			<dd>Listen on interface. This option may appear an unlimited number of times.
  			<dt><tt>-k <i>keyfile</i></tt>
 -			<dd>Specify the name and path of the symmetric key file, default <tt>/etc/ntp.keys</tt>. This is the same operation as the <tt>keys <i>keyfile</i></tt> configuration command.
-+			<dd>Specify the name and path of the symmetric key file, default <tt>/etc/ntp/keys</tt>. This is the same operation as the <tt>keys <i>keyfile</i></tt> configuration command.
++			<dd>Specify the name and path of the symmetric key file. This is the same operation as the <tt>keys <i>keyfile</i></tt> configuration command.
  			<dt><tt>-l <i>logfile</i></tt>
  			<dd>Specify the name and path of the log file. The default is the system log file. This is the same operation as the <tt>logfile <i>logfile</i></tt> configuration command.
  			<dt><tt>-L</tt>
+@@ -143,7 +149,7 @@
+ 			</tr>
+ 			<tr>
+ 				<td width="30%">frequency file</td>
+-				<td width="30%"><tt>/etc/ntp.drift</tt></td>
++				<td width="30%"><tt>none</tt></td>
+ 				<td width="20%"><tt>-f</tt></td>
+ 				<td width="20%"><tt>driftfile</tt></td>
+ 			</tr>
+@@ -167,14 +173,14 @@
+ 			</tr>
+ 			<tr>
+ 				<td width="30%">statistics path</td>
+-				<td width="30%"><tt>/var/NTP</tt></td>
++				<td width="30%"><tt>/var/log/ntpstats/</tt></td>
+ 				<td width="20%"><tt>-s</tt></td>
+ 				<td width="20%"><tt>statsdir</tt></td>
+ 			</tr>
+ 			<tr>
+ 				<td width="30%">keys path</td>
+-				<td width="30%"><tt>/usr/local/etc</tt></td>
+-				<td width="20%"><tt>-k</tt></td>
++				<td width="30%"><tt>/etc/ntp/crypto</tt></td>
++				<td width="20%"><tt>none</tt></td>
+ 				<td width="20%"><tt>keysdir</tt></td>
+ 			</tr>
+ 		</table>
 --- ntp-4.2.4/html/ntpdate.html.htmldoc	2007-01-05 15:40:59.000000000 +0100
 +++ ntp-4.2.4/html/ntpdate.html	2007-01-05 15:40:59.000000000 +0100
 @@ -18,9 +18,9 @@
@@ -119,9 +146,29 @@
  		</dl>
  		<h4>Bugs</h4>
  		<p>This program makes no attempt to improve accuracy by doing multiple samples.</p>
+--- ntp-4.2.4p2/html/authopt.html.htmldoc	2006-12-28 13:02:54.000000000 +0100
++++ ntp-4.2.4p2/html/authopt.html	2007-07-18 18:04:37.000000000 +0200
+@@ -74,7 +74,7 @@
+ 			<dt><tt>controlkey <i>key</i></tt>
+ 			<dd>Specifies the key identifier to use with the <a href="ntpq.html"><tt>ntpq</tt></a> utility, which uses the standard protocol defined in RFC-1305. The <tt><i>key</i></tt> argument is the key identifier for a trusted key, where the value can be in the range 1 to 65,534, inclusive.
+ 			<dt><tt>crypto [cert <i>file</i>] [leap <i>file</i>] [randfile <i>file</i>] [host <i>file</i>] [sign <i>file</i>] [ident <i>scheme</i>] [iffpar <i>file</i>] [gqpar <i>file</i>] [mvpar <i>file</i>] [pw <i>password</i>]</tt>
+-			<dd>This command requires the OpenSSL library. It activates public key cryptography, selects the message digest and signature encryption scheme and loads the required private and public values described above. If one or more files are left unspecified, the default names are used as described above. Unless the complete path and name of the file are specified, the location of a file is relative to the keys directory specified in the <tt>keysdir</tt> command or default <tt>/usr/local/etc</tt>. Following are the subcommands:
++			<dd>This command requires the OpenSSL library. It activates public key cryptography, selects the message digest and signature encryption scheme and loads the required private and public values described above. If one or more files are left unspecified, the default names are used as described above. Unless the complete path and name of the file are specified, the location of a file is relative to the keys directory specified in the <tt>keysdir</tt> command or default <tt>/etc/ntp/crypto</tt>. Following are the subcommands:
+ 				<dl>
+ 					<dt><tt>cert <i>file</i></tt>
+ 					<dd>Specifies the location of the required host public certificate file. This overrides the link <tt>ntpkey_cert_<i>hostname</i></tt> in the keys directory.
+@@ -103,7 +103,7 @@
+ 			<dt><tt>keys <i>keyfile</i></tt>
+ 			<dd>Specifies the complete path and location of the MD5 key file containing the keys and key identifiers used by <tt>ntpd</tt>, <tt>ntpq</tt> and <tt>ntpdc</tt> when operating with symmetric key cryptography. This is the same operation as the <tt>-k </tt>command line option.
+ 			<dt><tt>keysdir <i>path</i></tt>
+-			<dd>This command specifies the default directory path for cryptographic keys, parameters and certificates. The default is <tt>/usr/local/etc/</tt>.
++			<dd>This command specifies the default directory path for cryptographic keys, parameters and certificates. The default is <tt>/etc/ntp/crypto</tt>.
+ 			<dt><tt>requestkey <i>key</i></tt>
+ 			<dd>Specifies the key identifier to use with the <a href="ntpdc.html"><tt>ntpdc</tt></a> utility program, which uses a proprietary protocol specific to this implementation of <tt>ntpd</tt>. The <tt><i>key</i></tt> argument is a key identifier for the trusted key, where the value can be in the range 1 to 65,534, inclusive.
+ 			<dt><tt>revoke [<i>logsec</i>]</tt>
 --- ntp-4.2.4/html/keygen.html.htmldoc	2006-06-06 22:16:00.000000000 +0200
 +++ ntp-4.2.4/html/keygen.html	2007-01-05 15:40:59.000000000 +0100
-@@ -32,7 +32,7 @@
+@@ -32,17 +32,17 @@
  		</ul>
  		<hr>
  		<h4 id="synop">Synopsis</h4>
@@ -130,6 +177,18 @@
  		<h4 id="descrip">Description</h4>
  		<p>This program generates cryptographic data files used by the NTPv4 authentication and identification schemes. It generates MD5 key files used in symmetric key cryptography. In addition, if the OpenSSL software library has been installed, it generates keys, certificate and identity files used in public key cryptography. These files are used for cookie encryption, digital signature and challenge/response identification algorithms compatible with the Internet standard security infrastructure.</p>
  		<p>By default, files are not encrypted by <tt>ntp-keygen</tt>. The <tt>-p <i>password</i></tt> option specifies the write password and <tt>-q <i>password</i></tt> option the read password for previously encrypted files. The <tt>ntp-keygen</tt> program prompts for the password if it reads an encrypted file and the password is missing or incorrect. If an encrypted file is read successfully and no write password is specified, the read password is used as the write password by default.</p>
+ 		<p>The <tt>ntpd</tt> configuration command <tt>crypto pw <i>password</i></tt> specifies the read password for previously encrypted files. The daemon expires on the spot if the password is missing or incorrect. For convenience, if a file has been previously encrypted, the default read password is the name of the host running the program. If the previous write password is specified as the host name, these files can be read by that host with no explicit password.</p>
+ 		<p>All files are in PEM-encoded printable ASCII format, so they can be embedded as MIME attachments in mail to other sites and certificate authorities. File names begin with the prefix <tt>ntpkey_</tt> and end with the postfix <tt><i>_hostname.filestamp</i></tt>, where <tt><i>hostname</i></tt> is usually the string returned by the Unix <tt>gethostname()</tt> routine, and <tt><i>filestamp</i></tt> is the NTP seconds when the file was generated, in decimal digits. This both guarantees uniqueness and simplifies maintenance procedures, since all files can be quickly removed by a <tt>rm ntpkey*</tt> command or all files generated at a specific time can be removed by a <tt>rm *<i>filestamp</i></tt> command. To further reduce the risk of misconfiguration, the first two lines of a file contain the file name and generation date and time as comments.</p>
+-		<p>All files are installed by default in the keys directory <tt>/usr/local/etc</tt>, which is normally in a shared filesystem in NFS-mounted networks. The actual location of the keys directory and each file can be overridden by configuration commands, but this is not recommended. Normally, the files for each host are generated by that host and used only by that host, although exceptions exist as noted later on this page.</p>
++		<p>All files are installed by default in the keys directory <tt>/etc/ntp/crypto</tt>. The actual location of the keys directory and each file can be overridden by configuration commands, but this is not recommended. Normally, the files for each host are generated by that host and used only by that host, although exceptions exist as noted later on this page.</p>
+ 		<p>Normally, files containing private values, including the host key, sign key and identification parameters, are permitted root read/write-only; while others containing public values are permitted world readable. Alternatively, files containing private values can be encrypted and these files permitted world readable, which simplifies maintenance in shared file systems. Since uniqueness is insured by the hostname and file name extensions, the files for a NFS server and dependent clients can all be installed in the same shared directory.</p>
+ 		<p>The recommended practice is to keep the file name extensions when installing a file and to install a soft link from the generic names specified elsewhere on this page to the generated files. This allows new file generations to be activated simply by changing the link. If a link is present, <tt>ntpd</tt> follows it to the file name to extract the filestamp. If a link is not present, <tt>ntpd</tt> extracts the filestamp from the file itself. This allows clients to verify that the file and generation times are always current. The <tt>ntp-keygen</tt> program uses the same extension for all files generated at one time, so each generation is distinct and can be readily recognized in monitoring data.</p>
+ 		<h4 id="run">Running the program</h4>
+-		<p>The safest way to run the <tt>ntp-keygen</tt> program is logged in directly as root. The recommended procedure is change to the keys directory, usually <tt>/ust/local/etc</tt>, then run the program. When run for the first time, or if all <tt>ntpkey</tt> files have been removed, the program generates a RSA host key file and matching RSA-MD5 certificate file, which is all that is necessary in many cases. The program also generates soft links from the generic names to the respective files. If run again, the program uses the same host key file, but generates a new certificate file and link.</p>
++		<p>The safest way to run the <tt>ntp-keygen</tt> program is logged in directly as root. The recommended procedure is change to the keys directory, usually <tt>/etc/ntp/crypto</tt>, then run the program. When run for the first time, or if all <tt>ntpkey</tt> files have been removed, the program generates a RSA host key file and matching RSA-MD5 certificate file, which is all that is necessary in many cases. The program also generates soft links from the generic names to the respective files. If run again, the program uses the same host key file, but generates a new certificate file and link.</p>
+ 		<p>The host key is used to encrypt the cookie when required and so must be RSA type. By default, the host key is also the sign key used to encrypt signatures. When necessary, a different sign key can be specified and this can be either RSA or DSA type. By default, the message digest type is MD5, but any combination of sign key type and message digest type supported by the OpenSSL library can be specified, including those using the MD2, MD5, SHA, SHA1, MDC2 and RIPE160 message digest algorithms. However, the scheme specified in the certificate must be compatible with the sign key. Certificates using any digest algorithm are compatible with RSA sign keys; however, only SHA and SHA1 certificates are compatible with DSA sign keys.</p>
+ 		<p>Private/public key files and certificates are compatible with other OpenSSL applications and very likely other libraries as well. Certificates or certificate requests derived from them should be compatible with extant industry practice, although some users might find the interpretation of X509v3 extension fields somewhat liberal. However, the identification parameter files, although encoded as the other files, are probably not compatible with anything other than Autokey.</p>
+ 		<p>Running the program as other than root and using the Unix <tt>su</tt> command to assume root may not work properly, since by default the OpenSSL library looks for the random seed file <tt>.rnd</tt> in the user home directory. However, there should be only one <tt>.rnd</tt>, most conveniently in the root directory, so it is convenient to define the <tt>$RANDFILE</tt> environment variable used by the OpenSSL library as the path to <tt>/.rnd</tt>.</p>
 @@ -81,11 +81,13 @@
  			<dd>Set the suject name to <i>name</i>. This is used as the subject field in certificates and in the file name for host and sign keys.
  			<dt><tt>-M</tt>

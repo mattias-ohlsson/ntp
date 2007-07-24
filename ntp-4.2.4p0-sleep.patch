@@ -140,7 +140,7 @@
 +
 +	for (ts_last_index = 0; ts_last_index < TS_LAST_SIZE; ts_last_index++)
 +		L_CLR(&ts_last[ts_last_index]);
-+	time_elapsed = 0;
++	time_elapsed = ts_last_index = 0;
 +
  	for (;;)
  	{

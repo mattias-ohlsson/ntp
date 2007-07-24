@@ -1,0 +1,140 @@
+--- ntp-4.2.4p2/html/keygen.html.noseed	2007-07-18 16:03:45.000000000 +0200
++++ ntp-4.2.4p2/html/keygen.html	2007-07-18 16:03:33.000000000 +0200
+@@ -102,6 +102,7 @@
+ 		<p>All cryptographically sound key generation schemes must have means to randomize the entropy seed used to initialize the internal pseudo-random number generator used by the library routines. The OpenSSL library uses a designated random seed file for this purpose. The file must be available when starting the NTP daemon and <tt>ntp-keygen</tt> program. If a site supports OpenSSL or its companion OpenSSH, it is very likely that means to do this are already available.</p>
+ 		<p>It is important to understand that entropy must be evolved for each generation, for otherwise the random number sequence would be predictable. Various means dependent on external events, such as keystroke intervals, can be used to do this and some systems have built-in entropy sources. Suitable means are described in the OpenSSL software documentation, but are outside the scope of this page.</p>
+ 		<p>The entropy seed used by the OpenSSL library is contained in a file, usually called <tt>.rnd</tt>, which must be available when starting the NTP daemon or the <tt>ntp-keygen</tt> program. The NTP daemon will first look for the file using the path specified by the <tt>randfile</tt> subcommand of the <tt>crypto</tt> configuration command. If not specified in this way, or when starting the <tt>ntp-keygen</tt> program, the OpenSSL library will look for the file using the path specified by the <tt>RANDFILE</tt> environment variable in the user home directory, whether root or some other user. If the <tt>RANDFILE</tt> environment variable is not present, the library will look for the <tt>.rnd</tt> file in the user home directory. If the file is not available or cannot be written, the daemon exits with a message to the system log and the program exits with a suitable error message.</p>
++		<p>On systems that provide /dev/urandom, the randomness device is used instead and the file specified by the <tt>randfile</tt> subcommand or the <tt>RANDFILE</tt> environment variable is ignored.</p>
+ 		<h4 id="priv">Cryptographic Data Files</h4>
+ 		<p>All other file formats begin with two lines. The first contains the file name, including the generated host name and filestamp. The second contains the datestamp in conventional Unix <tt>date</tt> format. Lines beginning with <tt>#</tt> are considered comments and ignored by the <i><tt>ntp-keygen </tt></i>program and <tt>ntpd</tt> daemon. Cryptographic values are encoded first using ASN.1 rules, then encrypted if necessary, and finally written PEM-encoded printable ASCII format preceded and followed by MIME content identifier lines.</p>
+ 		<p id="symkey">The format of the symmetric keys file is somewhat different than the other files in the interest of backward compatibility. Since DES-CBC is deprecated in NTPv4, the only key format of interest is MD5 alphanumeric strings. Following hte heard the keys are entered one per line in the format</p>
+--- ntp-4.2.4p2/util/ntp-keygen.c.noseed	2007-06-20 13:03:23.000000000 +0200
++++ ntp-4.2.4p2/util/ntp-keygen.c	2007-07-18 16:03:45.000000000 +0200
+@@ -362,20 +362,24 @@ main(
+ 	 */
+ 	ERR_load_crypto_strings();
+ 	OpenSSL_add_all_algorithms();
+-	if (RAND_file_name(pathbuf, MAXFILENAME) == NULL) {
+-		fprintf(stderr, "RAND_file_name %s\n",
+-		    ERR_error_string(ERR_get_error(), NULL));
+-		return (-1);
+-	}
+-	temp = RAND_load_file(pathbuf, -1);
+-	if (temp == 0) {
++
++	/* But only if openssl doesn't use /dev/urandom */
++	if (RAND_status() != 1) {
++		if (RAND_file_name(pathbuf, MAXFILENAME) == NULL) {
++			fprintf(stderr, "RAND_file_name %s\n",
++			    ERR_error_string(ERR_get_error(), NULL));
++			return (-1);
++		}
++		temp = RAND_load_file(pathbuf, -1);
++		if (temp == 0) {
++			fprintf(stderr,
++			    "RAND_load_file %s not found or empty\n", pathbuf);
++			return (-1);
++		}
+ 		fprintf(stderr,
+-		    "RAND_load_file %s not found or empty\n", pathbuf);
+-		return (-1);
++		    "Random seed file %s %u bytes\n", pathbuf, temp);
++		RAND_add(&epoch, sizeof(epoch), 4.0);
+ 	}
+-	fprintf(stderr,
+-	    "Random seed file %s %u bytes\n", pathbuf, temp);
+-	RAND_add(&epoch, sizeof(epoch), 4.0);
+ #endif
+ 
+ 	/*
+--- ntp-4.2.4p2/ntpd/ntp_crypto.c.noseed	2006-12-28 13:03:28.000000000 +0100
++++ ntp-4.2.4p2/ntpd/ntp_crypto.c	2007-07-18 16:03:45.000000000 +0200
+@@ -3878,6 +3878,9 @@ crypto_setup(void)
+ 	memset(&pubkey, 0, sizeof(pubkey));
+ 	memset(&tai_leap, 0, sizeof(tai_leap));
+ 
++	ERR_load_crypto_strings();
++	OpenSSL_add_all_algorithms();
++
+ 	/*
+ 	 * Load required random seed file and seed the random number
+ 	 * generator. Be default, it is found in the user home
+@@ -3885,40 +3888,49 @@ crypto_setup(void)
+ 	 * depending on the system. Wiggle the contents a bit and write
+ 	 * it back so the sequence does not repeat when we next restart.
+ 	 */
+-	ERR_load_crypto_strings();
+-	if (rand_file == NULL) {
+-		if ((RAND_file_name(filename, MAXFILENAME)) != NULL) {
++
++	/* But only if openssl doesn't use /dev/urandom */
++	if (RAND_status() != 1) {
++		if (rand_file == NULL) {
++			if ((RAND_file_name(filename, MAXFILENAME)) != NULL) {
++				rand_file = emalloc(strlen(filename) + 1);
++				strcpy(rand_file, filename);
++			}
++		} else if (*rand_file != '/') {
++			snprintf(filename, MAXFILENAME, "%s/%s", keysdir,
++					rand_file);
++			free(rand_file);
+ 			rand_file = emalloc(strlen(filename) + 1);
+ 			strcpy(rand_file, filename);
+ 		}
+-	} else if (*rand_file != '/') {
+-		snprintf(filename, MAXFILENAME, "%s/%s", keysdir,
+-		    rand_file);
+-		free(rand_file);
+-		rand_file = emalloc(strlen(filename) + 1);
+-		strcpy(rand_file, filename);
+-	}
+-	if (rand_file == NULL) {
+-		msyslog(LOG_ERR,
+-		    "crypto_setup: random seed file not specified");
+-		exit (-1);
+-	}
+-	if ((bytes = RAND_load_file(rand_file, -1)) == 0) {
+-		msyslog(LOG_ERR,
+-		    "crypto_setup: random seed file %s not found\n",
+-		    rand_file);
+-		exit (-1);
+-	}
+-	get_systime(&seed);
+-	RAND_seed(&seed, sizeof(l_fp));
+-	RAND_write_file(rand_file);
+-	OpenSSL_add_all_algorithms();
++		if (rand_file == NULL) {
++			msyslog(LOG_ERR,
++				"crypto_setup: random seed file not specified");
++			exit (-1);
++		}
++		if ((bytes = RAND_load_file(rand_file, -1)) == 0) {
++			msyslog(LOG_ERR,
++				"crypto_setup: random seed file %s not found\n",
++				rand_file);
++			exit (-1);
++		}
++		get_systime(&seed);
++		RAND_seed(&seed, sizeof(l_fp));
++		RAND_write_file(rand_file);
+ #ifdef DEBUG
+-	if (debug)
+-		printf(
+-		    "crypto_setup: OpenSSL version %lx random seed file %s bytes read %d\n",
+-		    SSLeay(), rand_file, bytes);
++		if (debug)
++			printf(
++				"crypto_setup: OpenSSL version %lx random seed file %s bytes read %d\n",
++				SSLeay(), rand_file, bytes);
+ #endif
++	} else {
++#ifdef DEBUG
++		if (debug)
++			printf(
++				"crypto_setup: OpenSSL version %lx seeding not required\n",
++				SSLeay());
++#endif
++	}
+ 
+ 	/*
+ 	 * Load required host key from file "ntpkey_host_<hostname>". It
