@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -194,6 +194,9 @@ fi
 
 
 %changelog
+* Wed Jul 25 2007 Jesse Keating <jkeating@redhat.com> - 4.2.4p2-3
+- Rebuild for RH #249435
+
 * Tue Jul 24 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-2
 - ignore tentative addresses (#246297)
 - improve init script (#247003)
