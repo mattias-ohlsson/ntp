@@ -3,7 +3,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p2
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: distributable
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
@@ -30,6 +30,7 @@ Patch9: ntp-4.2.4-html2man.patch
 Patch10: ntp-4.2.4-htmldoc.patch
 Patch11: ntp-4.2.4p2-filegen.patch
 Patch12: ntp-4.2.4-sprintf.patch
+Patch13: ntp-4.2.4p2-loopback.patch
 Patch14: ntp-4.2.4p2-mlock.patch
 Patch17: ntp-4.2.4p0-sleep.patch
 Patch18: ntp-4.2.4p0-bcast.patch
@@ -40,6 +41,8 @@ Requires(pre): shadow-utils
 Requires(post): /sbin/chkconfig
 Requires(preun): /sbin/chkconfig /sbin/service
 Requires(postun): /sbin/service
+# Require libreadline linked with libtinfo
+Requires: readline >= 5.2-3
 BuildRequires: libcap-devel openssl-devel readline-devel perl-HTML-Parser
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -68,6 +71,7 @@ time synchronized via the NTP protocol.
 %patch10 -p1 -b .htmldoc
 %patch11 -p1 -b .filegen
 %patch12 -p1 -b .sprintf
+%patch13 -p1 -b .loopback
 %patch14 -p1 -b .mlock
 %patch17 -p1 -b .sleep
 %patch18 -p1 -b .bcast
@@ -194,6 +198,10 @@ fi
 
 
 %changelog
+* Mon Aug 13 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-4
+- allow loopback to share non-loopback address (#249226)
+- require readline >= 5.2-3 (#250917)
+
 * Wed Jul 25 2007 Jesse Keating <jkeating@redhat.com> - 4.2.4p2-3
 - Rebuild for RH #249435
 
