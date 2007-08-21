@@ -3,8 +3,21 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p2
-Release: 4%{?dist}
-License: distributable
+Release: 5%{?dist}
+# primary license (COPYRIGHT) : MIT
+# ElectricFence/ (not used) : GPLv2
+# include/ntif.h : BSD
+# include/rsa_md5.h : BSD with advertising
+# libntp/md5c.c : BSD with advertising
+# libntp/adjtimex.c : BSD
+# libopts/ : BSD or GPLv2+
+# libparse/ : BSD
+# ntpd/refclock_jjy.c: MIT
+# ntpd/refclock_oncore.c: BEERWARE License (aka, Public Domain)
+# ntpstat-0.2/ : GPLv2
+# util/ansi2knr.c (not used) : GPL+
+# sntp/ (not packaged) : MSNTP
+License: (MIT and BSD and BSD with advertising) and GPLv2
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
 Source1: ntp.conf
@@ -32,6 +45,8 @@ Patch11: ntp-4.2.4p2-filegen.patch
 Patch12: ntp-4.2.4-sprintf.patch
 Patch13: ntp-4.2.4p2-loopback.patch
 Patch14: ntp-4.2.4p2-mlock.patch
+Patch15: ntp-4.2.4p2-clockselect.patch
+Patch16: ntp-4.2.4p2-nosntp.patch
 Patch17: ntp-4.2.4p0-sleep.patch
 Patch18: ntp-4.2.4p0-bcast.patch
 Patch19: ntp-4.2.4p0-retcode.patch
@@ -73,6 +88,8 @@ time synchronized via the NTP protocol.
 %patch12 -p1 -b .sprintf
 %patch13 -p1 -b .loopback
 %patch14 -p1 -b .mlock
+%patch15 -p1 -b .clockselect
+%patch16 -p1 -b .nosntp
 %patch17 -p1 -b .sleep
 %patch18 -p1 -b .bcast
 %patch19 -p1 -b .retcode
@@ -113,7 +130,6 @@ rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT bindir=%{_sbindir} install
 
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man{5,8}
-mv $RPM_BUILD_ROOT%{_mandir}/man1/sntp.1 $RPM_BUILD_ROOT%{_mandir}/man8/sntp.8
 rm -rf $RPM_BUILD_ROOT%{_mandir}/man1
 
 pushd ntpstat-0.2
@@ -127,7 +143,8 @@ sed -i 's/\(\.TH[a-zA-Z ]*\)[1-9]\(.*\)/\18\2/' $RPM_BUILD_ROOT%{_mandir}/man8/*
 cp -r html/man/man[58] $RPM_BUILD_ROOT%{_mandir}
 
 # prepare html documentation
-find html | egrep '\.(html|css|txt|jpg|gif)$' | grep -v '/build/' | cpio -pmd htmldoc
+find html | egrep '\.(html|css|txt|jpg|gif)$' | grep -v '/build/\|sntp' | \
+	cpio -pmd htmldoc
 find htmldoc -type f | xargs chmod 644
 find htmldoc -type d | xargs chmod 755
 
@@ -180,7 +197,6 @@ fi
 %{_sbindir}/ntpdc
 %{_sbindir}/ntpq
 %{_sbindir}/ntptime
-%{_sbindir}/sntp
 %{_sbindir}/tickadj
 %{_initrddir}/ntpd
 %config(noreplace) %{_sysconfdir}/sysconfig/ntpd
@@ -198,6 +214,11 @@ fi
 
 
 %changelog
+* Tue Aug 21 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-5
+- avoid use of uninitialized floating-point values in clock_select
+- update license tag (Tom "spot" Callaway)
+- drop sntp, MSNTP license is non-free
+
 * Mon Aug 13 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-4
 - allow loopback to share non-loopback address (#249226)
 - require readline >= 5.2-3 (#250917)

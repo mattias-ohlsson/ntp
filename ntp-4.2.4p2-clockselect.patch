@@ -1,0 +1,15 @@
+--- ntp-4.2.4p2/ntpd/ntp_proto.c.clockselect	2007-08-16 16:40:46.000000000 +0200
++++ ntp-4.2.4p2/ntpd/ntp_proto.c	2007-08-16 16:31:32.000000000 +0200
+@@ -2085,10 +2085,12 @@ clock_select(void)
+ 			typeacts->status = CTL_PST_SEL_DISTSYSPEER;
+ 			peer_list[0] = typeacts;
+ 			nlist = 1;
++			error[0] = synch[0] = 0.0;
+ 		} else if (typelocal != 0) {
+ 			typelocal->status = CTL_PST_SEL_DISTSYSPEER;
+ 			peer_list[0] = typelocal;
+ 			nlist = 1;
++			error[0] = synch[0] = 0.0;
+ 		} else {
+ 			if (osys_peer != NULL) {
+ 				NLOG(NLOG_SYNCSTATUS)
