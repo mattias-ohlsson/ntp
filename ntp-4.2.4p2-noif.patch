@@ -1,0 +1,77 @@
+diff -up ntp-4.2.4p2/libisc/ifiter_sysctl.c.noif ntp-4.2.4p2/libisc/ifiter_sysctl.c
+--- ntp-4.2.4p2/libisc/ifiter_sysctl.c.noif	2006-06-06 22:16:23.000000000 +0200
++++ ntp-4.2.4p2/libisc/ifiter_sysctl.c	2007-09-24 16:08:55.000000000 +0200
+@@ -309,7 +309,10 @@ internal_destroy(isc_interfaceiter_t *it
+ 	 */
+ }
+ 
+-static
+-void internal_first(isc_interfaceiter_t *iter) {
++static isc_result_t
++internal_first(isc_interfaceiter_t *iter) {
+ 	iter->pos = 0;
++	if (iter->pos >= iter->bufused)
++		return (ISC_R_NOMORE);
++	return (ISC_R_SUCCESS);
+ }
+diff -up ntp-4.2.4p2/libisc/ifiter_ioctl.c.noif ntp-4.2.4p2/libisc/ifiter_ioctl.c
+--- ntp-4.2.4p2/libisc/ifiter_ioctl.c.noif	2007-09-24 16:08:55.000000000 +0200
++++ ntp-4.2.4p2/libisc/ifiter_ioctl.c	2007-09-24 16:08:55.000000000 +0200
+@@ -1098,8 +1098,8 @@ internal_destroy(isc_interfaceiter_t *it
+ #endif
+ }
+ 
+-static
+-void internal_first(isc_interfaceiter_t *iter) {
++static isc_result_t
++internal_first(isc_interfaceiter_t *iter) {
+ #ifdef HAVE_TRUCLUSTER
+ 	int clua_result;
+ #endif
+@@ -1118,5 +1118,10 @@ void internal_first(isc_interfaceiter_t 
+ #endif
+ #ifdef __linux
+ 	linux_if_inet6_first(iter);
++	if (iter->valid == ISC_R_SUCCESS)
++		return (iter->valid);
+ #endif
++	if (iter->pos >= (unsigned int) iter->ifc.ifc_len)
++		return (ISC_R_NOMORE);
++	return (ISC_R_SUCCESS);
+ }
+diff -up ntp-4.2.4p2/libisc/interfaceiter.c.noif ntp-4.2.4p2/libisc/interfaceiter.c
+--- ntp-4.2.4p2/libisc/interfaceiter.c.noif	2006-06-06 22:16:24.000000000 +0200
++++ ntp-4.2.4p2/libisc/interfaceiter.c	2007-09-24 16:08:55.000000000 +0200
+@@ -170,14 +170,11 @@ isc_interfaceiter_first(isc_interfaceite
+ 
+ 	REQUIRE(VALID_IFITER(iter));
+ 
+-	internal_first(iter);
+-	for (;;) {
++	for (result = internal_first(iter); result == ISC_R_SUCCESS;
++			result = internal_next(iter)) {
+ 		result = internal_current(iter);
+ 		if (result != ISC_R_IGNORE)
+ 			break;
+-		result = internal_next(iter);
+-		if (result != ISC_R_SUCCESS)
+-			break;
+ 	}
+ 	iter->result = result;
+ 	return (result);
+diff -up ntp-4.2.4p2/libisc/ifiter_getifaddrs.c.noif ntp-4.2.4p2/libisc/ifiter_getifaddrs.c
+--- ntp-4.2.4p2/libisc/ifiter_getifaddrs.c.noif	2006-06-06 22:16:22.000000000 +0200
++++ ntp-4.2.4p2/libisc/ifiter_getifaddrs.c	2007-09-24 16:08:55.000000000 +0200
+@@ -185,7 +185,10 @@ internal_destroy(isc_interfaceiter_t *it
+ 	iter->ifaddrs = NULL;
+ }
+ 
+-static
+-void internal_first(isc_interfaceiter_t *iter) {
++static isc_result_t
++internal_first(isc_interfaceiter_t *iter) {
+ 	iter->pos = iter->ifaddrs;
++	if (iter->pos == NULL)
++		return (ISC_R_NOMORE);
++	return (ISC_R_SUCCESS);
+ }

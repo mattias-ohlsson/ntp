@@ -1,9 +1,7 @@
-%define _use_internal_dependency_generator 0
-
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p2
-Release: 5%{?dist}
+Release: 6%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # include/ntif.h : BSD
@@ -28,10 +26,6 @@ Source5: ntpstat-0.2.tgz
 Source6: ntp.step-tickers
 Source8: ntp.cryptopw
 
-# new find-requires
-Source7: filter-requires-ntp.sh
-%define __find_requires %{SOURCE7}
-
 Patch2: ntp-4.2.4p0-droproot.patch
 Patch3: ntp-4.2.4-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
@@ -50,6 +44,7 @@ Patch16: ntp-4.2.4p2-nosntp.patch
 Patch17: ntp-4.2.4p0-sleep.patch
 Patch18: ntp-4.2.4p0-bcast.patch
 Patch19: ntp-4.2.4p0-retcode.patch
+Patch20: ntp-4.2.4p2-noif.patch
 
 URL: http://www.ntp.org
 Requires(pre): shadow-utils 
@@ -93,6 +88,7 @@ time synchronized via the NTP protocol.
 %patch17 -p1 -b .sleep
 %patch18 -p1 -b .bcast
 %patch19 -p1 -b .retcode
+%patch20 -p1 -b .noif
 
 %ifarch ia64
 %patch5 -p1 -b .linkfastmath
@@ -214,6 +210,10 @@ fi
 
 
 %changelog
+* Mon Sep 24 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-6
+- require perl (#274771)
+- don't fail when starting with no interfaces (#300371)
+
 * Tue Aug 21 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-5
 - avoid use of uninitialized floating-point values in clock_select
 - update license tag (Tom "spot" Callaway)
