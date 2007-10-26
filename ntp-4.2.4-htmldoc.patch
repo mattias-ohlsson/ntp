@@ -91,15 +91,18 @@
  			<dt><tt>-b</tt>
  			<dd>Force the time to be stepped using the settimeofday() system call, rather than slewed (default) using the adjtime() system call. This option should be used when called from a startup file at boot time.
  			<dt><tt>-d</tt>
-@@ -43,7 +43,7 @@
+@@ -43,9 +43,9 @@
  			<dt><tt>-e <i>authdelay</i></tt>
  			<dd>Specify the processing delay to perform an authentication function as the value <i>authdelay</i>, in seconds and fraction (see <tt>ntpd</tt> for details). This number is usually small enough to be negligible for most purposes, though specifying a value may improve timekeeping on very slow CPU's.
  			<dt><tt>-k <i>keyfile</i></tt>
 -			<dd>Specify the path for the authentication key file as the string <i>keyfile</i>. The default is <tt>/etc/ntp.keys</tt>. This file should be in the format described in <tt>ntpd</tt>.
 +			<dd>Specify the path for the authentication key file as the string <i>keyfile</i>. The default is <tt>/etc/ntp/keys</tt>. This file should be in the format described in <tt>ntpd</tt>.
  			<dt><tt>-o <i>version</i></tt>
- 			<dd>Specify the NTP version for outgoing packets as the integer <i>version</i>, which can be 1 or 2. The default is 3. This allows <tt>ntpdate</tt> to be used with older NTP versions.
+-			<dd>Specify the NTP version for outgoing packets as the integer <i>version</i>, which can be 1 or 2. The default is 3. This allows <tt>ntpdate</tt> to be used with older NTP versions.
++			<dd>Specify the NTP version for outgoing packets as the integer <i>version</i>, which can be 1 or 2. The default is 4. This allows <tt>ntpdate</tt> to be used with older NTP versions.
  			<dt><tt>-p <i>samples</i></tt>
+ 			<dd>Specify the number of samples to be acquired from each server as the integer <i>samples</i>, with values from 1 to 8 inclusive. The default is 4.
+ 			<dt><i><tt>-q</tt></i>
 @@ -55,7 +55,7 @@
  			<dt><tt>-t <i>timeout</i></tt>
  			<dd>Specify the maximum time waiting for a server response as the value <i>timeout</i>, in seconds and fraction. The value is is rounded to a multiple of 0.2 seconds. The default is 1 second, a value suitable for polling across a LAN.

@@ -1,21 +1,32 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
-Version: 4.2.4p2
-Release: 6%{?dist}
+Version: 4.2.4p4
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
-# include/ntif.h : BSD
-# include/rsa_md5.h : BSD with advertising
-# libntp/md5c.c : BSD with advertising
-# libntp/adjtimex.c : BSD
+# kernel/sys/ppsclock.h (not used) : BSD with advertising
+# include/ntif.h (not used) : BSD
+# include/rsa_md5.h (replaced) : BSD with advertising
+# include/ntp_rfc2553.h (replaced) : BSD with advertising
+# libisc/inet_aton.c (not used) : BSD with advertising
+# libntp/md5c.c (replaced) : BSD with advertising
+# libntp/mktime.c (replaced) : BSD with advertising
+# libntp/ntp_random.c (replaced) : BSD with advertising
+# libntp/memmove.c (replaced) : BSD with advertising
+# libntp/ntp_rfc2553.c (replaced) : BSD with advertising
+# libntp/adjtimex.c (not used) : BSD
 # libopts/ : BSD or GPLv2+
 # libparse/ : BSD
 # ntpd/refclock_jjy.c: MIT
-# ntpd/refclock_oncore.c: BEERWARE License (aka, Public Domain)
+# ntpd/refclock_oncore.c : BEERWARE License (aka, Public Domain)
+# ntpd/refclock_palisade.c : BSD with advertising
+# ntpd/refclock_jupiter.c : BSD with advertising
+# ntpd/refclock_mx4200.c : BSD with advertising
+# ntpd/refclock_palisade.h : BSD with advertising
 # ntpstat-0.2/ : GPLv2
 # util/ansi2knr.c (not used) : GPL+
 # sntp/ (not packaged) : MSNTP
-License: (MIT and BSD and BSD with advertising) and GPLv2
+License: (MIT and BSD and BSD with advertising) and (MIT and BSD) and GPLv2
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
 Source1: ntp.conf
@@ -32,17 +43,17 @@ Patch4: ntp-4.1.1c-rc3-authkey.patch
 Patch5: ntp-4.2.4-linkfastmath.patch
 Patch6: ntp-4.2.4p2-tentative.patch
 Patch7: ntp-4.2.4p2-noseed.patch
-Patch8: ntp-4.2.4p2-multilisten.patch
+Patch8: ntp-4.2.4p4-multilisten.patch
 Patch9: ntp-4.2.4-html2man.patch
 Patch10: ntp-4.2.4-htmldoc.patch
 Patch11: ntp-4.2.4p2-filegen.patch
 Patch12: ntp-4.2.4-sprintf.patch
-Patch13: ntp-4.2.4p2-loopback.patch
-Patch14: ntp-4.2.4p2-mlock.patch
+Patch13: ntp-4.2.4p4-bsdadv.patch
+Patch14: ntp-4.2.4p4-mlock.patch
 Patch15: ntp-4.2.4p2-clockselect.patch
 Patch16: ntp-4.2.4p2-nosntp.patch
 Patch17: ntp-4.2.4p0-sleep.patch
-Patch18: ntp-4.2.4p0-bcast.patch
+Patch18: ntp-4.2.4p4-bcast.patch
 Patch19: ntp-4.2.4p0-retcode.patch
 Patch20: ntp-4.2.4p2-noif.patch
 
@@ -81,7 +92,6 @@ time synchronized via the NTP protocol.
 %patch10 -p1 -b .htmldoc
 %patch11 -p1 -b .filegen
 %patch12 -p1 -b .sprintf
-%patch13 -p1 -b .loopback
 %patch14 -p1 -b .mlock
 %patch15 -p1 -b .clockselect
 %patch16 -p1 -b .nosntp
@@ -94,6 +104,14 @@ time synchronized via the NTP protocol.
 %patch5 -p1 -b .linkfastmath
 %endif
 
+# replace some BSD with advertising code
+for f in include/{ntp_rfc2553,rsa_md5}.h \
+	libntp/{mktime,memmove,md5c,ntp_rfc2553,ntp_random}.c
+do rm -f $f; touch $f; done
+ln -sf md5.h include/rsa_md5.h
+ln -sf md5.c libntp/md5c.c
+%patch13 -p1 -b .bsdadv
+
 %build
 export CFLAGS="$RPM_OPT_FLAGS"
 if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev/null; then
@@ -105,7 +123,7 @@ fi
 	--with-openssl-libdir=%{_libdir} \
 	--enable-all-clocks --enable-parse-clocks \
 	--enable-linuxcaps
-echo '#define KEYFILE "%{_sysconfdir}/ntp/keys"' >> config.h
+echo '#define KEYFILE "%{_sysconfdir}/ntp/keys"' >> ntpdate/ntpdate.h
 echo '#define NTP_VAR "%{_localstatedir}/log/ntpstats/"' >> config.h
 
 make %{?_smp_mflags}
@@ -210,6 +228,12 @@ fi
 
 
 %changelog
+* Fri Oct 26 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-1
+- update to 4.2.4p4
+- fix default NTP version for outgoing packets in ntpdate man page
+  (#245408)
+- replace BSD with advertising code in ntpdc and ntpq
+
 * Mon Sep 24 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p2-6
 - require perl (#274771)
 - don't fail when starting with no interfaces (#300371)

@@ -1,5 +1,6 @@
---- ntp-4.2.4p2/html/ntpd.html.mlock	2007-06-21 10:37:31.000000000 +0200
-+++ ntp-4.2.4p2/html/ntpd.html	2007-06-21 10:37:31.000000000 +0200
+diff -up ntp-4.2.4p4/html/ntpd.html.mlock ntp-4.2.4p4/html/ntpd.html
+--- ntp-4.2.4p4/html/ntpd.html.mlock	2007-10-25 14:55:05.000000000 +0200
++++ ntp-4.2.4p4/html/ntpd.html	2007-10-25 14:55:05.000000000 +0200
 @@ -34,7 +34,7 @@
  		</ul>
  		<hr>
@@ -18,8 +19,9 @@
  			<dt><tt>-n</tt>
  			<dd>Don't fork.
  			<dt><tt>-N</tt>
---- ntp-4.2.4p2/ntpd/ntpd.c.mlock	2007-06-21 10:37:31.000000000 +0200
-+++ ntp-4.2.4p2/ntpd/ntpd.c	2007-06-21 10:37:31.000000000 +0200
+diff -up ntp-4.2.4p4/ntpd/ntpd.c.mlock ntp-4.2.4p4/ntpd/ntpd.c
+--- ntp-4.2.4p4/ntpd/ntpd.c.mlock	2007-10-25 14:55:05.000000000 +0200
++++ ntp-4.2.4p4/ntpd/ntpd.c	2007-10-25 14:55:05.000000000 +0200
 @@ -699,7 +699,8 @@ ntpdmain(
  	}
  #endif
@@ -38,8 +40,9 @@
  #else /* not (HAVE_MLOCKALL && MCL_CURRENT && MCL_FUTURE) */
  # ifdef HAVE_PLOCK
  #  ifdef PROCLOCK
---- ntp-4.2.4p2/ntpd/ntpd-opts.c.mlock	2007-06-20 13:37:21.000000000 +0200
-+++ ntp-4.2.4p2/ntpd/ntpd-opts.c	2007-06-21 10:38:43.000000000 +0200
+diff -up ntp-4.2.4p4/ntpd/ntpd-opts.c.mlock ntp-4.2.4p4/ntpd/ntpd-opts.c
+--- ntp-4.2.4p4/ntpd/ntpd-opts.c.mlock	2007-09-11 02:31:15.000000000 +0200
++++ ntp-4.2.4p4/ntpd/ntpd-opts.c	2007-10-25 14:55:05.000000000 +0200
 @@ -265,6 +265,15 @@ tSCC    zNice_Name[]               = "ni
  #define NICE_FLAGS       (OPTST_DISABLED)
  
@@ -84,8 +87,9 @@
  };
  
  /*
---- ntp-4.2.4p2/ntpd/ntpd-opts.h.mlock	2007-06-20 13:37:21.000000000 +0200
-+++ ntp-4.2.4p2/ntpd/ntpd-opts.h	2007-06-21 10:42:28.000000000 +0200
+diff -up ntp-4.2.4p4/ntpd/ntpd-opts.h.mlock ntp-4.2.4p4/ntpd/ntpd-opts.h
+--- ntp-4.2.4p4/ntpd/ntpd-opts.h.mlock	2007-09-11 02:31:15.000000000 +0200
++++ ntp-4.2.4p4/ntpd/ntpd-opts.h	2007-10-25 14:58:10.000000000 +0200
 @@ -82,12 +82,13 @@ typedef enum {
          INDEX_OPT_VAR              = 26,
          INDEX_OPT_DVAR             = 27,
@@ -101,8 +105,8 @@
  
 -#define OPTION_CT    32
 +#define OPTION_CT    33
- #define NTPD_VERSION       "4.2.4p2"
- #define NTPD_FULL_VERSION  "ntpd - NTP daemon program - Ver. 4.2.4p2"
+ #define NTPD_VERSION       "4.2.4p4"
+ #define NTPD_FULL_VERSION  "ntpd - NTP daemon program - Ver. 4.2.4p4"
  
 @@ -180,6 +181,10 @@ typedef enum {
  #  warning undefining MODIFYMMTIMER due to option name conflict
