@@ -1,7 +1,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p4
-Release: 2%{?dist}
+Release: 3%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -228,6 +228,9 @@ fi
 
 
 %changelog
+* Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 4.2.4p4-3
+- Autorebuild for GCC 4.3
+
 * Wed Dec 05 2007 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-2
 - rebuild for openssl bump
 
