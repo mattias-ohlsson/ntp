@@ -13,7 +13,7 @@
 # Provides: ntpd
 # Required-Start: $network $local_fs $remote_fs
 # Required-Stop: $network $local_fs $remote_fs
-# Should-Start: $syslog $named
+# Should-Start: $syslog $named ntpdate
 # Should-Stop: $syslog $named
 # Short-Description: start and stop ntpd
 # Description: ntpd is the NTPv4 daemon. The Network Time Protocol (NTP)
@@ -28,74 +28,8 @@
 # Source networking configuration.
 . /etc/sysconfig/network
 
-if [ -f /etc/sysconfig/ntpd ];then
-        . /etc/sysconfig/ntpd
-fi
-
 prog=ntpd
 lockfile=/var/lock/subsys/$prog
-ntpconf=/etc/ntp.conf
-ntpstep=/etc/ntp/step-tickers
-
-sync_hwclock() {
-	ARC=0
-	SRM=0
-	UTC=0
-
-	if [ -f /etc/sysconfig/clock ]; then
-	   . /etc/sysconfig/clock
-
-	   # convert old style clock config to new values
-	   if [ "${CLOCKMODE}" = "GMT" ]; then
-	      UTC=true
-	   elif [ "${CLOCKMODE}" = "ARC" ]; then
-	      ARC=true
-	   fi
-	fi
-
-	CLOCKFLAGS="$CLOCKFLAGS --systohc"
-
-	case "$UTC" in
-	    yes|true)	CLOCKFLAGS="$CLOCKFLAGS --utc";;
-	    no|false)	CLOCKFLAGS="$CLOCKFLAGS --localtime";;
-	esac
-	case "$ARC" in
-	    yes|true)	CLOCKFLAGS="$CLOCKFLAGS --arc";;
-	esac
-	case "$SRM" in
-	    yes|true)	CLOCKFLAGS="$CLOCKFLAGS --srm";;
-	esac
-
-	action $"Syncing hardware clock to system time" /sbin/hwclock $CLOCKFLAGS
-}
-
-readconf() {
-	dostep=''
-	dropstr=''
-	hasg=''
-	OPTIND=1
-	while getopts ":46aAbc:dD:f:gi:I:k:l:LmnN:p:P:qr:s:t:u:U:v:V:x" args $OPTIONS;
-	do 
-	  case "$args" in
-	    x) dostep=yes;;
-	    c) ntpconf="$OPTARG";;
-	    u) dropstr="-U $(echo $OPTARG | sed 's/:.*//')";;
-	    g) hasg=yes;;
-	  esac
-	done
-
-	tickers=''
-	if [ -s "$ntpstep" ]; then
-	    tickers=$(sed 's/#.*//' $ntpstep)
-	    echo "$tickers" | grep -qi '[a-z0-9]' && dostep=yes || tickers=''
-	fi
-	if [ -n "$dostep" -a -z "$tickers" ]; then
-	    # -x option is used, but step-tickers doesn't exist or contain
-	    # anything useful, use servers from ntp.conf instead
-	    tickers=$(awk '$1=="peer"||$1=="server"{print $2}' $ntpconf | \
-	        egrep -v '127\.127\.[0-9]+\.[0-9]+')
-	fi
-}
 
 start() {
 	# Check that networking is up.
@@ -103,24 +37,9 @@ start() {
 
 	[ -x /usr/sbin/ntpd ] || exit 5
 
-	readconf;
+	[ -f /etc/sysconfig/ntpd ] || exit 6
+	. /etc/sysconfig/ntpd
 
-	if [ -n "$dostep" ]; then
-	    echo -n $"$prog: Synchronizing with time server: "
-	    /usr/sbin/ntpdate $dropstr -s -b $NTPDATE_OPTIONS $tickers &>/dev/null
-	    RETVAL=$?
-	    [ $RETVAL -eq 0 ] && success || failure
-	    echo
-	    if [ $RETVAL -eq 0 ]; then
-	        [ "$SYNC_HWCLOCK" = "yes" ] && sync_hwclock
-	    elif [ -z "$hasg" ]; then
-	        OPTIONS="$OPTIONS -g"
-	    fi
-	elif [ -z "$hasg" ]; then
-	    # -g can replace the grep for time servers
-	    # as it permits ntpd to violate its 1000s limit once.
-	    OPTIONS="$OPTIONS -g"
-	fi
         # Start daemons.
         echo -n $"Starting $prog: "
         daemon $prog $OPTIONS
@@ -155,7 +74,7 @@ case "$1" in
 	start
 	;;
   try-restart|condrestart)
-	if status $prog > /dev/null; then
+	if [ -f $lockfile ]; then
 	    stop
 	    start
 	fi

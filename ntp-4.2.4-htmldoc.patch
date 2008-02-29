@@ -9,8 +9,11 @@
  		<h4 id="descr">Description</h4>
  		<p>The <tt>ntpd</tt> program is an operating system daemon which sets and maintains the system time of day in synchronism with Internet standard time servers. It is a complete implementation of the Network Time Protocol (NTP) version 4, but also retains compatibility with version 3, as defined by RFC-1305, and version 1 and 2, as defined by RFC-1059 and RFC-1119, respectively. <tt>ntpd</tt> does most computations in 64-bit floating point arithmetic and does relatively clumsy 64-bit fixed point operations only when necessary to preserve the ultimate precision, about 232 picoseconds. While the ultimate precision is not achievable with ordinary workstations and networks of today, it may be required with future gigahertz CPU clocks and gigabit LANs.</p>
  		<h4 id="op">How NTP Operates</h4>
-@@ -65,6 +65,10 @@
+@@ -63,8 +63,13 @@
+ 		<p>In contexts where a host name is expected, a <tt>-4</tt> qualifier preceding the host name forces DNS resolution to the IPv4 namespace, while a <tt>-6</tt> qualifier forces DNS resolution to the IPv6 namespace.</p>
+ 		<p>Various internal <tt>ntpd</tt> variables can be displayed and configuration options altered while the <tt>ntpd</tt> is running using the <tt><a href="ntpq.html">ntpq</a></tt> and <tt><a href="ntpdc.html">ntpdc</a></tt> utility programs.</p>
  		<p>When <tt>ntpd</tt> starts it looks at the value of <tt>umask</tt>, and if zero <tt>ntpd</tt> will set the <tt>umask</tt> to <tt>022</tt>.</p>
++		<p>Unless the <tt>-n</tt>, <tt>-d</tt> or <tt>-D</tt> option is used, <tt>ntpd</tt> changes the current working directory to the root directory, so any options or commands specifying paths need to use an absolute path or a path relative to the root.</p>
  		<h4 id="cmd">Command Line Options</h4>
  		<dl>
 +			<dt><tt>-4</tt>
@@ -20,7 +23,7 @@
  			<dt><tt>-a</tt>
  			<dd>Require cryptographic authentication for broadcast client, multicast client and symmetric passive associations. This is the default.
  			<dt><tt>-A</tt>
-@@ -78,13 +82,15 @@
+@@ -78,13 +83,15 @@
  			<dt><tt>-D <i>level</i></tt>
  			<dd>Specify debugging level directly.
  			<dt><tt>-f <i>driftfile</i></tt>
@@ -38,7 +41,7 @@
  			<dt><tt>-l <i>logfile</i></tt>
  			<dd>Specify the name and path of the log file. The default is the system log file. This is the same operation as the <tt>logfile <i>logfile</i></tt> configuration command.
  			<dt><tt>-L</tt>
-@@ -143,7 +149,7 @@
+@@ -143,7 +150,7 @@
  			</tr>
  			<tr>
  				<td width="30%">frequency file</td>
@@ -47,7 +50,7 @@
  				<td width="20%"><tt>-f</tt></td>
  				<td width="20%"><tt>driftfile</tt></td>
  			</tr>
-@@ -167,14 +173,14 @@
+@@ -167,17 +174,20 @@
  			</tr>
  			<tr>
  				<td width="30%">statistics path</td>
@@ -65,6 +68,12 @@
  				<td width="20%"><tt>keysdir</tt></td>
  			</tr>
  		</table>
++		<h4 id="codes">Exit Codes</h4>
++		<p>A non-zero exit code indicates an error. Any error messages are logged to the system log by default.</p>
++		<p>The exit code is 0 only when <tt>ntpd</tt> is terminated by a signal, or when the <tt>-q</tt> option is used and <tt>ntpd</tt> successfully sets the system clock.</p>
+ 		<hr>
+ 		<script type="text/javascript" language="javascript" src="scripts/footer.txt"></script>
+ 	</body>
 --- ntp-4.2.4/html/ntpdate.html.htmldoc	2007-01-05 15:40:59.000000000 +0100
 +++ ntp-4.2.4/html/ntpdate.html	2007-01-05 15:40:59.000000000 +0100
 @@ -18,9 +18,9 @@
@@ -176,7 +185,7 @@
  		<hr>
  		<h4 id="synop">Synopsis</h4>
 -		<p id="intro"><tt>ntp-keygen [ -deGgHIMnPT ] [ -c [RSA-MD2 | RSA-MD5 | RSA-SHA | RSA-SHA1 | RSA-MDC2 | RSA-RIPEMD160 | DSA-SHA | DSA-SHA1 ] ] [ -i <i>name</i> ] [ -p <i>password</i> ] [ -S [ RSA | DSA ] ] [ -s <i>name</i> ] [ -v <i>nkeys</i> ]</tt></p>
-+		<p id="intro"><tt>ntp-keygen [ -deGgHIMPT ] [ -c [RSA-MD2 | RSA-MD5 | RSA-SHA | RSA-SHA1 | RSA-MDC2 | RSA-RIPEMD160 | DSA-SHA | DSA-SHA1 ] ] [ -i <i>name</i> ] [ -p <i>password</i> ] [ -q <i>password</i> ] [ -S [ RSA | DSA ] ] [ -s <i>name</i> ] [ -v <i>nkeys</i> ] [ -V <i>params</i> ]</tt></p>
++		<p id="intro"><tt>ntp-keygen [ -deGgHIMPT ] [ -c [RSA-MD2 | RSA-MD5 | RSA-SHA | RSA-SHA1 | RSA-MDC2 | RSA-RIPEMD160 | DSA-SHA | DSA-SHA1 ] ] [ -i <i>name</i> ] [ -m <i>modulus</i> ] [ -p <i>password</i> ] [ -q <i>password</i> ] [ -S [ RSA | DSA ] ] [ -s <i>name</i> ] [ -v <i>nkeys</i> ] [ -V <i>params</i> ]</tt></p>
  		<h4 id="descrip">Description</h4>
  		<p>This program generates cryptographic data files used by the NTPv4 authentication and identification schemes. It generates MD5 key files used in symmetric key cryptography. In addition, if the OpenSSL software library has been installed, it generates keys, certificate and identity files used in public key cryptography. These files are used for cookie encryption, digital signature and challenge/response identification algorithms compatible with the Internet standard security infrastructure.</p>
  		<p>By default, files are not encrypted by <tt>ntp-keygen</tt>. The <tt>-p <i>password</i></tt> option specifies the write password and <tt>-q <i>password</i></tt> option the read password for previously encrypted files. The <tt>ntp-keygen</tt> program prompts for the password if it reads an encrypted file and the password is missing or incorrect. If an encrypted file is read successfully and no write password is specified, the read password is used as the write password by default.</p>

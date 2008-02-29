@@ -1,7 +1,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p4
-Release: 3%{?dist}
+Release: 4%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -35,8 +35,11 @@ Source3: ntpd.init
 Source4: ntpd.sysconfig
 Source5: ntpstat-0.2.tgz
 Source6: ntp.step-tickers
+Source7: ntpdate.init
 Source8: ntp.cryptopw
+Source9: ntpdate.sysconfig
 
+Patch1: ntp-4.2.4p4-kernel.patch
 Patch2: ntp-4.2.4p0-droproot.patch
 Patch3: ntp-4.2.4-groups.patch
 Patch4: ntp-4.1.1c-rc3-authkey.patch
@@ -82,6 +85,7 @@ time synchronized via the NTP protocol.
 %prep 
 %setup -q -a 5
 
+%patch1 -p1 -b .kernel
 %patch2 -p1 -b .droproot
 %patch3 -p1 -b .groups
 %patch4 -p1 -b .authkey
@@ -171,7 +175,9 @@ sed -e 's|ETCNTP|%{_sysconfdir}/ntp|' -e 's|VARNTP|%{_localstatedir}/lib/ntp|' \
 touch -r %{SOURCE1} .%{_sysconfdir}/ntp.conf
 install -p -m600 %{SOURCE2} .%{_sysconfdir}/ntp/keys
 install -p -m755 %{SOURCE3} .%{_initrddir}/ntpd
+install -p -m755 %{SOURCE7} .%{_initrddir}/ntpdate
 install -p -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
+install -p -m644 %{SOURCE9} .%{_sysconfdir}/sysconfig/ntpdate
 install -p -m644 %{SOURCE6} .%{_sysconfdir}/ntp/step-tickers
 install -p -m600 %{SOURCE8} .%{_sysconfdir}/ntp/crypto/pw
 popd
@@ -185,12 +191,15 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add ntpd
+/sbin/chkconfig --add ntpdate
 :
 
 %preun
 if [ "$1" -eq 0 ]; then
 	/sbin/service ntpd stop &> /dev/null
 	/sbin/chkconfig --del ntpd
+	/sbin/service ntpdate stop &> /dev/null
+	/sbin/chkconfig --del ntpdate
 fi
 :
 
@@ -213,7 +222,9 @@ fi
 %{_sbindir}/ntptime
 %{_sbindir}/tickadj
 %{_initrddir}/ntpd
+%{_initrddir}/ntpdate
 %config(noreplace) %{_sysconfdir}/sysconfig/ntpd
+%config(noreplace) %{_sysconfdir}/sysconfig/ntpdate
 %dir %{_sysconfdir}/ntp
 %config(noreplace) %{_sysconfdir}/ntp.conf
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
@@ -228,6 +239,11 @@ fi
 
 
 %changelog
+* Fri Feb 29 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-4
+- reset kernel frequency when -x option is used
+- create separate init script for ntpdate
+- add note about paths and exit codes to ntpd man page
+
 * Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 4.2.4p4-3
 - Autorebuild for GCC 4.3
 
