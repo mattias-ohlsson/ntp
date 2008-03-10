@@ -1,7 +1,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p4
-Release: 4%{?dist}
+Release: 5%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -59,6 +59,7 @@ Patch17: ntp-4.2.4p0-sleep.patch
 Patch18: ntp-4.2.4p4-bcast.patch
 Patch19: ntp-4.2.4p0-retcode.patch
 Patch20: ntp-4.2.4p2-noif.patch
+Patch21: ntp-4.2.4p4-ipv6.patch
 
 URL: http://www.ntp.org
 Requires(pre): shadow-utils 
@@ -103,6 +104,7 @@ time synchronized via the NTP protocol.
 %patch18 -p1 -b .bcast
 %patch19 -p1 -b .retcode
 %patch20 -p1 -b .noif
+%patch21 -p1 -b .ipv6
 
 %ifarch ia64
 %patch5 -p1 -b .linkfastmath
@@ -239,6 +241,9 @@ fi
 
 
 %changelog
+* Mon Mar 10 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-5
+- fix building IPv6 support with new glibc-headers (#436713)
+
 * Fri Feb 29 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-4
 - reset kernel frequency when -x option is used
 - create separate init script for ntpdate
