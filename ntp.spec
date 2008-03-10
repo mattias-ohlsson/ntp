@@ -60,6 +60,7 @@ Patch18: ntp-4.2.4p4-bcast.patch
 Patch19: ntp-4.2.4p0-retcode.patch
 Patch20: ntp-4.2.4p2-noif.patch
 Patch21: ntp-4.2.4p4-ipv6.patch
+Patch22: ntp-4.2.4p4-cmsgalign.patch
 
 URL: http://www.ntp.org
 Requires(pre): shadow-utils 
@@ -105,6 +106,7 @@ time synchronized via the NTP protocol.
 %patch19 -p1 -b .retcode
 %patch20 -p1 -b .noif
 %patch21 -p1 -b .ipv6
+%patch22 -p1 -b .cmsgalign
 
 %ifarch ia64
 %patch5 -p1 -b .linkfastmath
@@ -243,6 +245,8 @@ fi
 %changelog
 * Mon Mar 10 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-5
 - fix building IPv6 support with new glibc-headers (#436713)
+- avoid unaligned memory access (#435301)
+- fix receiving broadcasts on 255.255.255.255
 
 * Fri Feb 29 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-4
 - reset kernel frequency when -x option is used

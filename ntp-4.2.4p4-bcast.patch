@@ -66,8 +66,8 @@ diff -up ntp-4.2.4p4/ntpd/ntp_io.c.bcast ntp-4.2.4p4/ntpd/ntp_io.c
  	struct msghdr msghdr;
  	struct iovec iovec;
 -	char control[TIMESTAMP_CTLMSGBUF_SIZE];	/* pick up control messages */
-+	char control[sizeof (struct cmsghdr) +
-+		sizeof (struct in_pktinfo) + 8];	/* pick up control messages */
++	char control[sizeof (struct cmsghdr) * 2 + sizeof (struct timeval) +
++		sizeof (struct in_pktinfo) + 32];	/* pick up control messages */
  #endif
  
  	/*
