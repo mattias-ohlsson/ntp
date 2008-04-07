@@ -1,7 +1,7 @@
 Summary: Synchronizes system time using the Network Time Protocol (NTP)
 Name: ntp
 Version: 4.2.4p4
-Release: 5%{?dist}
+Release: 6%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -243,6 +243,9 @@ fi
 
 
 %changelog
+* Mon Apr 07 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-6
+- don't use /etc/sysconfig/clock in ntpdate init script
+
 * Mon Mar 10 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-5
 - fix building IPv6 support with new glibc-headers (#436713)
 - avoid unaligned memory access (#435301)
