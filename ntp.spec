@@ -1,7 +1,7 @@
-Summary: Synchronizes system time using the Network Time Protocol (NTP)
+Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.4p4
-Release: 6%{?dist}
+Release: 7%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -61,12 +61,14 @@ Patch19: ntp-4.2.4p0-retcode.patch
 Patch20: ntp-4.2.4p2-noif.patch
 Patch21: ntp-4.2.4p4-ipv6.patch
 Patch22: ntp-4.2.4p4-cmsgalign.patch
+Patch23: ntp-4.2.4p4-gettime.patch
+Patch24: ntp-4.2.4p4-resinit.patch
 
 URL: http://www.ntp.org
-Requires(pre): shadow-utils 
 Requires(post): /sbin/chkconfig
 Requires(preun): /sbin/chkconfig /sbin/service
 Requires(postun): /sbin/service
+Requires: ntpdate = %{version}-%{release}
 # Require libreadline linked with libtinfo
 Requires: readline >= 5.2-3
 BuildRequires: libcap-devel openssl-devel readline-devel perl-HTML-Parser
@@ -74,15 +76,32 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 The Network Time Protocol (NTP) is used to synchronize a computer's
-time with another reference time source. The ntp package contains
-utilities and daemons that will synchronize your computer's time to
-Coordinated Universal Time (UTC) via the NTP protocol and NTP servers.
-The ntp package includes ntpdate (a program for retrieving the date
-and time from remote machines via a network) and ntpd (a daemon which
-continuously adjusts system time).
+time with another reference time source. This package includes ntpd
+(a daemon which continuously adjusts system time) and utilities used
+to query and configure the ntpd daemon.
 
-Install the ntp package if you need tools for keeping your system's
-time synchronized via the NTP protocol.
+Perl scripts ntp-wait and ntptrace are in the ntp-perl package and
+the ntpdate program is in the ntpdate package.
+
+%package perl
+Summary: NTP utilities written in perl
+Group: Applications/System
+Requires: %{name} = %{version}-%{release}
+# perl introduced in 4.2.4p4-7
+Obsoletes: %{name} < 4.2.4p4-7
+%description perl
+This package contains perl scripts ntp-wait and ntptrace.
+ 
+%package -n ntpdate
+Summary: Utility to set the date and time via NTP
+Group: Applications/System
+Requires(pre): shadow-utils 
+Requires(post): /sbin/chkconfig
+Requires(preun): /sbin/chkconfig /sbin/service
+
+%description -n ntpdate
+ntpdate is a program for retrieving the date and time from
+NTP servers.
 
 %prep 
 %setup -q -a 5
@@ -107,6 +126,11 @@ time synchronized via the NTP protocol.
 %patch20 -p1 -b .noif
 %patch21 -p1 -b .ipv6
 %patch22 -p1 -b .cmsgalign
+%patch24 -p1 -b .resinit
+
+# clock_gettime needs -lrt
+sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
+%patch23 -p1 -b .gettime
 
 %ifarch ia64
 %patch5 -p1 -b .linkfastmath
@@ -189,12 +213,15 @@ popd
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%pre
+%pre -n ntpdate
 /usr/sbin/groupadd -g 38 ntp  2> /dev/null || :
 /usr/sbin/useradd -u 38 -g 38 -s /sbin/nologin -M -r -d %{_sysconfdir}/ntp ntp 2>/dev/null || :
 
 %post
 /sbin/chkconfig --add ntpd
+:
+
+%post -n ntpdate
 /sbin/chkconfig --add ntpdate
 :
 
@@ -202,6 +229,11 @@ rm -rf $RPM_BUILD_ROOT
 if [ "$1" -eq 0 ]; then
 	/sbin/service ntpd stop &> /dev/null
 	/sbin/chkconfig --del ntpd
+fi
+:
+
+%preun -n ntpdate
+if [ "$1" -eq 0 ]; then
 	/sbin/service ntpdate stop &> /dev/null
 	/sbin/chkconfig --del ntpdate
 fi
@@ -216,33 +248,51 @@ fi
 %files
 %defattr(-,root,root)
 %doc htmldoc/html/* COPYRIGHT ChangeLog NEWS TODO 
-%{_sbindir}/ntp-wait
-%{_sbindir}/ntptrace
 %{_sbindir}/ntp-keygen
 %{_sbindir}/ntpd
-%{_sbindir}/ntpdate
 %{_sbindir}/ntpdc
 %{_sbindir}/ntpq
 %{_sbindir}/ntptime
 %{_sbindir}/tickadj
 %{_initrddir}/ntpd
-%{_initrddir}/ntpdate
 %config(noreplace) %{_sysconfdir}/sysconfig/ntpd
-%config(noreplace) %{_sysconfdir}/sysconfig/ntpdate
-%dir %{_sysconfdir}/ntp
 %config(noreplace) %{_sysconfdir}/ntp.conf
-%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
-%config(noreplace) %{_sysconfdir}/ntp/keys
 %dir %attr(750,root,ntp) %{_sysconfdir}/ntp/crypto
 %config(noreplace) %{_sysconfdir}/ntp/crypto/pw
 %dir %attr(-,ntp,ntp) %{_localstatedir}/lib/ntp
 %ghost %attr(644,ntp,ntp) %{_localstatedir}/lib/ntp/drift
 %dir %attr(-,ntp,ntp) %{_localstatedir}/log/ntpstats
-%{_mandir}/man[58]/*.[58]*
 %{_bindir}/ntpstat
+%{_mandir}/man5/*.5*
+%{_mandir}/man8/ntp-keygen.8*
+%{_mandir}/man8/ntpd.8*
+%{_mandir}/man8/ntpdc.8*
+%{_mandir}/man8/ntpq.8*
+%{_mandir}/man8/ntpstat.8*
+%{_mandir}/man8/ntptime.8*
 
+%files perl
+%defattr(-,root,root)
+%{_sbindir}/ntp-wait
+%{_sbindir}/ntptrace
+%{_mandir}/man8/ntptrace.8*
+
+%files -n ntpdate
+%defattr(-,root,root)
+%{_initrddir}/ntpdate
+%config(noreplace) %{_sysconfdir}/sysconfig/ntpdate
+%dir %{_sysconfdir}/ntp
+%config(noreplace) %{_sysconfdir}/ntp/keys
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
+%{_sbindir}/ntpdate
+%{_mandir}/man8/ntpdate.8*
 
 %changelog
+* Mon Jul 28 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-7
+- reload resolv.conf after temporary failure in name resolution (#456743)
+- use clock_gettime
+- make subpackages for perl scripts and ntpdate (#452097, #456116)
+
 * Mon Apr 07 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-6
 - don't use /etc/sysconfig/clock in ntpdate init script
 
