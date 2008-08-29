@@ -1,0 +1,116 @@
+diff -up ntp-4.2.4p5/ntpd/ntp_io.c.rtnetlink ntp-4.2.4p5/ntpd/ntp_io.c
+--- ntp-4.2.4p5/ntpd/ntp_io.c.rtnetlink	2008-08-28 16:02:21.000000000 +0200
++++ ntp-4.2.4p5/ntpd/ntp_io.c	2008-08-28 16:03:58.000000000 +0200
+@@ -216,6 +216,9 @@ struct vsock {
+ 	ISC_LINK(vsock_t)		link;
+ };
+ 
++#define HAS_ROUTING_SOCKET 1
++#define HAVE_RTNETLINK 1
++
+ #if !defined(HAVE_IO_COMPLETION_PORT) && defined(HAS_ROUTING_SOCKET)
+ /*
+  * async notification processing (e. g. routing sockets)
+@@ -3858,6 +3861,10 @@ find_flagged_addr_in_list(struct sockadd
+ #ifdef HAS_ROUTING_SOCKET
+ #include <net/route.h>
+ 
++#ifdef HAVE_RTNETLINK
++#include <linux/rtnetlink.h>
++#endif
++
+ #ifndef UPDATE_GRACE
+ #define UPDATE_GRACE	2	/* wait UPDATE_GRACE seconds before scanning */
+ #endif
+@@ -3866,9 +3873,12 @@ static void
+ process_routing_msgs(struct asyncio_reader *reader)
+ {
+ 	char buffer[5120];
+-	char *p = buffer;
+-
+-	int cnt;
++	int cnt, msg_type;
++#ifdef HAVE_RTNETLINK
++	struct nlmsghdr *nh;
++#else
++	char *p;
++#endif
+ 	
+ 	if (disable_dynamic_updates) {
+ 		/*
+@@ -3892,8 +3902,11 @@ process_routing_msgs(struct asyncio_read
+ 	/*
+ 	 * process routing message
+ 	 */
+-	while ((p + sizeof(struct rt_msghdr)) <= (buffer + cnt))
+-	{
++#ifdef HAVE_RTNETLINK
++	for (nh = (struct nlmsghdr *)buffer; NLMSG_OK(nh, cnt); nh = NLMSG_NEXT(nh, cnt)) {
++		msg_type = nh->nlmsg_type;
++#else
++	for (p = buffer; (p + sizeof(struct rt_msghdr)) <= (buffer + cnt); p += rtm->rtm_msglen) {
+ 		struct rt_msghdr *rtm;
+ 		
+ 		rtm = (struct rt_msghdr *)p;
+@@ -3903,8 +3916,9 @@ process_routing_msgs(struct asyncio_read
+ 			delete_asyncio_reader(reader);
+ 			return;
+ 		}
+-		
+-		switch (rtm->rtm_type) {
++		msg_type = rtm->rtm_type;
++#endif
++		switch (msg_type) {
+ #ifdef RTM_NEWADDR
+ 		case RTM_NEWADDR:
+ #endif
+@@ -3935,17 +3949,21 @@ process_routing_msgs(struct asyncio_read
+ 			/*
+ 			 * we are keen on new and deleted addresses and if an interface goes up and down or routing changes
+ 			 */
+-			DPRINTF(3, ("routing message op = %d: scheduling interface update\n", rtm->rtm_type));
++			DPRINTF(3, ("routing message op = %d: scheduling interface update\n", msg_type));
+ 			timer_interfacetimeout(current_time + UPDATE_GRACE);
+ 			break;
++#ifdef HAVE_RTNETLINK
++		case NLMSG_DONE:
++			/* end of multipart message */
++			return;
++#endif
+ 		default:
+ 			/*
+ 			 * the rest doesn't bother us.
+ 			 */
+-			DPRINTF(4, ("routing message op = %d: ignored\n", rtm->rtm_type));
++			DPRINTF(4, ("routing message op = %d: ignored\n", msg_type));
+ 			break;
+ 		}
+-		p += rtm->rtm_msglen;
+ 	}
+ }
+ 
+@@ -3956,10 +3974,24 @@ static void
+ init_async_notifications()
+ {
+ 	struct asyncio_reader *reader;
++#ifdef HAVE_RTNETLINK
++	int fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
++	struct sockaddr_nl sa;
++#else
+ 	int fd = socket(PF_ROUTE, SOCK_RAW, 0);
++#endif
+ 	
+ 	if (fd >= 0) {
+ 		fd = move_fd(fd);
++#ifdef HAVE_RTNETLINK
++		memset(&sa, 0, sizeof(sa));
++		sa.nl_family = PF_NETLINK;
++		sa.nl_groups = RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR;
++		if (bind(fd, (struct sockaddr*)&sa, sizeof(sa)) < 0) {
++			msyslog(LOG_ERR, "bind failed on routing socket (%m) - using polled interface update");
++			return;
++		}
++#endif
+ 		init_nonblocking_io(fd);
+ #if defined(HAVE_SIGNALED_IO)
+ 		init_socket_sig(fd);

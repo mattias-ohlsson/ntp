@@ -1,22 +1,9 @@
 https://ntp.isc.org/bugs/show_bug.cgi?id=779
 https://ntp.isc.org/bugs/show_bug.cgi?id=823
 
-diff -up ntp-4.2.4p4/ntpd/ntp_peer.c.bcast ntp-4.2.4p4/ntpd/ntp_peer.c
---- ntp-4.2.4p4/ntpd/ntp_peer.c.bcast	2007-05-27 13:02:49.000000000 +0200
-+++ ntp-4.2.4p4/ntpd/ntp_peer.c	2007-10-25 15:08:01.000000000 +0200
-@@ -705,7 +705,8 @@ select_peerinterface(struct peer *peer, 
- 	 * as our (network) source address would be undefined and
- 	 * crypto will not work without knowing the own transmit address
- 	 */
--	if (interface != NULL && interface->flags & INT_WILDCARD)
-+	if (interface != NULL && interface->flags & INT_WILDCARD &&
-+			!(cast_flags & MDF_BCAST))
- 		interface = NULL;
- 
- 	return interface;
-diff -up ntp-4.2.4p4/ntpd/ntp_io.c.bcast ntp-4.2.4p4/ntpd/ntp_io.c
---- ntp-4.2.4p4/ntpd/ntp_io.c.bcast	2007-10-25 15:08:01.000000000 +0200
-+++ ntp-4.2.4p4/ntpd/ntp_io.c	2007-10-25 15:20:58.000000000 +0200
+diff -up ntp-4.2.4p5/ntpd/ntp_io.c.bcast ntp-4.2.4p5/ntpd/ntp_io.c
+--- ntp-4.2.4p5/ntpd/ntp_io.c.bcast	2008-08-18 13:00:06.000000000 +0200
++++ ntp-4.2.4p5/ntpd/ntp_io.c	2008-08-18 13:00:06.000000000 +0200
 @@ -145,6 +145,8 @@ int ninterfaces;			/* Total number of in
  
  volatile int disable_dynamic_updates;   /* when set to != 0 dynamic updates won't happen */
@@ -26,7 +13,7 @@ diff -up ntp-4.2.4p4/ntpd/ntp_io.c.bcast ntp-4.2.4p4/ntpd/ntp_io.c
  #ifdef REFCLOCK
  /*
   * Refclock stuff.	We keep a chain of structures with data concerning
-@@ -1538,6 +1540,18 @@ set_reuseaddr(int flag) {
+@@ -1558,6 +1560,18 @@ set_reuseaddr(int flag) {
  	}
  }
  
@@ -45,7 +32,7 @@ diff -up ntp-4.2.4p4/ntpd/ntp_io.c.bcast ntp-4.2.4p4/ntpd/ntp_io.c
  /*
   * This is just a wrapper around an internal function so we can
   * make other changes as necessary later on
-@@ -1954,6 +1968,7 @@ io_setbclient(void)
+@@ -1974,6 +1988,7 @@ io_setbclient(void)
  #else
  	netsyslog(LOG_ERR, "io_setbclient: Broadcast Client disabled by build");
  #endif
@@ -53,7 +40,7 @@ diff -up ntp-4.2.4p4/ntpd/ntp_io.c.bcast ntp-4.2.4p4/ntpd/ntp_io.c
  }
  
  /*
-@@ -1976,6 +1991,7 @@ io_unsetbclient(void)
+@@ -1996,6 +2011,7 @@ io_unsetbclient(void)
  		    continue;
  		lstatus = socket_broadcast_disable(interf, &interf->sin);
  	}
@@ -61,7 +48,7 @@ diff -up ntp-4.2.4p4/ntpd/ntp_io.c.bcast ntp-4.2.4p4/ntpd/ntp_io.c
  }
  
  /*
-@@ -2868,7 +2884,8 @@ read_network_packet(SOCKET fd, struct in
+@@ -2892,7 +2908,8 @@ read_network_packet(SOCKET fd, struct in
  #ifdef HAVE_TIMESTAMP
  	struct msghdr msghdr;
  	struct iovec iovec;
@@ -71,7 +58,7 @@ diff -up ntp-4.2.4p4/ntpd/ntp_io.c.bcast ntp-4.2.4p4/ntpd/ntp_io.c
  #endif
  
  	/*
-@@ -2880,7 +2897,7 @@ read_network_packet(SOCKET fd, struct in
+@@ -2904,7 +2921,7 @@ read_network_packet(SOCKET fd, struct in
  
  	rb = get_free_recv_buffer();
  
@@ -80,7 +67,7 @@ diff -up ntp-4.2.4p4/ntpd/ntp_io.c.bcast ntp-4.2.4p4/ntpd/ntp_io.c
  	{
  		char buf[RX_BUFF_SIZE];
  		struct sockaddr_storage from;
-@@ -2942,6 +2959,34 @@ read_network_packet(SOCKET fd, struct in
+@@ -2966,6 +2983,34 @@ read_network_packet(SOCKET fd, struct in
  		return (buflen);
  	}
  
@@ -115,3 +102,16 @@ diff -up ntp-4.2.4p4/ntpd/ntp_io.c.bcast ntp-4.2.4p4/ntpd/ntp_io.c
  #ifdef DEBUG
  	if (debug > 2) {
  		if(rb->recv_srcadr.ss_family == AF_INET)
+diff -up ntp-4.2.4p5/ntpd/ntp_peer.c.bcast ntp-4.2.4p5/ntpd/ntp_peer.c
+--- ntp-4.2.4p5/ntpd/ntp_peer.c.bcast	2008-08-10 13:02:40.000000000 +0200
++++ ntp-4.2.4p5/ntpd/ntp_peer.c	2008-08-18 13:02:43.000000000 +0200
+@@ -709,7 +709,8 @@ select_peerinterface(struct peer *peer, 
+ 	 * as our (network) source address would be undefined and
+ 	 * crypto will not work without knowing the own transmit address
+ 	 */
+-	if (interface != NULL && interface->flags & INT_WILDCARD)
++	if (interface != NULL && interface->flags & INT_WILDCARD &&
++			!(cast_flags & MDF_BCAST))
+ #ifdef SYS_WINNT
+ 		if ( !accept_wildcard_if_for_winnt )  
+ #endif

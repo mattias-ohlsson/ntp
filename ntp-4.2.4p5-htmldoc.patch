@@ -1,5 +1,121 @@
---- ntp-4.2.4/html/ntpd.html.htmldoc	2006-12-28 13:02:57.000000000 +0100
-+++ ntp-4.2.4/html/ntpd.html	2007-01-05 15:40:59.000000000 +0100
+diff -up ntp-4.2.4p5/html/authopt.html.htmldoc ntp-4.2.4p5/html/authopt.html
+--- ntp-4.2.4p5/html/authopt.html.htmldoc	2006-12-28 13:02:54.000000000 +0100
++++ ntp-4.2.4p5/html/authopt.html	2008-08-18 12:31:59.000000000 +0200
+@@ -74,7 +74,7 @@
+ 			<dt><tt>controlkey <i>key</i></tt>
+ 			<dd>Specifies the key identifier to use with the <a href="ntpq.html"><tt>ntpq</tt></a> utility, which uses the standard protocol defined in RFC-1305. The <tt><i>key</i></tt> argument is the key identifier for a trusted key, where the value can be in the range 1 to 65,534, inclusive.
+ 			<dt><tt>crypto [cert <i>file</i>] [leap <i>file</i>] [randfile <i>file</i>] [host <i>file</i>] [sign <i>file</i>] [ident <i>scheme</i>] [iffpar <i>file</i>] [gqpar <i>file</i>] [mvpar <i>file</i>] [pw <i>password</i>]</tt>
+-			<dd>This command requires the OpenSSL library. It activates public key cryptography, selects the message digest and signature encryption scheme and loads the required private and public values described above. If one or more files are left unspecified, the default names are used as described above. Unless the complete path and name of the file are specified, the location of a file is relative to the keys directory specified in the <tt>keysdir</tt> command or default <tt>/usr/local/etc</tt>. Following are the subcommands:
++			<dd>This command requires the OpenSSL library. It activates public key cryptography, selects the message digest and signature encryption scheme and loads the required private and public values described above. If one or more files are left unspecified, the default names are used as described above. Unless the complete path and name of the file are specified, the location of a file is relative to the keys directory specified in the <tt>keysdir</tt> command or default <tt>/etc/ntp/crypto</tt>. Following are the subcommands:
+ 				<dl>
+ 					<dt><tt>cert <i>file</i></tt>
+ 					<dd>Specifies the location of the required host public certificate file. This overrides the link <tt>ntpkey_cert_<i>hostname</i></tt> in the keys directory.
+@@ -103,7 +103,7 @@
+ 			<dt><tt>keys <i>keyfile</i></tt>
+ 			<dd>Specifies the complete path and location of the MD5 key file containing the keys and key identifiers used by <tt>ntpd</tt>, <tt>ntpq</tt> and <tt>ntpdc</tt> when operating with symmetric key cryptography. This is the same operation as the <tt>-k </tt>command line option.
+ 			<dt><tt>keysdir <i>path</i></tt>
+-			<dd>This command specifies the default directory path for cryptographic keys, parameters and certificates. The default is <tt>/usr/local/etc/</tt>.
++			<dd>This command specifies the default directory path for cryptographic keys, parameters and certificates. The default is <tt>/etc/ntp/crypto</tt>.
+ 			<dt><tt>requestkey <i>key</i></tt>
+ 			<dd>Specifies the key identifier to use with the <a href="ntpdc.html"><tt>ntpdc</tt></a> utility program, which uses a proprietary protocol specific to this implementation of <tt>ntpd</tt>. The <tt><i>key</i></tt> argument is a key identifier for the trusted key, where the value can be in the range 1 to 65,534, inclusive.
+ 			<dt><tt>revoke [<i>logsec</i>]</tt>
+diff -up ntp-4.2.4p5/html/confopt.html.htmldoc ntp-4.2.4p5/html/confopt.html
+--- ntp-4.2.4p5/html/confopt.html.htmldoc	2008-08-10 13:02:43.000000000 +0200
++++ ntp-4.2.4p5/html/confopt.html	2008-08-18 12:31:59.000000000 +0200
+@@ -32,8 +32,8 @@
+ 		<p>There are three types of associations: persistent, preemptable and ephemeral. Persistent associations are mobilized by a configuration command and never demobilized. Preemptable associations, which are new to NTPv4, are mobilized by a configuration command which includes the <tt>prempt</tt> flag and are demobilized by timeout or error. Ephemeral associations are mobilized upon arrival of designated messages and demobilized by timeout or error.</p>
+ 		<dl>
+ 			<dt><tt>server <i>address</i> [options ...]</tt><br>
+-				<tt>peer <i>address</i> [</tt><tt>options ...]<br>
+-					broadcast <i>address</i> [options ...]</tt><br>
++				<tt>peer <i>address</i> [options ...]</tt><br>
++					<tt>broadcast <i>address</i> [options ...]</tt><br>
+ 				<tt>manycastclient <i>address</i> [options ...]</tt>
+ 			<dd>These four commands specify the time server name or address to be used and the mode in which to operate. The <i>address</i> can be either a DNS name or a IP address in dotted-quad notation. Additional information on association behavior can be found in the <a href="assoc.html">Association Management</a> page.
+ 				<dl>
+diff -up ntp-4.2.4p5/html/keygen.html.htmldoc ntp-4.2.4p5/html/keygen.html
+--- ntp-4.2.4p5/html/keygen.html.htmldoc	2008-08-18 12:31:59.000000000 +0200
++++ ntp-4.2.4p5/html/keygen.html	2008-08-18 12:31:59.000000000 +0200
+@@ -32,17 +32,17 @@
+ 		</ul>
+ 		<hr>
+ 		<h4 id="synop">Synopsis</h4>
+-		<p id="intro"><tt>ntp-keygen [ -deGgHIMnPT ] [ -c [RSA-MD2 | RSA-MD5 | RSA-SHA | RSA-SHA1 | RSA-MDC2 | RSA-RIPEMD160 | DSA-SHA | DSA-SHA1 ] ] [ -i <i>name</i> ] [ -p <i>password</i> ] [ -S [ RSA | DSA ] ] [ -s <i>name</i> ] [ -v <i>nkeys</i> ]</tt></p>
++		<p id="intro"><tt>ntp-keygen [ -deGgHIMPT ] [ -c [RSA-MD2 | RSA-MD5 | RSA-SHA | RSA-SHA1 | RSA-MDC2 | RSA-RIPEMD160 | DSA-SHA | DSA-SHA1 ] ] [ -i <i>name</i> ] [ -m <i>modulus</i> ] [ -p <i>password</i> ] [ -q <i>password</i> ] [ -S [ RSA | DSA ] ] [ -s <i>name</i> ] [ -v <i>nkeys</i> ] [ -V <i>params</i> ]</tt></p>
+ 		<h4 id="descrip">Description</h4>
+ 		<p>This program generates cryptographic data files used by the NTPv4 authentication and identification schemes. It generates MD5 key files used in symmetric key cryptography. In addition, if the OpenSSL software library has been installed, it generates keys, certificate and identity files used in public key cryptography. These files are used for cookie encryption, digital signature and challenge/response identification algorithms compatible with the Internet standard security infrastructure.</p>
+ 		<p>By default, files are not encrypted by <tt>ntp-keygen</tt>. The <tt>-p <i>password</i></tt> option specifies the write password and <tt>-q <i>password</i></tt> option the read password for previously encrypted files. The <tt>ntp-keygen</tt> program prompts for the password if it reads an encrypted file and the password is missing or incorrect. If an encrypted file is read successfully and no write password is specified, the read password is used as the write password by default.</p>
+ 		<p>The <tt>ntpd</tt> configuration command <tt>crypto pw <i>password</i></tt> specifies the read password for previously encrypted files. The daemon expires on the spot if the password is missing or incorrect. For convenience, if a file has been previously encrypted, the default read password is the name of the host running the program. If the previous write password is specified as the host name, these files can be read by that host with no explicit password.</p>
+ 		<p>All files are in PEM-encoded printable ASCII format, so they can be embedded as MIME attachments in mail to other sites and certificate authorities. File names begin with the prefix <tt>ntpkey_</tt> and end with the postfix <tt><i>_hostname.filestamp</i></tt>, where <tt><i>hostname</i></tt> is usually the string returned by the Unix <tt>gethostname()</tt> routine, and <tt><i>filestamp</i></tt> is the NTP seconds when the file was generated, in decimal digits. This both guarantees uniqueness and simplifies maintenance procedures, since all files can be quickly removed by a <tt>rm ntpkey*</tt> command or all files generated at a specific time can be removed by a <tt>rm *<i>filestamp</i></tt> command. To further reduce the risk of misconfiguration, the first two lines of a file contain the file name and generation date and time as comments.</p>
+-		<p>All files are installed by default in the keys directory <tt>/usr/local/etc</tt>, which is normally in a shared filesystem in NFS-mounted networks. The actual location of the keys directory and each file can be overridden by configuration commands, but this is not recommended. Normally, the files for each host are generated by that host and used only by that host, although exceptions exist as noted later on this page.</p>
++		<p>All files are installed by default in the keys directory <tt>/etc/ntp/crypto</tt>. The actual location of the keys directory and each file can be overridden by configuration commands, but this is not recommended. Normally, the files for each host are generated by that host and used only by that host, although exceptions exist as noted later on this page.</p>
+ 		<p>Normally, files containing private values, including the host key, sign key and identification parameters, are permitted root read/write-only; while others containing public values are permitted world readable. Alternatively, files containing private values can be encrypted and these files permitted world readable, which simplifies maintenance in shared file systems. Since uniqueness is insured by the hostname and file name extensions, the files for a NFS server and dependent clients can all be installed in the same shared directory.</p>
+ 		<p>The recommended practice is to keep the file name extensions when installing a file and to install a soft link from the generic names specified elsewhere on this page to the generated files. This allows new file generations to be activated simply by changing the link. If a link is present, <tt>ntpd</tt> follows it to the file name to extract the filestamp. If a link is not present, <tt>ntpd</tt> extracts the filestamp from the file itself. This allows clients to verify that the file and generation times are always current. The <tt>ntp-keygen</tt> program uses the same extension for all files generated at one time, so each generation is distinct and can be readily recognized in monitoring data.</p>
+ 		<h4 id="run">Running the program</h4>
+-		<p>The safest way to run the <tt>ntp-keygen</tt> program is logged in directly as root. The recommended procedure is change to the keys directory, usually <tt>/ust/local/etc</tt>, then run the program. When run for the first time, or if all <tt>ntpkey</tt> files have been removed, the program generates a RSA host key file and matching RSA-MD5 certificate file, which is all that is necessary in many cases. The program also generates soft links from the generic names to the respective files. If run again, the program uses the same host key file, but generates a new certificate file and link.</p>
++		<p>The safest way to run the <tt>ntp-keygen</tt> program is logged in directly as root. The recommended procedure is change to the keys directory, usually <tt>/etc/ntp/crypto</tt>, then run the program. When run for the first time, or if all <tt>ntpkey</tt> files have been removed, the program generates a RSA host key file and matching RSA-MD5 certificate file, which is all that is necessary in many cases. The program also generates soft links from the generic names to the respective files. If run again, the program uses the same host key file, but generates a new certificate file and link.</p>
+ 		<p>The host key is used to encrypt the cookie when required and so must be RSA type. By default, the host key is also the sign key used to encrypt signatures. When necessary, a different sign key can be specified and this can be either RSA or DSA type. By default, the message digest type is MD5, but any combination of sign key type and message digest type supported by the OpenSSL library can be specified, including those using the MD2, MD5, SHA, SHA1, MDC2 and RIPE160 message digest algorithms. However, the scheme specified in the certificate must be compatible with the sign key. Certificates using any digest algorithm are compatible with RSA sign keys; however, only SHA and SHA1 certificates are compatible with DSA sign keys.</p>
+ 		<p>Private/public key files and certificates are compatible with other OpenSSL applications and very likely other libraries as well. Certificates or certificate requests derived from them should be compatible with extant industry practice, although some users might find the interpretation of X509v3 extension fields somewhat liberal. However, the identification parameter files, although encoded as the other files, are probably not compatible with anything other than Autokey.</p>
+ 		<p>Running the program as other than root and using the Unix <tt>su</tt> command to assume root may not work properly, since by default the OpenSSL library looks for the random seed file <tt>.rnd</tt> in the user home directory. However, there should be only one <tt>.rnd</tt>, most conveniently in the root directory, so it is convenient to define the <tt>$RANDFILE</tt> environment variable used by the OpenSSL library as the path to <tt>/.rnd</tt>.</p>
+@@ -81,11 +81,13 @@
+ 			<dd>Set the suject name to <i>name</i>. This is used as the subject field in certificates and in the file name for host and sign keys.
+ 			<dt><tt>-M</tt>
+ 			<dd>Generate MD5 keys, obsoleting any that may exist.
++			<dt><tt>-m <i>modulus</i></tt>
++			<dd>Set prime modulus size in bits (256 - 2048). Default size is 512.
+ 			<dt><tt>-P</tt>
+ 			<dd>Generate a private certificate. By default, the program generates public certificates.
+ 			<dt><tt>-p <i>password</i></tt>
+ 			<dd>Encrypt generated files containing private data with <tt><i>password</i></tt> and the DES-CBC algorithm.
+-			<dt><tt>-q</tt>
++			<dt><tt>-q <i>password</i></tt>
+ 			<dd>Set the password for reading files to <tt><i>password</i></tt>.
+ 			<dt><tt>-S [ RSA | DSA ]</tt>
+ 			<dd>Generate a new sign key of the designated type, obsoleting any that may exist. By default, the program uses the host key as the sign key.
+diff -up ntp-4.2.4p5/html/monopt.html.htmldoc ntp-4.2.4p5/html/monopt.html
+--- ntp-4.2.4p5/html/monopt.html.htmldoc	2006-12-28 13:02:56.000000000 +0100
++++ ntp-4.2.4p5/html/monopt.html	2008-08-18 12:31:59.000000000 +0200
+@@ -82,9 +82,7 @@
+ 						<dl>
+ 							<dt><i><tt>name</tt></i>
+ 							<dd>This is the type of the statistics records, as shown in the <tt>statistics</tt> command.
+-						</dl>
+-					<dd><tt>file <i>filename</i></tt>
+-						<dl>
++					<dt><tt>file <i>filename</i></tt>
+ 							<dd>This is the file name for the statistics records. Filenames of set members are built from three concatenated elements <i><tt>prefix</tt></i>, <i><tt>filename</tt></i> and <i><tt>suffix</tt></i>:
+ 								<dl>
+ 									<dt><i><tt>prefix</tt></i>
+@@ -94,9 +92,7 @@
+ 									<dt><i><tt>suffix</tt></i>
+ 									<dd>This part is reflects individual elements of a file set. It is generated according to the type of a file set.
+ 								</dl>
+-						</dl>
+-					<dd><tt>type <i>typename</i></tt>
+-						<dl>
++					<dt><tt>type <i>typename</i></tt>
+ 							<dd>A file generation set is characterized by its type. The following types are supported:
+ 								<dl>
+ 									<dt><tt>none</tt>
+@@ -114,13 +110,9 @@
+ 									<dt><tt>age</tt>
+ 									<dd>This type of file generation sets changes to a new element of the file set every 24 hours of server operation. The filename suffix consists of a dot, the letter <tt>a</tt>, and an 8-digit number. This number is taken to be the number of seconds the server is running at the start of the corresponding 24-hour period. Information is only written to a file generation by specifying <tt>enable</tt>; output is prevented by specifying <tt>disable</tt>.
+ 								</dl>
+-						</dl>
+-					<dd><tt>link | nolink</tt>
+-						<dl>
++					<dt><tt>link | nolink</tt>
+ 							<dd>It is convenient to be able to access the current element of a file generation set by a fixed name. This feature is enabled by specifying <tt>link</tt> and disabled using <tt>nolink</tt>. If <tt>link</tt> is specified, a hard link from the current file set element to a file without suffix is created. When there is already a file with this name and the number of links of this file is one, it is renamed appending a dot, the letter <tt>C</tt>, and the pid of the <tt>ntpd</tt> server process. When the number of links is greater than one, the file is unlinked. This allows the current file to be accessed by a constant name.
+-						</dl>
+-					<dd><tt>enable | disable</tt>
+-						<dl>
++					<dt><tt>enable | disable</tt>
+ 							<dd>Enables or disables the recording function.
+ 						</dl>
+ 				</dl>
+diff -up ntp-4.2.4p5/html/ntpd.html.htmldoc ntp-4.2.4p5/html/ntpd.html
+--- ntp-4.2.4p5/html/ntpd.html.htmldoc	2006-12-28 13:02:57.000000000 +0100
++++ ntp-4.2.4p5/html/ntpd.html	2008-08-18 12:31:59.000000000 +0200
 @@ -34,7 +34,7 @@
  		</ul>
  		<hr>
@@ -74,8 +190,9 @@
  		<hr>
  		<script type="text/javascript" language="javascript" src="scripts/footer.txt"></script>
  	</body>
---- ntp-4.2.4/html/ntpdate.html.htmldoc	2007-01-05 15:40:59.000000000 +0100
-+++ ntp-4.2.4/html/ntpdate.html	2007-01-05 15:40:59.000000000 +0100
+diff -up ntp-4.2.4p5/html/ntpdate.html.htmldoc ntp-4.2.4p5/html/ntpdate.html
+--- ntp-4.2.4p5/html/ntpdate.html.htmldoc	2008-08-18 12:31:59.000000000 +0200
++++ ntp-4.2.4p5/html/ntpdate.html	2008-08-18 12:31:59.000000000 +0200
 @@ -18,9 +18,9 @@
  		<hr>
  		<p>Disclaimer: The functionality of this program is now available in the <tt>ntpd</tt> program. See the <tt>-q</tt> command line option in the <a href="ntpd.html"><tt>ntpd</tt> - Network Time Protocol (NTP) daemon</a> page. After a suitable period of mourning, the <tt>ntpdate</tt> program is to be retired from this distribution</p>
@@ -130,94 +247,9 @@
  		<h4>Bugs</h4>
  		The slew adjustment is actually 50% larger than the measured offset, since this (it is argued) will tend to keep a badly drifting clock more accurate. This is probably not a good idea and may cause a troubling hunt for some values of the kernel variables <tt>tick</tt> and <tt>tickadj</tt>.&nbsp;
  		<hr>
---- ntp-4.2.4/html/ntptrace.html.htmldoc	2006-06-06 22:16:06.000000000 +0200
-+++ ntp-4.2.4/html/ntptrace.html	2007-01-05 15:40:59.000000000 +0100
-@@ -17,7 +17,7 @@
- 		<br clear="left">
- 		<hr>
- 		<h4>Synopsis</h4>
--		<tt>ntptrace [ -vdn ] [ -r <i>retries</i> ] [ -t <i>timeout</i> ] [ <i>server</i> ]</tt>
-+		<tt>ntptrace [ -n ] [ -m <i>maxhosts</i> ] [ <i>server</i> ]</tt>
- 		<h4>Description</h4>
- 		<p><tt>ntptrace</tt> determines where a given Network Time Protocol (NTP) server gets its time from, and follows the chain of NTP servers back to their master time source. If given no arguments, it starts with <tt>localhost</tt>. Here is an example of the output from <tt>ntptrace</tt>:</p>
- 		<pre>
-@@ -29,16 +29,8 @@
- 		<p>On each line, the fields are (left to right): the host name, the host stratum, the time offset between that host and the local host (as measured by <tt>ntptrace</tt>; this is why it is not always zero for &quot;<tt>localhost</tt>&quot;), the host synchronization distance, and (only for stratum-1 servers) the reference clock ID. All times are given in seconds. Note that the stratum is the server hop count to the primary source, while the synchronization distance is the estimated error relative to the primary source. These terms are precisely defined in RFC-1305.</p>
- 		<h4>Options</h4>
- 		<dl>
--			<dt><tt>-d</tt>
--			<dd>Turns on some debugging output.
- 			<dt><tt>-n</tt>
- 			<dd>Turns off the printing of host names; instead, host IP addresses are given. This may be useful if a nameserver is down.
--			<dt><tt>-r <i>retries</i></tt>
--			<dd>Sets the number of retransmission attempts for each host (default = 5).
--			<dt><tt>-t <i>timeout</i></tt>
--			<dd>Sets the retransmission timeout (in seconds) (default = 2).
--			<dt><tt>-v</tt>
--			<dd>Prints verbose information about the NTP servers.
- 		</dl>
- 		<h4>Bugs</h4>
- 		<p>This program makes no attempt to improve accuracy by doing multiple samples.</p>
---- ntp-4.2.4p2/html/authopt.html.htmldoc	2006-12-28 13:02:54.000000000 +0100
-+++ ntp-4.2.4p2/html/authopt.html	2007-07-18 18:04:37.000000000 +0200
-@@ -74,7 +74,7 @@
- 			<dt><tt>controlkey <i>key</i></tt>
- 			<dd>Specifies the key identifier to use with the <a href="ntpq.html"><tt>ntpq</tt></a> utility, which uses the standard protocol defined in RFC-1305. The <tt><i>key</i></tt> argument is the key identifier for a trusted key, where the value can be in the range 1 to 65,534, inclusive.
- 			<dt><tt>crypto [cert <i>file</i>] [leap <i>file</i>] [randfile <i>file</i>] [host <i>file</i>] [sign <i>file</i>] [ident <i>scheme</i>] [iffpar <i>file</i>] [gqpar <i>file</i>] [mvpar <i>file</i>] [pw <i>password</i>]</tt>
--			<dd>This command requires the OpenSSL library. It activates public key cryptography, selects the message digest and signature encryption scheme and loads the required private and public values described above. If one or more files are left unspecified, the default names are used as described above. Unless the complete path and name of the file are specified, the location of a file is relative to the keys directory specified in the <tt>keysdir</tt> command or default <tt>/usr/local/etc</tt>. Following are the subcommands:
-+			<dd>This command requires the OpenSSL library. It activates public key cryptography, selects the message digest and signature encryption scheme and loads the required private and public values described above. If one or more files are left unspecified, the default names are used as described above. Unless the complete path and name of the file are specified, the location of a file is relative to the keys directory specified in the <tt>keysdir</tt> command or default <tt>/etc/ntp/crypto</tt>. Following are the subcommands:
- 				<dl>
- 					<dt><tt>cert <i>file</i></tt>
- 					<dd>Specifies the location of the required host public certificate file. This overrides the link <tt>ntpkey_cert_<i>hostname</i></tt> in the keys directory.
-@@ -103,7 +103,7 @@
- 			<dt><tt>keys <i>keyfile</i></tt>
- 			<dd>Specifies the complete path and location of the MD5 key file containing the keys and key identifiers used by <tt>ntpd</tt>, <tt>ntpq</tt> and <tt>ntpdc</tt> when operating with symmetric key cryptography. This is the same operation as the <tt>-k </tt>command line option.
- 			<dt><tt>keysdir <i>path</i></tt>
--			<dd>This command specifies the default directory path for cryptographic keys, parameters and certificates. The default is <tt>/usr/local/etc/</tt>.
-+			<dd>This command specifies the default directory path for cryptographic keys, parameters and certificates. The default is <tt>/etc/ntp/crypto</tt>.
- 			<dt><tt>requestkey <i>key</i></tt>
- 			<dd>Specifies the key identifier to use with the <a href="ntpdc.html"><tt>ntpdc</tt></a> utility program, which uses a proprietary protocol specific to this implementation of <tt>ntpd</tt>. The <tt><i>key</i></tt> argument is a key identifier for the trusted key, where the value can be in the range 1 to 65,534, inclusive.
- 			<dt><tt>revoke [<i>logsec</i>]</tt>
---- ntp-4.2.4/html/keygen.html.htmldoc	2006-06-06 22:16:00.000000000 +0200
-+++ ntp-4.2.4/html/keygen.html	2007-01-05 15:40:59.000000000 +0100
-@@ -32,17 +32,17 @@
- 		</ul>
- 		<hr>
- 		<h4 id="synop">Synopsis</h4>
--		<p id="intro"><tt>ntp-keygen [ -deGgHIMnPT ] [ -c [RSA-MD2 | RSA-MD5 | RSA-SHA | RSA-SHA1 | RSA-MDC2 | RSA-RIPEMD160 | DSA-SHA | DSA-SHA1 ] ] [ -i <i>name</i> ] [ -p <i>password</i> ] [ -S [ RSA | DSA ] ] [ -s <i>name</i> ] [ -v <i>nkeys</i> ]</tt></p>
-+		<p id="intro"><tt>ntp-keygen [ -deGgHIMPT ] [ -c [RSA-MD2 | RSA-MD5 | RSA-SHA | RSA-SHA1 | RSA-MDC2 | RSA-RIPEMD160 | DSA-SHA | DSA-SHA1 ] ] [ -i <i>name</i> ] [ -m <i>modulus</i> ] [ -p <i>password</i> ] [ -q <i>password</i> ] [ -S [ RSA | DSA ] ] [ -s <i>name</i> ] [ -v <i>nkeys</i> ] [ -V <i>params</i> ]</tt></p>
- 		<h4 id="descrip">Description</h4>
- 		<p>This program generates cryptographic data files used by the NTPv4 authentication and identification schemes. It generates MD5 key files used in symmetric key cryptography. In addition, if the OpenSSL software library has been installed, it generates keys, certificate and identity files used in public key cryptography. These files are used for cookie encryption, digital signature and challenge/response identification algorithms compatible with the Internet standard security infrastructure.</p>
- 		<p>By default, files are not encrypted by <tt>ntp-keygen</tt>. The <tt>-p <i>password</i></tt> option specifies the write password and <tt>-q <i>password</i></tt> option the read password for previously encrypted files. The <tt>ntp-keygen</tt> program prompts for the password if it reads an encrypted file and the password is missing or incorrect. If an encrypted file is read successfully and no write password is specified, the read password is used as the write password by default.</p>
- 		<p>The <tt>ntpd</tt> configuration command <tt>crypto pw <i>password</i></tt> specifies the read password for previously encrypted files. The daemon expires on the spot if the password is missing or incorrect. For convenience, if a file has been previously encrypted, the default read password is the name of the host running the program. If the previous write password is specified as the host name, these files can be read by that host with no explicit password.</p>
- 		<p>All files are in PEM-encoded printable ASCII format, so they can be embedded as MIME attachments in mail to other sites and certificate authorities. File names begin with the prefix <tt>ntpkey_</tt> and end with the postfix <tt><i>_hostname.filestamp</i></tt>, where <tt><i>hostname</i></tt> is usually the string returned by the Unix <tt>gethostname()</tt> routine, and <tt><i>filestamp</i></tt> is the NTP seconds when the file was generated, in decimal digits. This both guarantees uniqueness and simplifies maintenance procedures, since all files can be quickly removed by a <tt>rm ntpkey*</tt> command or all files generated at a specific time can be removed by a <tt>rm *<i>filestamp</i></tt> command. To further reduce the risk of misconfiguration, the first two lines of a file contain the file name and generation date and time as comments.</p>
--		<p>All files are installed by default in the keys directory <tt>/usr/local/etc</tt>, which is normally in a shared filesystem in NFS-mounted networks. The actual location of the keys directory and each file can be overridden by configuration commands, but this is not recommended. Normally, the files for each host are generated by that host and used only by that host, although exceptions exist as noted later on this page.</p>
-+		<p>All files are installed by default in the keys directory <tt>/etc/ntp/crypto</tt>. The actual location of the keys directory and each file can be overridden by configuration commands, but this is not recommended. Normally, the files for each host are generated by that host and used only by that host, although exceptions exist as noted later on this page.</p>
- 		<p>Normally, files containing private values, including the host key, sign key and identification parameters, are permitted root read/write-only; while others containing public values are permitted world readable. Alternatively, files containing private values can be encrypted and these files permitted world readable, which simplifies maintenance in shared file systems. Since uniqueness is insured by the hostname and file name extensions, the files for a NFS server and dependent clients can all be installed in the same shared directory.</p>
- 		<p>The recommended practice is to keep the file name extensions when installing a file and to install a soft link from the generic names specified elsewhere on this page to the generated files. This allows new file generations to be activated simply by changing the link. If a link is present, <tt>ntpd</tt> follows it to the file name to extract the filestamp. If a link is not present, <tt>ntpd</tt> extracts the filestamp from the file itself. This allows clients to verify that the file and generation times are always current. The <tt>ntp-keygen</tt> program uses the same extension for all files generated at one time, so each generation is distinct and can be readily recognized in monitoring data.</p>
- 		<h4 id="run">Running the program</h4>
--		<p>The safest way to run the <tt>ntp-keygen</tt> program is logged in directly as root. The recommended procedure is change to the keys directory, usually <tt>/ust/local/etc</tt>, then run the program. When run for the first time, or if all <tt>ntpkey</tt> files have been removed, the program generates a RSA host key file and matching RSA-MD5 certificate file, which is all that is necessary in many cases. The program also generates soft links from the generic names to the respective files. If run again, the program uses the same host key file, but generates a new certificate file and link.</p>
-+		<p>The safest way to run the <tt>ntp-keygen</tt> program is logged in directly as root. The recommended procedure is change to the keys directory, usually <tt>/etc/ntp/crypto</tt>, then run the program. When run for the first time, or if all <tt>ntpkey</tt> files have been removed, the program generates a RSA host key file and matching RSA-MD5 certificate file, which is all that is necessary in many cases. The program also generates soft links from the generic names to the respective files. If run again, the program uses the same host key file, but generates a new certificate file and link.</p>
- 		<p>The host key is used to encrypt the cookie when required and so must be RSA type. By default, the host key is also the sign key used to encrypt signatures. When necessary, a different sign key can be specified and this can be either RSA or DSA type. By default, the message digest type is MD5, but any combination of sign key type and message digest type supported by the OpenSSL library can be specified, including those using the MD2, MD5, SHA, SHA1, MDC2 and RIPE160 message digest algorithms. However, the scheme specified in the certificate must be compatible with the sign key. Certificates using any digest algorithm are compatible with RSA sign keys; however, only SHA and SHA1 certificates are compatible with DSA sign keys.</p>
- 		<p>Private/public key files and certificates are compatible with other OpenSSL applications and very likely other libraries as well. Certificates or certificate requests derived from them should be compatible with extant industry practice, although some users might find the interpretation of X509v3 extension fields somewhat liberal. However, the identification parameter files, although encoded as the other files, are probably not compatible with anything other than Autokey.</p>
- 		<p>Running the program as other than root and using the Unix <tt>su</tt> command to assume root may not work properly, since by default the OpenSSL library looks for the random seed file <tt>.rnd</tt> in the user home directory. However, there should be only one <tt>.rnd</tt>, most conveniently in the root directory, so it is convenient to define the <tt>$RANDFILE</tt> environment variable used by the OpenSSL library as the path to <tt>/.rnd</tt>.</p>
-@@ -81,11 +81,13 @@
- 			<dd>Set the suject name to <i>name</i>. This is used as the subject field in certificates and in the file name for host and sign keys.
- 			<dt><tt>-M</tt>
- 			<dd>Generate MD5 keys, obsoleting any that may exist.
-+			<dt><tt>-m <i>modulus</i></tt>
-+			<dd>Set prime modulus size in bits (256 - 2048). Default size is 512.
- 			<dt><tt>-P</tt>
- 			<dd>Generate a private certificate. By default, the program generates public certificates.
- 			<dt><tt>-p <i>password</i></tt>
- 			<dd>Encrypt generated files containing private data with <tt><i>password</i></tt> and the DES-CBC algorithm.
--			<dt><tt>-q</tt>
-+			<dt><tt>-q <i>password</i></tt>
- 			<dd>Set the password for reading files to <tt><i>password</i></tt>.
- 			<dt><tt>-S [ RSA | DSA ]</tt>
- 			<dd>Generate a new sign key of the designated type, obsoleting any that may exist. By default, the program uses the host key as the sign key.
---- ntp-4.2.4/html/ntpdc.html.htmldoc	2006-12-28 13:02:59.000000000 +0100
-+++ ntp-4.2.4/html/ntpdc.html	2007-01-05 15:40:59.000000000 +0100
+diff -up ntp-4.2.4p5/html/ntpdc.html.htmldoc ntp-4.2.4p5/html/ntpdc.html
+--- ntp-4.2.4p5/html/ntpdc.html.htmldoc	2008-08-10 13:02:44.000000000 +0200
++++ ntp-4.2.4p5/html/ntpdc.html	2008-08-18 12:38:13.000000000 +0200
 @@ -19,9 +19,9 @@
  		<script type="text/javascript" language="javascript" src="scripts/links12.txt"></script>
  		<hr>
@@ -243,8 +275,8 @@
  		<dt><tt>addpeer <i>peer_address</i> [
  		<i>keyid</i> ] [ <i>version</i> ] [
  		<tt>minpoll# | prefer | iburst  | burst | minpoll
--		<i>N</i> | <tt>maxpoll</tt> <i>N</i> [ <i>dynamic</i> ] [...] ]</tt>
-+		<i>N</i> | <tt>maxpoll</tt> <i>N</i> [ <i>dynamic</i> ] [...]</tt> ]</tt>
+-		<i>N</i> | <tt>maxpoll</tt> <i>N</i> [...] ]</tt>
++		<i>N</i> | <tt>maxpoll</tt> <i>N</i> [...] </tt> ]</tt>
  		<dt><tt>addpeer <i>peer_address</i> [
  		<tt>prefer | iburst | burst | minpoll
  		<i>N</i> | <tt>maxpoll</tt> <i>N</i> | <tt>keyid</tt>
@@ -253,27 +285,26 @@
  			<dd>Add a configured peer association at the
  			given address and operating in symmetric
  			active mode. Note that an existing association
-@@ -162,16 +164,16 @@
+@@ -162,15 +164,15 @@
  			<tt>peer</tt> configuration file command of
  			ntpd.  See the <a href="confopt.html">Server Options</a> page for further information.
  			Each flag (or its absence) replaces the
 -			previous setting. The <tt>prefer</tt> keyword indicates a preferred peer (and thus will be used primarily for clock synchronisation if possible). The preferred peer also determines the validity of the PPS signal - if the preferred peer is suitable for synchronisation so is the PPS signal.
 +			previous setting. The <tt>prefer</tt> keyword indicates a preferred peer (and thus will be used primarily for clock synchronization if possible). The preferred peer also determines the validity of the PPS signal - if the preferred peer is suitable for synchronization so is the PPS signal.
- 			The <tt>dynamic</tt> keyword allows association configuration even when no suitable network interface is found at configuration time. The dynamic interface update mechanism may complete the configuration when new interfaces appear (e.g. WLAN/PPP interfaces) at a later time and thus render the association operable.
  			<dt><tt>addserver <i>peer_address</i> [
  		<i>keyid</i> ] [ <i>version</i> ] [
  		<tt>minpoll# | prefer | iburst  | burst | minpoll
 -		<i>N</i> | <tt>maxpoll</tt> <i>N</i> [...] ]</tt>
-+		<i>N</i> | <tt>maxpoll</tt> <i>N</i> [...] </tt>]</tt>
++		<i>N</i> | <tt>maxpoll</tt> <i>N</i> [...] </tt> ]</tt>
  		<dt><tt>addserver <i>peer_address</i> [
  		<tt>prefer | iburst | burst | minpoll
  		<i>N</i> | <tt>maxpoll</tt> <i>N</i> | <tt>keyid</tt>
--			<i>N</i> | <tt>version</tt> <i>N</i> [...] [ <i>dynamic</i> ] ]</tt>
-+			<i>N</i> | <tt>version</tt> <i>N</i> [...] [ <i>dynamic</i></tt> ] ]</tt>
+-			<i>N</i> | <tt>version</tt> <i>N</i> [...] ]</tt>
++			<i>N</i> | <tt>version</tt> <i>N</i> [...] </tt> ]</tt>
  			<dd>Identical to the addpeer command, except that the operating mode is client.
  			<dt><tt>broadcast <i>peer_address</i> [
  			<i>keyid</i> ] [ <i>version</i> ] [ <i>prefer</i> ]</tt>
-@@ -200,9 +202,9 @@
+@@ -199,9 +201,9 @@
  			<dd>Returns information concerning the authentication module, including known keys and counts of encryptions and decryptions which have been done.
  			<dt><tt>traps</tt>
  			<dd>Display the traps set in the server. See the source listing for further information.
@@ -285,8 +316,9 @@
  			<dd>Clear a trap for asynchronous messages. See the source listing for further information.
  			<dt><tt>reset</tt>
  			<dd>Clear the statistics counters in various modules of the server. See the source listing for further information.
---- ntp-4.2.4/html/ntpq.html.htmldoc	2006-06-06 22:16:06.000000000 +0200
-+++ ntp-4.2.4/html/ntpq.html	2007-01-05 15:40:59.000000000 +0100
+diff -up ntp-4.2.4p5/html/ntpq.html.htmldoc ntp-4.2.4p5/html/ntpq.html
+--- ntp-4.2.4p5/html/ntpq.html.htmldoc	2006-06-06 22:16:06.000000000 +0200
++++ ntp-4.2.4p5/html/ntpq.html	2008-08-18 12:31:59.000000000 +0200
 @@ -19,11 +19,11 @@
  		<script type="text/javascript" language="javascript" src="scripts/links12.txt"></script>
  		<hr>
@@ -336,56 +368,32 @@
  			<dt><tt>0x200 TEST10</tt>
  			<dd>The autokey protocol has detected an authentication failure. See the <a href="authopt.html">Authentication Options</a> page.
  			<dt><tt>0x400 TEST11</tt>
---- ntp-4.2.4/html/monopt.html.htmldoc	2006-12-28 13:02:56.000000000 +0100
-+++ ntp-4.2.4/html/monopt.html	2007-01-05 15:42:20.000000000 +0100
-@@ -82,9 +82,7 @@
- 						<dl>
- 							<dt><i><tt>name</tt></i>
- 							<dd>This is the type of the statistics records, as shown in the <tt>statistics</tt> command.
--						</dl>
--					<dd><tt>file <i>filename</i></tt>
--						<dl>
-+					<dt><tt>file <i>filename</i></tt>
- 							<dd>This is the file name for the statistics records. Filenames of set members are built from three concatenated elements <i><tt>prefix</tt></i>, <i><tt>filename</tt></i> and <i><tt>suffix</tt></i>:
- 								<dl>
- 									<dt><i><tt>prefix</tt></i>
-@@ -94,9 +92,7 @@
- 									<dt><i><tt>suffix</tt></i>
- 									<dd>This part is reflects individual elements of a file set. It is generated according to the type of a file set.
- 								</dl>
--						</dl>
--					<dd><tt>type <i>typename</i></tt>
--						<dl>
-+					<dt><tt>type <i>typename</i></tt>
- 							<dd>A file generation set is characterized by its type. The following types are supported:
- 								<dl>
- 									<dt><tt>none</tt>
-@@ -114,13 +110,9 @@
- 									<dt><tt>age</tt>
- 									<dd>This type of file generation sets changes to a new element of the file set every 24 hours of server operation. The filename suffix consists of a dot, the letter <tt>a</tt>, and an 8-digit number. This number is taken to be the number of seconds the server is running at the start of the corresponding 24-hour period. Information is only written to a file generation by specifying <tt>enable</tt>; output is prevented by specifying <tt>disable</tt>.
- 								</dl>
--						</dl>
--					<dd><tt>link | nolink</tt>
--						<dl>
-+					<dt><tt>link | nolink</tt>
- 							<dd>It is convenient to be able to access the current element of a file generation set by a fixed name. This feature is enabled by specifying <tt>link</tt> and disabled using <tt>nolink</tt>. If <tt>link</tt> is specified, a hard link from the current file set element to a file without suffix is created. When there is already a file with this name and the number of links of this file is one, it is renamed appending a dot, the letter <tt>C</tt>, and the pid of the <tt>ntpd</tt> server process. When the number of links is greater than one, the file is unlinked. This allows the current file to be accessed by a constant name.
--						</dl>
--					<dd><tt>enable | disable</tt>
--						<dl>
-+					<dt><tt>enable | disable</tt>
- 							<dd>Enables or disables the recording function.
- 						</dl>
- 				</dl>
---- ntp-4.2.4/html/confopt.html.htmldoc	2006-12-28 13:02:55.000000000 +0100
-+++ ntp-4.2.4/html/confopt.html	2007-01-05 15:40:59.000000000 +0100
-@@ -32,8 +32,8 @@
- 		<p>There are three types of associations: persistent, preemptable and ephemeral. Persistent associations are mobilized by a configuration command and never demobilized. Preemptable associations, which are new to NTPv4, are mobilized by a configuration command which includes the <tt>prempt</tt> flag and are demobilized by timeout or error. Ephemeral associations are mobilized upon arrival of designated messages and demobilized by timeout or error.</p>
+diff -up ntp-4.2.4p5/html/ntptrace.html.htmldoc ntp-4.2.4p5/html/ntptrace.html
+--- ntp-4.2.4p5/html/ntptrace.html.htmldoc	2006-06-06 22:16:06.000000000 +0200
++++ ntp-4.2.4p5/html/ntptrace.html	2008-08-18 12:31:59.000000000 +0200
+@@ -17,7 +17,7 @@
+ 		<br clear="left">
+ 		<hr>
+ 		<h4>Synopsis</h4>
+-		<tt>ntptrace [ -vdn ] [ -r <i>retries</i> ] [ -t <i>timeout</i> ] [ <i>server</i> ]</tt>
++		<tt>ntptrace [ -n ] [ -m <i>maxhosts</i> ] [ <i>server</i> ]</tt>
+ 		<h4>Description</h4>
+ 		<p><tt>ntptrace</tt> determines where a given Network Time Protocol (NTP) server gets its time from, and follows the chain of NTP servers back to their master time source. If given no arguments, it starts with <tt>localhost</tt>. Here is an example of the output from <tt>ntptrace</tt>:</p>
+ 		<pre>
+@@ -29,16 +29,8 @@ usndh.edu: stratum 1, offset 0.0019298, 
+ 		<p>On each line, the fields are (left to right): the host name, the host stratum, the time offset between that host and the local host (as measured by <tt>ntptrace</tt>; this is why it is not always zero for &quot;<tt>localhost</tt>&quot;), the host synchronization distance, and (only for stratum-1 servers) the reference clock ID. All times are given in seconds. Note that the stratum is the server hop count to the primary source, while the synchronization distance is the estimated error relative to the primary source. These terms are precisely defined in RFC-1305.</p>
+ 		<h4>Options</h4>
  		<dl>
- 			<dt><tt>server <i>address</i> [options ...]</tt><br>
--				<tt>peer <i>address</i> [</tt><tt>options ...]<br>
--					broadcast <i>address</i> [options ...]</tt><br>
-+				<tt>peer <i>address</i> [options ...]</tt><br>
-+					<tt>broadcast <i>address</i> [options ...]</tt><br>
- 				<tt>manycastclient <i>address</i> [options ...]</tt>
- 			<dd>These four commands specify the time server name or address to be used and the mode in which to operate. The <i>address</i> can be either a DNS name or a IP address in dotted-quad notation. Additional information on association behavior can be found in the <a href="assoc.html">Association Management</a> page.
- 				<dl>
+-			<dt><tt>-d</tt>
+-			<dd>Turns on some debugging output.
+ 			<dt><tt>-n</tt>
+ 			<dd>Turns off the printing of host names; instead, host IP addresses are given. This may be useful if a nameserver is down.
+-			<dt><tt>-r <i>retries</i></tt>
+-			<dd>Sets the number of retransmission attempts for each host (default = 5).
+-			<dt><tt>-t <i>timeout</i></tt>
+-			<dd>Sets the retransmission timeout (in seconds) (default = 2).
+-			<dt><tt>-v</tt>
+-			<dd>Prints verbose information about the NTP servers.
+ 		</dl>
+ 		<h4>Bugs</h4>
+ 		<p>This program makes no attempt to improve accuracy by doing multiple samples.</p>

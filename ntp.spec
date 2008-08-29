@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
-Version: 4.2.4p4
-Release: 7%{?dist}
+Version: 4.2.4p5
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -42,27 +42,27 @@ Source9: ntpdate.sysconfig
 Patch1: ntp-4.2.4p4-kernel.patch
 Patch2: ntp-4.2.4p0-droproot.patch
 Patch3: ntp-4.2.4-groups.patch
-Patch4: ntp-4.1.1c-rc3-authkey.patch
 Patch5: ntp-4.2.4-linkfastmath.patch
 Patch6: ntp-4.2.4p2-tentative.patch
 Patch7: ntp-4.2.4p2-noseed.patch
 Patch8: ntp-4.2.4p4-multilisten.patch
 Patch9: ntp-4.2.4-html2man.patch
-Patch10: ntp-4.2.4-htmldoc.patch
+Patch10: ntp-4.2.4p5-htmldoc.patch
 Patch11: ntp-4.2.4p2-filegen.patch
 Patch12: ntp-4.2.4-sprintf.patch
 Patch13: ntp-4.2.4p4-bsdadv.patch
-Patch14: ntp-4.2.4p4-mlock.patch
+Patch14: ntp-4.2.4p5-mlock.patch
 Patch15: ntp-4.2.4p2-clockselect.patch
 Patch16: ntp-4.2.4p2-nosntp.patch
-Patch17: ntp-4.2.4p0-sleep.patch
-Patch18: ntp-4.2.4p4-bcast.patch
+Patch17: ntp-4.2.4p5-sleep.patch
+Patch18: ntp-4.2.4p5-bcast.patch
 Patch19: ntp-4.2.4p0-retcode.patch
 Patch20: ntp-4.2.4p2-noif.patch
 Patch21: ntp-4.2.4p4-ipv6.patch
 Patch22: ntp-4.2.4p4-cmsgalign.patch
 Patch23: ntp-4.2.4p4-gettime.patch
 Patch24: ntp-4.2.4p4-resinit.patch
+Patch25: ntp-4.2.4p5-rtnetlink.patch
 
 URL: http://www.ntp.org
 Requires(post): /sbin/chkconfig
@@ -109,7 +109,6 @@ NTP servers.
 %patch1 -p1 -b .kernel
 %patch2 -p1 -b .droproot
 %patch3 -p1 -b .groups
-%patch4 -p1 -b .authkey
 %patch6 -p1 -b .tentative
 %patch7 -p1 -b .noseed
 %patch8 -p1 -b .multilisten
@@ -127,6 +126,7 @@ NTP servers.
 %patch21 -p1 -b .ipv6
 %patch22 -p1 -b .cmsgalign
 %patch24 -p1 -b .resinit
+%patch25 -p1 -b .rtnetlink
 
 # clock_gettime needs -lrt
 sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
@@ -288,6 +288,10 @@ fi
 %{_mandir}/man8/ntpdate.8*
 
 %changelog
+* Fri Aug 29 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p5-1
+- update to 4.2.4p5
+- add support for fast interface updates
+
 * Mon Jul 28 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p4-7
 - reload resolv.conf after temporary failure in name resolution (#456743)
 - use clock_gettime

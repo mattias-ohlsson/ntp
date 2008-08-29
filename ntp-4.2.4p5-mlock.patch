@@ -1,6 +1,6 @@
-diff -up ntp-4.2.4p4/html/ntpd.html.mlock ntp-4.2.4p4/html/ntpd.html
---- ntp-4.2.4p4/html/ntpd.html.mlock	2007-10-25 14:55:05.000000000 +0200
-+++ ntp-4.2.4p4/html/ntpd.html	2007-10-25 14:55:05.000000000 +0200
+diff -up ntp-4.2.4p5/html/ntpd.html.mlock ntp-4.2.4p5/html/ntpd.html
+--- ntp-4.2.4p5/html/ntpd.html.mlock	2008-08-18 12:58:37.000000000 +0200
++++ ntp-4.2.4p5/html/ntpd.html	2008-08-18 12:58:37.000000000 +0200
 @@ -34,7 +34,7 @@
  		</ul>
  		<hr>
@@ -10,7 +10,7 @@ diff -up ntp-4.2.4p4/html/ntpd.html.mlock ntp-4.2.4p4/html/ntpd.html
  		<h4 id="descr">Description</h4>
  		<p>The <tt>ntpd</tt> program is an operating system daemon which sets and maintains the system time of day in synchronism with Internet standard time servers. It is a complete implementation of the Network Time Protocol (NTP) version 4, but also retains compatibility with version 3, as defined by RFC-1305, and version 1 and 2, as defined by RFC-1059 and RFC-1119, respectively. <tt>ntpd</tt> does most computations in 64-bit floating point arithmetic and does relatively clumsy 64-bit fixed point operations only when necessary to preserve the ultimate precision, about 232 picoseconds. While the ultimate precision is not achievable with ordinary workstations and networks of today, it may be required with future gigahertz CPU clocks and gigabit LANs.</p>
  		<h4 id="op">How NTP Operates</h4>
-@@ -95,6 +95,8 @@
+@@ -96,6 +96,8 @@
  			<dd>Specify the name and path of the log file. The default is the system log file. This is the same operation as the <tt>logfile <i>logfile</i></tt> configuration command.
  			<dt><tt>-L</tt>
  			<dd>Do not listen to virtual IPs. The default is to listen.
@@ -19,31 +19,10 @@ diff -up ntp-4.2.4p4/html/ntpd.html.mlock ntp-4.2.4p4/html/ntpd.html
  			<dt><tt>-n</tt>
  			<dd>Don't fork.
  			<dt><tt>-N</tt>
-diff -up ntp-4.2.4p4/ntpd/ntpd.c.mlock ntp-4.2.4p4/ntpd/ntpd.c
---- ntp-4.2.4p4/ntpd/ntpd.c.mlock	2007-10-25 14:55:05.000000000 +0200
-+++ ntp-4.2.4p4/ntpd/ntpd.c	2007-10-25 14:55:05.000000000 +0200
-@@ -699,7 +699,8 @@ ntpdmain(
- 	}
- #endif
- 
--#if defined(HAVE_MLOCKALL) && defined(MCL_CURRENT) && defined(MCL_FUTURE)
-+#if defined(MCL_CURRENT) && defined(MCL_FUTURE)
-+    if (HAVE_OPT( MLOCK )) {
- # ifdef HAVE_SETRLIMIT
- 	/*
- 	 * Set the stack limit to something smaller, so that we don't lock a lot
-@@ -737,6 +738,7 @@ ntpdmain(
- 	 */
- 	if (mlockall(MCL_CURRENT|MCL_FUTURE) < 0)
- 		msyslog(LOG_ERR, "mlockall(): %m");
-+    }
- #else /* not (HAVE_MLOCKALL && MCL_CURRENT && MCL_FUTURE) */
- # ifdef HAVE_PLOCK
- #  ifdef PROCLOCK
-diff -up ntp-4.2.4p4/ntpd/ntpd-opts.c.mlock ntp-4.2.4p4/ntpd/ntpd-opts.c
---- ntp-4.2.4p4/ntpd/ntpd-opts.c.mlock	2007-09-11 02:31:15.000000000 +0200
-+++ ntp-4.2.4p4/ntpd/ntpd-opts.c	2007-10-25 14:55:05.000000000 +0200
-@@ -265,6 +265,15 @@ tSCC    zNice_Name[]               = "ni
+diff -up ntp-4.2.4p5/ntpd/ntpd-opts.c.mlock ntp-4.2.4p5/ntpd/ntpd-opts.c
+--- ntp-4.2.4p5/ntpd/ntpd-opts.c.mlock	2008-08-17 11:20:09.000000000 +0200
++++ ntp-4.2.4p5/ntpd/ntpd-opts.c	2008-08-18 12:58:37.000000000 +0200
+@@ -264,6 +264,15 @@ tSCC    zNice_Name[]               = "ni
  #define NICE_FLAGS       (OPTST_DISABLED)
  
  /*
@@ -59,7 +38,7 @@ diff -up ntp-4.2.4p4/ntpd/ntpd-opts.c.mlock ntp-4.2.4p4/ntpd/ntpd-opts.c
   *  Pidfile option description:
   */
  tSCC    zPidfileText[] =
-@@ -790,6 +799,18 @@ static tOptDesc optDesc[ OPTION_CT ] = {
+@@ -789,6 +798,18 @@ static tOptDesc optDesc[ OPTION_CT ] = {
                                  OPTST_ARG_OPTIONAL | OPTST_IMM | OPTST_NO_INIT
  #endif
  
@@ -78,7 +57,7 @@ diff -up ntp-4.2.4p4/ntpd/ntpd-opts.c.mlock ntp-4.2.4p4/ntpd/ntpd-opts.c
    {  /* entry idx, value */ INDEX_OPT_VERSION, VALUE_OPT_VERSION,
       /* equiv idx value  */ NO_EQUIVALENT, 0,
       /* equivalenced to  */ NO_EQUIVALENT,
-@@ -882,7 +903,7 @@ tOptions ntpdOptions = {
+@@ -881,7 +902,7 @@ tOptions ntpdOptions = {
        NO_EQUIVALENT /* index of '-#' option */,
        NO_EQUIVALENT /* index of default opt */
      },
@@ -87,10 +66,10 @@ diff -up ntp-4.2.4p4/ntpd/ntpd-opts.c.mlock ntp-4.2.4p4/ntpd/ntpd-opts.c
  };
  
  /*
-diff -up ntp-4.2.4p4/ntpd/ntpd-opts.h.mlock ntp-4.2.4p4/ntpd/ntpd-opts.h
---- ntp-4.2.4p4/ntpd/ntpd-opts.h.mlock	2007-09-11 02:31:15.000000000 +0200
-+++ ntp-4.2.4p4/ntpd/ntpd-opts.h	2007-10-25 14:58:10.000000000 +0200
-@@ -82,12 +82,13 @@ typedef enum {
+diff -up ntp-4.2.4p5/ntpd/ntpd-opts.h.mlock ntp-4.2.4p5/ntpd/ntpd-opts.h
+--- ntp-4.2.4p5/ntpd/ntpd-opts.h.mlock	2008-08-17 11:20:09.000000000 +0200
++++ ntp-4.2.4p5/ntpd/ntpd-opts.h	2008-08-18 12:58:37.000000000 +0200
+@@ -81,12 +81,13 @@ typedef enum {
          INDEX_OPT_VAR              = 26,
          INDEX_OPT_DVAR             = 27,
          INDEX_OPT_SLEW             = 28,
@@ -105,10 +84,10 @@ diff -up ntp-4.2.4p4/ntpd/ntpd-opts.h.mlock ntp-4.2.4p4/ntpd/ntpd-opts.h
  
 -#define OPTION_CT    32
 +#define OPTION_CT    33
- #define NTPD_VERSION       "4.2.4p4"
- #define NTPD_FULL_VERSION  "ntpd - NTP daemon program - Ver. 4.2.4p4"
+ #define NTPD_VERSION       "4.2.4p5"
+ #define NTPD_FULL_VERSION  "ntpd - NTP daemon program - Ver. 4.2.4p5"
  
-@@ -180,6 +181,10 @@ typedef enum {
+@@ -179,6 +180,10 @@ typedef enum {
  #  warning undefining MODIFYMMTIMER due to option name conflict
  #  undef   MODIFYMMTIMER
  # endif
@@ -119,7 +98,7 @@ diff -up ntp-4.2.4p4/ntpd/ntpd-opts.h.mlock ntp-4.2.4p4/ntpd/ntpd-opts.h
  # ifdef    NOFORK
  #  warning undefining NOFORK due to option name conflict
  #  undef   NOFORK
-@@ -249,6 +254,7 @@ typedef enum {
+@@ -248,6 +253,7 @@ typedef enum {
  # undef LOGFILE
  # undef NOVIRTUALIPS
  # undef MODIFYMMTIMER
@@ -127,7 +106,7 @@ diff -up ntp-4.2.4p4/ntpd/ntpd-opts.h.mlock ntp-4.2.4p4/ntpd/ntpd-opts.h
  # undef NOFORK
  # undef NICE
  # undef PIDFILE
-@@ -291,6 +297,7 @@ typedef enum {
+@@ -290,6 +296,7 @@ typedef enum {
  #ifdef SYS_WINNT
  #define VALUE_OPT_MODIFYMMTIMER  'M'
  #endif /* SYS_WINNT */
@@ -135,3 +114,24 @@ diff -up ntp-4.2.4p4/ntpd/ntpd-opts.h.mlock ntp-4.2.4p4/ntpd/ntpd-opts.h
  #define VALUE_OPT_NOFORK         'n'
  #define VALUE_OPT_NICE           'N'
  #define VALUE_OPT_PIDFILE        'p'
+diff -up ntp-4.2.4p5/ntpd/ntpd.c.mlock ntp-4.2.4p5/ntpd/ntpd.c
+--- ntp-4.2.4p5/ntpd/ntpd.c.mlock	2008-08-18 12:58:37.000000000 +0200
++++ ntp-4.2.4p5/ntpd/ntpd.c	2008-08-18 12:58:37.000000000 +0200
+@@ -699,7 +699,8 @@ ntpdmain(
+ 	}
+ #endif
+ 
+-#if defined(HAVE_MLOCKALL) && defined(MCL_CURRENT) && defined(MCL_FUTURE)
++#if defined(MCL_CURRENT) && defined(MCL_FUTURE)
++    if (HAVE_OPT( MLOCK )) {
+ # ifdef HAVE_SETRLIMIT
+ 	/*
+ 	 * Set the stack limit to something smaller, so that we don't lock a lot
+@@ -737,6 +738,7 @@ ntpdmain(
+ 	 */
+ 	if (mlockall(MCL_CURRENT|MCL_FUTURE) < 0)
+ 		msyslog(LOG_ERR, "mlockall(): %m");
++    }
+ #else /* not (HAVE_MLOCKALL && MCL_CURRENT && MCL_FUTURE) */
+ # ifdef HAVE_PLOCK
+ #  ifdef PROCLOCK
