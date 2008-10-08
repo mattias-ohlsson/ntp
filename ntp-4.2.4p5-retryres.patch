@@ -1,0 +1,12 @@
+diff -up ntp-4.2.4p5/ntpd/ntp_intres.c.retryres ntp-4.2.4p5/ntpd/ntp_intres.c
+--- ntp-4.2.4p5/ntpd/ntp_intres.c.retryres	2008-10-07 15:22:27.000000000 +0200
++++ ntp-4.2.4p5/ntpd/ntp_intres.c	2008-10-07 15:41:44.000000000 +0200
+@@ -542,6 +542,8 @@ findhostaddr(
+ 			return (1);
+ 		case EAI_NONAME:
+ #ifndef FORCE_DNSRETRY
++			if (resolve_value < MAXRESOLVE)
++				return 1;
+ 			return (0);
+ #else
+ 			return (1);

@@ -1,0 +1,11 @@
+diff -up ntp-4.2.4p5/ntpd/ntpd.c.driftonexit ntp-4.2.4p5/ntpd/ntpd.c
+--- ntp-4.2.4p5/ntpd/ntpd.c.driftonexit	2008-10-07 15:22:27.000000000 +0200
++++ ntp-4.2.4p5/ntpd/ntpd.c	2008-10-07 16:29:06.000000000 +0200
+@@ -1174,7 +1174,6 @@ finish(
+ {
+ 
+ 	msyslog(LOG_NOTICE, "ntpd exiting on signal %d", sig);
+-	write_stats();
+ #ifdef HAVE_DNSREGISTRATION
+ 	if (mdns != NULL)
+ 	DNSServiceRefDeallocate(mdns);

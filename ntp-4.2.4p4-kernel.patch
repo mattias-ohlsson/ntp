@@ -25,9 +25,12 @@ diff -up ntp-4.2.4p4/ntpd/ntp_loopfilter.c.kernel ntp-4.2.4p4/ntpd/ntp_loopfilte
  	rval = 1;
  	if (fabs(fp_offset) > clock_max && clock_max > 0) {
  		switch (state) {
-@@ -895,7 +893,7 @@ loop_config(
+@@ -893,9 +891,9 @@ loop_config(
+ 		pll_control = 1;
+ 		memset(&ntv, 0, sizeof(ntv));
  #ifdef STA_NANO
- 		ntv.modes = MOD_BITS | MOD_NANO;
+-		ntv.modes = MOD_BITS | MOD_NANO;
++		ntv.modes = MOD_BITS | MOD_FREQUENCY | MOD_NANO;
  #else /* STA_NANO */
 -		ntv.modes = MOD_BITS;
 +		ntv.modes = MOD_BITS | MOD_FREQUENCY;

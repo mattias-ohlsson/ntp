@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.4p5
-Release: 1%{?dist}
+Release: 2%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -39,30 +39,47 @@ Source7: ntpdate.init
 Source8: ntp.cryptopw
 Source9: ntpdate.sysconfig
 
+# ntpbz #628, #1073
 Patch1: ntp-4.2.4p4-kernel.patch
 Patch2: ntp-4.2.4p0-droproot.patch
+# ntpbz #812
 Patch3: ntp-4.2.4-groups.patch
 Patch5: ntp-4.2.4-linkfastmath.patch
 Patch6: ntp-4.2.4p2-tentative.patch
+# ntpbz #897
 Patch7: ntp-4.2.4p2-noseed.patch
+# ntpbz #830
 Patch8: ntp-4.2.4p4-multilisten.patch
 Patch9: ntp-4.2.4-html2man.patch
+# ntpbz #898
 Patch10: ntp-4.2.4p5-htmldoc.patch
+# fixed in 4.2.5
 Patch11: ntp-4.2.4p2-filegen.patch
+# ntpbz #738
 Patch12: ntp-4.2.4-sprintf.patch
 Patch13: ntp-4.2.4p4-bsdadv.patch
 Patch14: ntp-4.2.4p5-mlock.patch
+# fixed in 4.2.5
 Patch15: ntp-4.2.4p2-clockselect.patch
 Patch16: ntp-4.2.4p2-nosntp.patch
+# ntpbz #802
 Patch17: ntp-4.2.4p5-sleep.patch
+# ntpbz #779, #823
 Patch18: ntp-4.2.4p5-bcast.patch
+# ntpbz #759
 Patch19: ntp-4.2.4p0-retcode.patch
+# ntpbz #397
 Patch20: ntp-4.2.4p2-noif.patch
 Patch21: ntp-4.2.4p4-ipv6.patch
 Patch22: ntp-4.2.4p4-cmsgalign.patch
 Patch23: ntp-4.2.4p4-gettime.patch
 Patch24: ntp-4.2.4p4-resinit.patch
+# ntpbz #992
 Patch25: ntp-4.2.4p5-rtnetlink.patch
+# remove when #460561 is fixed
+Patch26: ntp-4.2.4p5-retryres.patch
+# ntpbz #808
+Patch27: ntp-4.2.4p5-driftonexit.patch
 
 URL: http://www.ntp.org
 Requires(post): /sbin/chkconfig
@@ -127,6 +144,8 @@ NTP servers.
 %patch22 -p1 -b .cmsgalign
 %patch24 -p1 -b .resinit
 %patch25 -p1 -b .rtnetlink
+%patch26 -p1 -b .retryres
+%patch27 -p1 -b .driftonexit
 
 # clock_gettime needs -lrt
 sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
@@ -161,6 +180,7 @@ echo '#define NTP_VAR "%{_localstatedir}/log/ntpstats/"' >> config.h
 make %{?_smp_mflags}
 
 sed -i 's|$ntpq = "ntpq"|$ntpq = "%{_sbindir}/ntpq"|' scripts/ntptrace
+sed -i 's|ntpq -c |%{_sbindir}/ntpq -c |' scripts/ntp-wait
 
 pushd html
 ../scripts/html2man
@@ -288,6 +308,11 @@ fi
 %{_mandir}/man8/ntpdate.8*
 
 %changelog
+* Wed Oct 08 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p5-2
+- retry failed name resolution few times before giving up (#460561)
+- don't write drift file upon exit
+- run ntpq with full path in ntp-wait script
+
 * Fri Aug 29 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p5-1
 - update to 4.2.4p5
 - add support for fast interface updates
