@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
-Version: 4.2.4p5
-Release: 2%{?dist}
+Version: 4.2.4p6
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -57,10 +57,13 @@ Patch10: ntp-4.2.4p5-htmldoc.patch
 Patch11: ntp-4.2.4p2-filegen.patch
 # ntpbz #738
 Patch12: ntp-4.2.4-sprintf.patch
+# drop this and switch to libedit in 4.2.6
 Patch13: ntp-4.2.4p4-bsdadv.patch
-Patch14: ntp-4.2.4p5-mlock.patch
+# add option -m to lock memory
+Patch14: ntp-4.2.4p6-mlock.patch
 # fixed in 4.2.5
 Patch15: ntp-4.2.4p2-clockselect.patch
+# don't build sntp
 Patch16: ntp-4.2.4p2-nosntp.patch
 # ntpbz #802
 Patch17: ntp-4.2.4p5-sleep.patch
@@ -155,7 +158,7 @@ sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
 %patch5 -p1 -b .linkfastmath
 %endif
 
-# replace some BSD with advertising code
+# replace BSD with advertising code in ntp{dc,q} to allow linking with readline
 for f in include/{ntp_rfc2553,rsa_md5}.h \
 	libntp/{mktime,memmove,md5c,ntp_rfc2553,ntp_random}.c
 do rm -f $f; touch $f; done
@@ -308,6 +311,9 @@ fi
 %{_mandir}/man8/ntpdate.8*
 
 %changelog
+* Mon Jan 12 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p6-1
+- update to 4.2.4p6 (CVE-2009-0021)
+
 * Wed Oct 08 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p5-2
 - retry failed name resolution few times before giving up (#460561)
 - don't write drift file upon exit
