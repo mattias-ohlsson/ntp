@@ -38,6 +38,7 @@ Source6: ntp.step-tickers
 Source7: ntpdate.init
 Source8: ntp.cryptopw
 Source9: ntpdate.sysconfig
+Source10: ntp.dhclient
 
 # ntpbz #628, #1073
 Patch1: ntp-4.2.4p4-kernel.patch
@@ -166,6 +167,10 @@ ln -sf md5.h include/rsa_md5.h
 ln -sf md5.c libntp/md5c.c
 %patch13 -p1 -b .bsdadv
 
+for f in COPYRIGHT; do
+	iconv -f iso8859-1 -t utf8 -o ${f}{_,} && touch -r ${f}{,_} && mv -f ${f}{_,}
+done
+
 %build
 export CFLAGS="$RPM_OPT_FLAGS"
 if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev/null; then
@@ -218,7 +223,7 @@ find htmldoc -type f | xargs chmod 644
 find htmldoc -type d | xargs chmod 755
 
 pushd $RPM_BUILD_ROOT
-mkdir -p .%{_sysconfdir}/{ntp,ntp/crypto,sysconfig} .%{_initrddir}
+mkdir -p .%{_sysconfdir}/{ntp/crypto,sysconfig,dhcp/dhclient.d} .%{_initrddir}
 mkdir -p .%{_localstatedir}/{lib/ntp,log/ntpstats}
 touch .%{_localstatedir}/lib/ntp/drift
 sed -e 's|ETCNTP|%{_sysconfdir}/ntp|' -e 's|VARNTP|%{_localstatedir}/lib/ntp|' \
@@ -231,6 +236,7 @@ install -p -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
 install -p -m644 %{SOURCE9} .%{_sysconfdir}/sysconfig/ntpdate
 install -p -m644 %{SOURCE6} .%{_sysconfdir}/ntp/step-tickers
 install -p -m600 %{SOURCE8} .%{_sysconfdir}/ntp/crypto/pw
+install -p -m755 %{SOURCE10} .%{_sysconfdir}/dhcp/dhclient.d/ntp.sh
 popd
 
 %clean
@@ -282,6 +288,8 @@ fi
 %config(noreplace) %{_sysconfdir}/ntp.conf
 %dir %attr(750,root,ntp) %{_sysconfdir}/ntp/crypto
 %config(noreplace) %{_sysconfdir}/ntp/crypto/pw
+%dir %{_sysconfdir}/dhcp/dhclient.d
+%{_sysconfdir}/dhcp/dhclient.d/ntp.sh
 %dir %attr(-,ntp,ntp) %{_localstatedir}/lib/ntp
 %ghost %attr(644,ntp,ntp) %{_localstatedir}/lib/ntp/drift
 %dir %attr(-,ntp,ntp) %{_localstatedir}/log/ntpstats
@@ -311,8 +319,10 @@ fi
 %{_mandir}/man8/ntpdate.8*
 
 %changelog
-* Mon Jan 12 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p6-1
+* Wed Jan 14 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p6-1
 - update to 4.2.4p6 (CVE-2009-0021)
+- include dhclient script (David Cantrell)
+- convert COPYRIGHT to UTF-8
 
 * Wed Oct 08 2008 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p5-2
 - retry failed name resolution few times before giving up (#460561)
