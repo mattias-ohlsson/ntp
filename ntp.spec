@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.4p6
-Release: 1%{?dist}
+Release: 2%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -319,6 +319,9 @@ fi
 %{_mandir}/man8/ntpdate.8*
 
 %changelog
+* Fri Jan 16 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p6-2
+- rebuild for new openssl
+
 * Wed Jan 14 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p6-1
 - update to 4.2.4p6 (CVE-2009-0021)
 - include dhclient script (David Cantrell)
