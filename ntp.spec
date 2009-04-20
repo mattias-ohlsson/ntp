@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.4p6
-Release: 3%{?dist}
+Release: 4%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -84,6 +84,8 @@ Patch25: ntp-4.2.4p5-rtnetlink.patch
 Patch26: ntp-4.2.4p5-retryres.patch
 # ntpbz #808
 Patch27: ntp-4.2.4p5-driftonexit.patch
+# ntpbz #1144
+Patch28: ntp-4.2.4p6-ntpqsprintf.patch
 
 URL: http://www.ntp.org
 Requires(post): /sbin/chkconfig
@@ -150,6 +152,7 @@ NTP servers.
 %patch25 -p1 -b .rtnetlink
 %patch26 -p1 -b .retryres
 %patch27 -p1 -b .driftonexit
+%patch28 -p1 -b .ntpqsprintf
 
 # clock_gettime needs -lrt
 sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
@@ -319,6 +322,12 @@ fi
 %{_mandir}/man8/ntpdate.8*
 
 %changelog
+* Mon Apr 20 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p6-4
+- don't restart ntpd in dhclient script with every renewal
+- fix buffer overflow in ntpq (#490617)
+- check status in condrestart (#481261)
+- don't crash when compiled with HAVE_TIMER_CREATE (#486217)
+
 * Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.2.4p6-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 

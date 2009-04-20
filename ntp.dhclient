@@ -25,32 +25,35 @@
 CONF=/etc/ntp.conf
 SAVECONF=${SAVEDIR}/${CONF##*/}.predhclient.${interface}
 
+ntp_replace_conf() {
+        echo "$1" | diff -q ${CONF} - > /dev/null 2>&1
+        if [ $? -eq 1 ]; then
+            echo "$1" > ${CONF}
+            restorecon ${CONF} >/dev/null 2>&1
+            service ntpd condrestart >/dev/null 2>&1
+        fi
+}
+
 ntp_config() {
     if [ ! "${PEERNTP}" = "no" ] && [ -n "${new_ntp_servers}" ] &&
         [ -e ${CONF} ] && [ -d ${SAVEDIR} ]; then
-        mv -f ${CONF} ${SAVECONF}
+        local conf=$(egrep -v '^server .*  # added by /sbin/dhclient-script$' < ${CONF})
 
-        egrep -v '^server .*  # added by /sbin/dhclient-script$' < ${SAVECONF} > ${CONF}
+        conf=$(echo "$conf"
+            for s in ${new_ntp_servers}; do
+                echo "server ${s}  # added by /sbin/dhclient-script"
+            done)
 
-        diff -q ${CONF} ${SAVECONF} >/dev/null 2>&1
-        if [ $? -eq 1 ]; then
-            rm -f ${SAVECONF}
-            cp -f ${CONF} ${SAVECONF}
-        fi
-
-        for s in ${new_ntp_servers}; do
-            echo "server ${s}  # added by /sbin/dhclient-script" >> ${CONF}
-        done
-
-        restorecon ${CONF} ${SAVECONF} >/dev/null 2>&1
-        service ntpd condrestart >/dev/null 2>&1
+        [ -f ${SAVECONF} ] || touch ${SAVECONF}
+        ntp_replace_conf "$conf"
     fi
 }
 
 ntp_restore() {
-    if [ ! "${PEERNTP}" = "no" ] && [ -f ${SAVECONF} ]; then
-        mv -f ${SAVECONF} ${CONF}
-        restorecon ${CONF} >/dev/null 2>&1
-        service ntpd condrestart >/dev/null 2>&1
+    if [ -e ${CONF} ] && [ -f ${SAVECONF} ]; then
+        local conf=$(egrep -v '^server .*  # added by /sbin/dhclient-script$' < ${CONF})
+
+        ntp_replace_conf "$conf"
+        rm -f ${SAVECONF}
     fi
 }
