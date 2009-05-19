@@ -143,6 +143,7 @@ NTP servers.
 Summary: NTP documentation
 Group: Documentation
 Requires: %{name} = %{version}-%{release}
+BuildArch: noarch
 %description doc
 This package contains NTP documentation in HTML format.
  
