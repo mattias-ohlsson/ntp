@@ -1,0 +1,23 @@
+diff -up ntp-4.2.4p7/configure.ipv6 ntp-4.2.4p7/configure
+--- ntp-4.2.4p7/configure.ipv6	2009-05-18 17:18:31.000000000 +0200
++++ ntp-4.2.4p7/configure	2009-05-18 17:22:37.000000000 +0200
+@@ -46206,15 +46206,19 @@ cat confdefs.h >>conftest.$ac_ext
+ cat >>conftest.$ac_ext <<_ACEOF
+ /* end confdefs.h.  */
+ 
++#define _GNU_SOURCE
+ 			    #include <sys/types.h>
+ 			    #include <sys/socket.h>
+ 			    #include <netinet/in.h>
++;
+ 			    $isc_netinetin6_hack
+ 			    $isc_netinet6in6_hack
+ 
++;
+ int
+ main ()
+ {
++;
+ 
+ 			    struct in6_pktinfo xyzzy;
+ 

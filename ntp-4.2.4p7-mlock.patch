@@ -1,6 +1,6 @@
-diff -up ntp-4.2.4p6/html/ntpd.html.mlock ntp-4.2.4p6/html/ntpd.html
---- ntp-4.2.4p6/html/ntpd.html.mlock	2009-01-12 12:50:50.000000000 +0100
-+++ ntp-4.2.4p6/html/ntpd.html	2009-01-12 12:50:50.000000000 +0100
+diff -up ntp-4.2.4p7/html/ntpd.html.mlock ntp-4.2.4p7/html/ntpd.html
+--- ntp-4.2.4p7/html/ntpd.html.mlock	2009-05-19 16:05:30.000000000 +0200
++++ ntp-4.2.4p7/html/ntpd.html	2009-05-19 16:05:30.000000000 +0200
 @@ -34,7 +34,7 @@
  		</ul>
  		<hr>
@@ -19,9 +19,9 @@ diff -up ntp-4.2.4p6/html/ntpd.html.mlock ntp-4.2.4p6/html/ntpd.html
  			<dt><tt>-n</tt>
  			<dd>Don't fork.
  			<dt><tt>-N</tt>
-diff -up ntp-4.2.4p6/ntpd/ntpd-opts.c.mlock ntp-4.2.4p6/ntpd/ntpd-opts.c
---- ntp-4.2.4p6/ntpd/ntpd-opts.c.mlock	2009-01-08 12:11:54.000000000 +0100
-+++ ntp-4.2.4p6/ntpd/ntpd-opts.c	2009-01-12 12:50:50.000000000 +0100
+diff -up ntp-4.2.4p7/ntpd/ntpd-opts.c.mlock ntp-4.2.4p7/ntpd/ntpd-opts.c
+--- ntp-4.2.4p7/ntpd/ntpd-opts.c.mlock	2009-05-18 10:56:02.000000000 +0200
++++ ntp-4.2.4p7/ntpd/ntpd-opts.c	2009-05-19 16:05:30.000000000 +0200
 @@ -264,6 +264,15 @@ tSCC    zNice_Name[]               = "ni
  #define NICE_FLAGS       (OPTST_DISABLED)
  
@@ -66,9 +66,9 @@ diff -up ntp-4.2.4p6/ntpd/ntpd-opts.c.mlock ntp-4.2.4p6/ntpd/ntpd-opts.c
  };
  
  /*
-diff -up ntp-4.2.4p6/ntpd/ntpd-opts.h.mlock ntp-4.2.4p6/ntpd/ntpd-opts.h
---- ntp-4.2.4p6/ntpd/ntpd-opts.h.mlock	2009-01-08 12:11:54.000000000 +0100
-+++ ntp-4.2.4p6/ntpd/ntpd-opts.h	2009-01-12 12:50:50.000000000 +0100
+diff -up ntp-4.2.4p7/ntpd/ntpd-opts.h.mlock ntp-4.2.4p7/ntpd/ntpd-opts.h
+--- ntp-4.2.4p7/ntpd/ntpd-opts.h.mlock	2009-05-18 10:56:02.000000000 +0200
++++ ntp-4.2.4p7/ntpd/ntpd-opts.h	2009-05-19 16:05:30.000000000 +0200
 @@ -81,12 +81,13 @@ typedef enum {
          INDEX_OPT_VAR              = 26,
          INDEX_OPT_DVAR             = 27,
@@ -84,8 +84,8 @@ diff -up ntp-4.2.4p6/ntpd/ntpd-opts.h.mlock ntp-4.2.4p6/ntpd/ntpd-opts.h
  
 -#define OPTION_CT    32
 +#define OPTION_CT    33
- #define NTPD_VERSION       "4.2.4p6"
- #define NTPD_FULL_VERSION  "ntpd - NTP daemon program - Ver. 4.2.4p6"
+ #define NTPD_VERSION       "4.2.4p7"
+ #define NTPD_FULL_VERSION  "ntpd - NTP daemon program - Ver. 4.2.4p7"
  
 @@ -179,6 +180,10 @@ typedef enum {
  #  warning undefining MODIFYMMTIMER due to option name conflict
@@ -114,10 +114,10 @@ diff -up ntp-4.2.4p6/ntpd/ntpd-opts.h.mlock ntp-4.2.4p6/ntpd/ntpd-opts.h
  #define VALUE_OPT_NOFORK         'n'
  #define VALUE_OPT_NICE           'N'
  #define VALUE_OPT_PIDFILE        'p'
-diff -up ntp-4.2.4p6/ntpd/ntpd.c.mlock ntp-4.2.4p6/ntpd/ntpd.c
---- ntp-4.2.4p6/ntpd/ntpd.c.mlock	2009-01-12 12:50:50.000000000 +0100
-+++ ntp-4.2.4p6/ntpd/ntpd.c	2009-01-12 12:50:50.000000000 +0100
-@@ -699,7 +699,8 @@ ntpdmain(
+diff -up ntp-4.2.4p7/ntpd/ntpd.c.mlock ntp-4.2.4p7/ntpd/ntpd.c
+--- ntp-4.2.4p7/ntpd/ntpd.c.mlock	2009-05-19 16:05:30.000000000 +0200
++++ ntp-4.2.4p7/ntpd/ntpd.c	2009-05-19 16:06:02.000000000 +0200
+@@ -691,7 +691,8 @@ ntpdmain(
  	}
  #endif
  
@@ -127,7 +127,16 @@ diff -up ntp-4.2.4p6/ntpd/ntpd.c.mlock ntp-4.2.4p6/ntpd/ntpd.c
  # ifdef HAVE_SETRLIMIT
  	/*
  	 * Set the stack limit to something smaller, so that we don't lock a lot
-@@ -737,6 +738,7 @@ ntpdmain(
+@@ -717,7 +718,7 @@ ntpdmain(
+ 	     * fail if we drop root privlege.  To be useful the value
+ 	     * has to be larger than the largest ntpd resident set size.
+ 	     */
+-	    rl.rlim_cur = rl.rlim_max = 32*1024*1024;
++	    rl.rlim_cur = rl.rlim_max = 64*1024*1024;
+ 	    if (setrlimit(RLIMIT_MEMLOCK, &rl) == -1) {
+ 	    	msyslog(LOG_ERR, "Cannot set RLIMIT_MEMLOCK: %m");
+ 	    }
+@@ -729,6 +730,7 @@ ntpdmain(
  	 */
  	if (mlockall(MCL_CURRENT|MCL_FUTURE) < 0)
  		msyslog(LOG_ERR, "mlockall(): %m");

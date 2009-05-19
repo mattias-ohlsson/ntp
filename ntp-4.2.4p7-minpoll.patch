@@ -1,0 +1,36 @@
+diff -up ntp-4.2.4p7/html/confopt.html.minpoll ntp-4.2.4p7/html/confopt.html
+--- ntp-4.2.4p7/html/confopt.html.minpoll	2009-05-19 14:23:01.000000000 +0200
++++ ntp-4.2.4p7/html/confopt.html	2009-05-19 14:27:27.000000000 +0200
+@@ -56,7 +56,7 @@
+ 			<dd>When the server is unreachable, send a burst of eight packets instead of the usual one. The packet spacing is normally 2 s; however, the spacing between the first and second packets can be changed with the <a href="miscopt.html"><tt>calldelay</tt></a> command to allow additional time for a modem or ISDN call to complete. This option is valid with only the <tt>server</tt> command and is a recommended option with this command.<dt><tt>key</tt> <i><tt>key</tt></i>
+ 			<dd>All packets sent to and received from the server or peer are to include authentication fields encrypted using the specified <i><tt>key</tt></i> identifier with values from 1 to 65534, inclusive. The default is to include no encryption field. This option is valid with all commands.<dt><tt>minpoll <i>minpoll</i></tt><br>
+ 				<tt>maxpoll <i>maxpoll</i></tt>
+-			<dd>These options specify the minimum and maximum poll intervals for NTP messages, in seconds as a power of two. The maximum poll interval defaults to 10 (1,024 s), but can be increased by the <tt>maxpoll</tt> option to an upper limit of 17 (36.4 h). The minimum poll interval defaults to 6 (64 s), but can be decreased by the <tt>minpoll</tt> option to a lower limit of 4 (16 s). These option are valid only with the <tt>server</tt> and <tt>peer</tt> commands.<dt><tt>noselect</tt>
++			<dd>These options specify the minimum and maximum poll intervals for NTP messages, in seconds as a power of two. The maximum poll interval defaults to 10 (1,024 s), but can be increased by the <tt>maxpoll</tt> option to an upper limit of 17 (36.4 h). The minimum poll interval defaults to 6 (64 s), but can be decreased by the <tt>minpoll</tt> option to a lower limit of 3 (8 s). These option are valid only with the <tt>server</tt> and <tt>peer</tt> commands.<dt><tt>noselect</tt>
+ 			<dd>Marks the server as unused, except for display purposes. The server is discarded by the selection algorithm. This option is valid only with the <tt>server</tt> and <tt>peer</tt> commands.<dt><tt>preempt</tt>
+ 			<dd>Specifies the association as preemptable rather than the default persistent. This option is valied only with the <tt>server</tt> command.<dt><tt>prefer</tt>
+ 			<dd>Marks the server as preferred. All other things being equal, this host will be chosen for synchronization among a set of correctly operating hosts. See the <a href="prefer.html">Mitigation Rules and the <tt>prefer</tt> Keyword</a> page for further information. This option is valid only with the <tt>server</tt> and <tt>peer</tt> commands.<dt><tt>true</tt>
+diff -up ntp-4.2.4p7/include/ntp.h.minpoll ntp-4.2.4p7/include/ntp.h
+--- ntp-4.2.4p7/include/ntp.h.minpoll	2008-08-10 13:02:42.000000000 +0200
++++ ntp-4.2.4p7/include/ntp.h	2009-05-19 14:23:01.000000000 +0200
+@@ -104,7 +104,7 @@ typedef char s_char;
+  * Poll interval parameters
+  */
+ #define NTP_UNREACH	24	/* poll unreach threshold */
+-#define	NTP_MINPOLL	4	/* log2 min poll interval (16 s) */
++#define	NTP_MINPOLL	3	/* log2 min poll interval (8 s) */
+ #define NTP_MINDPOLL	6	/* log2 default min poll (64 s) */
+ #define NTP_MAXDPOLL	10	/* log2 default max poll (~17 m) */
+ #define	NTP_MAXPOLL	17	/* log2 max poll interval (~36 h) */
+diff -up ntp-4.2.4p7/ntpd/ntp_loopfilter.c.minpoll ntp-4.2.4p7/ntpd/ntp_loopfilter.c
+--- ntp-4.2.4p7/ntpd/ntp_loopfilter.c.minpoll	2009-05-19 14:23:01.000000000 +0200
++++ ntp-4.2.4p7/ntpd/ntp_loopfilter.c	2009-05-19 14:23:01.000000000 +0200
+@@ -404,7 +404,7 @@ local_clock(
+ 			    fp_offset);
+ 			reinit_timer();
+ 			tc_counter = 0;
+-			sys_poll = NTP_MINPOLL;
++			sys_poll = NTP_MINPOLL + 1;
+ 			sys_tai = 0;
+ 			clock_jitter = LOGTOD(sys_precision);
+ 			rval = 2;

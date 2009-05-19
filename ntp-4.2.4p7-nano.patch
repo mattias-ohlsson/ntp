@@ -1,0 +1,18 @@
+diff -up ntp-4.2.4p7/include/ntp_syscall.h.nano ntp-4.2.4p7/include/ntp_syscall.h
+--- ntp-4.2.4p7/include/ntp_syscall.h.nano	2009-05-19 10:26:49.000000000 +0200
++++ ntp-4.2.4p7/include/ntp_syscall.h	2009-05-19 10:28:05.000000000 +0200
+@@ -14,6 +14,14 @@
+ # include <sys/timex.h>
+ #endif
+ 
++#if defined(ADJ_NANO) && !defined(MOD_NANO)
++#define MOD_NANO ADJ_NANO
++#endif
++
++#if defined(ADJ_TAI) && !defined(MOD_TAI)
++#define MOD_TAI ADJ_TAI
++#endif
++
+ #ifndef STA_MODE
+ #define STA_MODE        0x4000  /* mode (0 = PLL, 1 = FLL) (ro) */
+ #endif

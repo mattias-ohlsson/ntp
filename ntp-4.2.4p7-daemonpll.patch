@@ -1,0 +1,16 @@
+diff -up ntp-4.2.4p7/ntpd/ntp_loopfilter.c.daemonpll ntp-4.2.4p7/ntpd/ntp_loopfilter.c
+--- ntp-4.2.4p7/ntpd/ntp_loopfilter.c.daemonpll	2009-05-18 18:13:31.000000000 +0200
++++ ntp-4.2.4p7/ntpd/ntp_loopfilter.c	2009-05-18 18:18:13.000000000 +0200
+@@ -489,10 +489,9 @@ local_clock(
+ 			/*
+ 			 * For the PLL the integration interval
+ 			 * (numerator) is the minimum of the update
+-			 * interval and poll interval. This allows
+-			 * oversampling, but not undersampling.
++			 * interval and Allan intercept.
+ 			 */ 
+-			etemp = min(mu, (u_long)ULOGTOD(sys_poll));
++			etemp = min(mu, allan_xpt);
+ 			dtemp = 4 * CLOCK_PLL * ULOGTOD(sys_poll);
+ 			plladj = fp_offset * etemp / (dtemp * dtemp);
+ 			rstclock(S_SYNC, peer->epoch, fp_offset);

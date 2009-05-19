@@ -1,0 +1,26 @@
+diff -up ntp-4.2.4p7/include/ntp_syscall.h.stamode ntp-4.2.4p7/include/ntp_syscall.h
+--- ntp-4.2.4p7/include/ntp_syscall.h.stamode	2004-02-25 06:57:56.000000000 +0100
++++ ntp-4.2.4p7/include/ntp_syscall.h	2009-05-19 10:21:34.000000000 +0200
+@@ -14,6 +14,10 @@
+ # include <sys/timex.h>
+ #endif
+ 
++#ifndef STA_MODE
++#define STA_MODE        0x4000  /* mode (0 = PLL, 1 = FLL) (ro) */
++#endif
++
+ #ifndef NTP_SYSCALLS_LIBC
+ #ifdef NTP_SYSCALLS_STD
+ # define ntp_adjtime(t)		syscall(SYS_ntp_adjtime, (t))
+diff -up ntp-4.2.4p7/ntpd/ntp_loopfilter.c.stamode ntp-4.2.4p7/ntpd/ntp_loopfilter.c
+--- ntp-4.2.4p7/ntpd/ntp_loopfilter.c.stamode	2009-05-19 10:20:03.000000000 +0200
++++ ntp-4.2.4p7/ntpd/ntp_loopfilter.c	2009-05-19 10:25:22.000000000 +0200
+@@ -644,7 +644,7 @@ local_clock(
+ 			    "kernel time sync error %04x", ntv.status);
+ 			ntv.status &= ~(STA_PPSFREQ | STA_PPSTIME);
+ 		} else {
+-			if ((ntv.status ^ pll_status) & ~STA_FLL)
++			if ((ntv.status ^ pll_status) & ~(STA_FLL | STA_MODE))
+ 				NLOG(NLOG_SYNCEVENT | NLOG_SYSEVENT)
+ 				    msyslog(LOG_NOTICE,
+ 				    "kernel time sync status change %04x",

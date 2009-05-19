@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
-Version: 4.2.4p6
-Release: 4%{?dist}
+Version: 4.2.4p7
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -42,15 +42,21 @@ Source10: ntp.dhclient
 
 # ntpbz #628, #1073
 Patch1: ntp-4.2.4p4-kernel.patch
+# add support for dropping root to ntpdate
 Patch2: ntp-4.2.4p0-droproot.patch
 # ntpbz #812
 Patch3: ntp-4.2.4-groups.patch
+# ntpbz #1170
+Patch4: ntp-4.2.4p7-daemonpll.patch
+# link ntpd with -ffast-math on ia64
 Patch5: ntp-4.2.4-linkfastmath.patch
+# ntpbz #1134
 Patch6: ntp-4.2.4p2-tentative.patch
 # ntpbz #897
 Patch7: ntp-4.2.4p2-noseed.patch
 # ntpbz #830
 Patch8: ntp-4.2.4p4-multilisten.patch
+# fix script used to generate man pages
 Patch9: ntp-4.2.4-html2man.patch
 # ntpbz #898
 Patch10: ntp-4.2.4p5-htmldoc.patch
@@ -61,31 +67,37 @@ Patch12: ntp-4.2.4-sprintf.patch
 # drop this and switch to libedit in 4.2.6
 Patch13: ntp-4.2.4p4-bsdadv.patch
 # add option -m to lock memory
-Patch14: ntp-4.2.4p6-mlock.patch
+Patch14: ntp-4.2.4p7-mlock.patch
 # fixed in 4.2.5
 Patch15: ntp-4.2.4p2-clockselect.patch
 # don't build sntp
-Patch16: ntp-4.2.4p2-nosntp.patch
+Patch16: ntp-4.2.4p7-nosntp.patch
 # ntpbz #802
 Patch17: ntp-4.2.4p5-sleep.patch
 # ntpbz #779, #823
-Patch18: ntp-4.2.4p5-bcast.patch
+Patch18: ntp-4.2.4p7-bcast.patch
 # ntpbz #759
 Patch19: ntp-4.2.4p0-retcode.patch
 # ntpbz #397
 Patch20: ntp-4.2.4p2-noif.patch
-Patch21: ntp-4.2.4p4-ipv6.patch
+# force IPv6 support
+Patch21: ntp-4.2.4p7-ipv6.patch
+# align buffer for control messages
 Patch22: ntp-4.2.4p4-cmsgalign.patch
-Patch23: ntp-4.2.4p4-gettime.patch
+# force use of clock_gettime
+Patch23: ntp-4.2.4p7-gettime.patch
+# reload resolv.conf after failure in name resolution
 Patch24: ntp-4.2.4p4-resinit.patch
 # ntpbz #992
 Patch25: ntp-4.2.4p5-rtnetlink.patch
-# remove when #460561 is fixed
-Patch26: ntp-4.2.4p5-retryres.patch
+# don't log STA_MODE (PLL/FLL) changes
+Patch26: ntp-4.2.4p7-stamode.patch
 # ntpbz #808
 Patch27: ntp-4.2.4p5-driftonexit.patch
-# ntpbz #1144
-Patch28: ntp-4.2.4p6-ntpqsprintf.patch
+# add missing nanokernel macros
+Patch28: ntp-4.2.4p7-nano.patch
+# allow minpoll 3 as in 4.2.5
+Patch29: ntp-4.2.4p7-minpoll.patch
 
 URL: http://www.ntp.org
 Requires(post): /sbin/chkconfig
@@ -104,7 +116,8 @@ time with another reference time source. This package includes ntpd
 to query and configure the ntpd daemon.
 
 Perl scripts ntp-wait and ntptrace are in the ntp-perl package and
-the ntpdate program is in the ntpdate package.
+the ntpdate program is in the ntpdate package. The documentation is
+in the ntp-doc package.
 
 %package perl
 Summary: NTP utilities written in perl
@@ -126,12 +139,22 @@ Requires(preun): /sbin/chkconfig /sbin/service
 ntpdate is a program for retrieving the date and time from
 NTP servers.
 
+%package doc
+Summary: NTP documentation
+Group: Documentation
+Requires: %{name} = %{version}-%{release}
+%description doc
+This package contains NTP documentation in HTML format.
+ 
+%define ntpdocdir %{_datadir}/doc/%{name}-%{version}
+
 %prep 
 %setup -q -a 5
 
 %patch1 -p1 -b .kernel
 %patch2 -p1 -b .droproot
 %patch3 -p1 -b .groups
+%patch4 -p1 -b .daemonpll
 %patch6 -p1 -b .tentative
 %patch7 -p1 -b .noseed
 %patch8 -p1 -b .multilisten
@@ -150,9 +173,10 @@ NTP servers.
 %patch22 -p1 -b .cmsgalign
 %patch24 -p1 -b .resinit
 %patch25 -p1 -b .rtnetlink
-%patch26 -p1 -b .retryres
+%patch26 -p1 -b .stamode
 %patch27 -p1 -b .driftonexit
-%patch28 -p1 -b .ntpqsprintf
+%patch28 -p1 -b .nano
+%patch29 -p1 -b .minpoll
 
 # clock_gettime needs -lrt
 sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
@@ -219,11 +243,14 @@ popd
 sed -i 's/\(\.TH[a-zA-Z ]*\)[1-9]\(.*\)/\18\2/' $RPM_BUILD_ROOT%{_mandir}/man8/*.8
 cp -r html/man/man[58] $RPM_BUILD_ROOT%{_mandir}
 
+mkdir -p $RPM_BUILD_ROOT%{ntpdocdir}
+cp -p COPYRIGHT ChangeLog NEWS $RPM_BUILD_ROOT%{ntpdocdir}
+
 # prepare html documentation
 find html | egrep '\.(html|css|txt|jpg|gif)$' | grep -v '/build/\|sntp' | \
-	cpio -pmd htmldoc
-find htmldoc -type f | xargs chmod 644
-find htmldoc -type d | xargs chmod 755
+	cpio -pmd $RPM_BUILD_ROOT%{ntpdocdir}
+find $RPM_BUILD_ROOT%{ntpdocdir} -type f | xargs chmod 644
+find $RPM_BUILD_ROOT%{ntpdocdir} -type d | xargs chmod 755
 
 pushd $RPM_BUILD_ROOT
 mkdir -p .%{_sysconfdir}/{ntp/crypto,sysconfig,dhcp/dhclient.d} .%{_initrddir}
@@ -279,7 +306,10 @@ fi
 
 %files
 %defattr(-,root,root)
-%doc htmldoc/html/* COPYRIGHT ChangeLog NEWS TODO 
+%dir %{ntpdocdir}
+%{ntpdocdir}/COPYRIGHT
+%{ntpdocdir}/ChangeLog
+%{ntpdocdir}/NEWS
 %{_sbindir}/ntp-keygen
 %{_sbindir}/ntpd
 %{_sbindir}/ntpdc
@@ -321,7 +351,20 @@ fi
 %{_sbindir}/ntpdate
 %{_mandir}/man8/ntpdate.8*
 
+%files doc
+%defattr(-,root,root)
+%{ntpdocdir}/html
+
 %changelog
+* Tue May 19 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p7-1
+- update to 4.2.4p7 (CVE-2009-1252)
+- improve PLL response when kernel discipline is disabled
+- don't log STA_MODE changes
+- enable nanokernel support
+- allow minpoll 3
+- increase memlock limit
+- move html documentation to -doc subpackage (#492444)
+
 * Mon Apr 20 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p6-4
 - don't restart ntpd in dhclient script with every renewal
 - fix buffer overflow in ntpq (#490617)
