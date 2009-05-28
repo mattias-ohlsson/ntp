@@ -1,0 +1,97 @@
+diff -up ntp-4.2.4p7/ntpd/ntp_loopfilter.c.freqmode ntp-4.2.4p7/ntpd/ntp_loopfilter.c
+--- ntp-4.2.4p7/ntpd/ntp_loopfilter.c.freqmode	2009-05-28 15:19:30.000000000 +0200
++++ ntp-4.2.4p7/ntpd/ntp_loopfilter.c	2009-05-28 17:21:30.000000000 +0200
+@@ -133,6 +133,7 @@ u_long	sys_clocktime;		/* last system cl
+ u_long	pps_control;		/* last pps update */
+ u_long	sys_tai;		/* UTC offset from TAI (s) */
+ static void rstclock P((int, u_long, double)); /* transition function */
++static double direct_freq(double, u_long); /* calculate frequency directly */
+ 
+ #ifdef KERNEL_PLL
+ struct timex ntv;		/* kernel API parameters */
+@@ -359,8 +360,7 @@ local_clock(
+ 			if (mu < clock_minstep)
+ 				return (0);
+ 
+-			clock_frequency = (fp_offset - clock_offset) /
+-			    mu;
++			clock_frequency = direct_freq(fp_offset, mu);
+ 
+ 			/* fall through to S_SPIK */
+ 
+@@ -451,16 +451,16 @@ local_clock(
+ 
+ 		/*
+ 		 * In S_FREQ state ignore updates until the stepout
+-		 * threshold. After that, correct the phase and
+-		 * frequency and switch to S_SYNC state.
++		 * threshold. After that, compute the new frequency, but
++		 * do not adjust the phase or frequency until the next
++		 * update.
+ 		 */
+ 		case S_FREQ:
+ 			if (mu < clock_minstep)
+ 				return (0);
+ 
+-			clock_frequency = (fp_offset - clock_offset) /
+-			    mu;
+-			rstclock(S_SYNC, peer->epoch, fp_offset);
++			clock_frequency = direct_freq(fp_offset, mu);
++			rstclock(S_SYNC, peer->epoch, 0);
+ 			break;
+ 
+ 		/*
+@@ -590,8 +590,7 @@ local_clock(
+ 			 */
+ 			if (clock_frequency != 0) {
+ 				ntv.modes |= MOD_FREQUENCY;
+-				ntv.freq = (int32)((clock_frequency +
+-				    drift_comp) * 65536e6);
++				ntv.freq = (int32)(clock_frequency * 65536e6);
+ 			}
+ 			ntv.esterror = (u_int32)(clock_jitter * 1e6);
+ 			ntv.maxerror = (u_int32)((sys_rootdelay / 2 +
+@@ -837,6 +836,43 @@ rstclock(
+ 	last_offset = clock_offset = offset;
+ }
+ 
++/*
++ * calc_freq - calculate frequency directly
++ *
++ * This is very carefully done. When the offset is first computed at the
++ * first update, a residual frequency component results. Subsequently,
++ * updates are suppresed until the end of the measurement interval while
++ * the offset is amortized. At the end of the interval the frequency is
++ * calculated from the current offset, residual offset, length of the
++ * interval and residual frequency component. At the same time the
++ * frequenchy file is armed for update at the next hourly stats.
++ */
++static double
++direct_freq(
++	double	fp_offset,
++	u_long mu
++	)
++{
++
++#ifdef KERNEL_PLL
++	/*
++	 * If the kernel is enabled, we need the residual offset to
++	 * calculate the frequency correction.
++	 */
++	if (pll_control && kern_enable) {
++		memset(&ntv,  0, sizeof(ntv));
++		ntp_adjtime(&ntv);
++#ifdef STA_NANO
++		clock_offset = ntv.offset / 1e9;
++#else /* STA_NANO */
++		clock_offset = ntv.offset / 1e6;
++#endif /* STA_NANO */
++		drift_comp = ntv.freq / 65536e6;
++	}
++#endif /* KERNEL_PLL */
++	return (fp_offset - clock_offset) / mu + drift_comp;
++}
++
+ 
+ int huffpuff_enabled()
+ {

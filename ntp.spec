@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.4p7
-Release: 1%{?dist}
+Release: 2%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -98,6 +98,8 @@ Patch27: ntp-4.2.4p5-driftonexit.patch
 Patch28: ntp-4.2.4p7-nano.patch
 # allow minpoll 3 as in 4.2.5
 Patch29: ntp-4.2.4p7-minpoll.patch
+# fix frequency mode, backported from 4.2.5
+Patch30: ntp-4.2.4p7-freqmode.patch
 
 URL: http://www.ntp.org
 Requires(post): /sbin/chkconfig
@@ -178,6 +180,7 @@ This package contains NTP documentation in HTML format.
 %patch27 -p1 -b .driftonexit
 %patch28 -p1 -b .nano
 %patch29 -p1 -b .minpoll
+%patch30 -p1 -b .freqmode
 
 # clock_gettime needs -lrt
 sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
@@ -357,6 +360,10 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Thu May 28 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p7-2
+- fix frequency calculation when starting with no drift file
+- reduce phase adjustments beyond Allan intercept in daemon PLL
+
 * Tue May 19 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p7-1
 - update to 4.2.4p7 (CVE-2009-1252)
 - improve PLL response when kernel discipline is disabled
