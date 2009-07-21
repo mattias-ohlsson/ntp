@@ -1,19 +1,19 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.4p7
-Release: 2%{?dist}
+Release: 3%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
 # include/ntif.h (not used) : BSD
-# include/rsa_md5.h (replaced) : BSD with advertising
-# include/ntp_rfc2553.h (replaced) : BSD with advertising
+# include/rsa_md5.h : BSD with advertising
+# include/ntp_rfc2553.h : BSD with advertising
 # libisc/inet_aton.c (not used) : BSD with advertising
-# libntp/md5c.c (replaced) : BSD with advertising
-# libntp/mktime.c (replaced) : BSD with advertising
-# libntp/ntp_random.c (replaced) : BSD with advertising
-# libntp/memmove.c (replaced) : BSD with advertising
-# libntp/ntp_rfc2553.c (replaced) : BSD with advertising
+# libntp/md5c.c : BSD with advertising
+# libntp/mktime.c : BSD with advertising
+# libntp/ntp_random.c : BSD with advertising
+# libntp/memmove.c : BSD with advertising
+# libntp/ntp_rfc2553.c : BSD with advertising
 # libntp/adjtimex.c (not used) : BSD
 # libopts/ : BSD or GPLv2+
 # libparse/ : BSD
@@ -26,7 +26,7 @@ Release: 2%{?dist}
 # ntpstat-0.2/ : GPLv2
 # util/ansi2knr.c (not used) : GPL+
 # sntp/ (not packaged) : MSNTP
-License: (MIT and BSD and BSD with advertising) and (MIT and BSD) and GPLv2
+License: (MIT and BSD and BSD with advertising) and GPLv2
 Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
 Source1: ntp.conf
@@ -64,8 +64,8 @@ Patch10: ntp-4.2.4p5-htmldoc.patch
 Patch11: ntp-4.2.4p2-filegen.patch
 # ntpbz #738
 Patch12: ntp-4.2.4-sprintf.patch
-# drop this and switch to libedit in 4.2.6
-Patch13: ntp-4.2.4p4-bsdadv.patch
+# use editline instead of readline
+Patch13: ntp-4.2.4p7-editline.patch
 # add option -m to lock memory
 Patch14: ntp-4.2.4p7-mlock.patch
 # fixed in 4.2.5
@@ -73,7 +73,7 @@ Patch15: ntp-4.2.4p2-clockselect.patch
 # don't build sntp
 Patch16: ntp-4.2.4p7-nosntp.patch
 # ntpbz #802
-Patch17: ntp-4.2.4p5-sleep.patch
+Patch17: ntp-4.2.4p7-sleep.patch
 # ntpbz #779, #823
 Patch18: ntp-4.2.4p7-bcast.patch
 # ntpbz #759
@@ -100,15 +100,17 @@ Patch28: ntp-4.2.4p7-nano.patch
 Patch29: ntp-4.2.4p7-minpoll.patch
 # fix frequency mode, backported from 4.2.5
 Patch30: ntp-4.2.4p7-freqmode.patch
+# handle unknown clock types
+Patch31: ntpstat-0.2-clksrc.patch
+# process first packet in multipacket response
+Patch32: ntpstat-0.2-multipacket.patch
 
 URL: http://www.ntp.org
 Requires(post): /sbin/chkconfig
 Requires(preun): /sbin/chkconfig /sbin/service
 Requires(postun): /sbin/service
 Requires: ntpdate = %{version}-%{release}
-# Require libreadline linked with libtinfo
-Requires: readline >= 5.2-3
-BuildRequires: libcap-devel openssl-devel readline-devel perl-HTML-Parser
+BuildRequires: libcap-devel openssl-devel libedit-devel perl-HTML-Parser
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -151,6 +153,12 @@ This package contains NTP documentation in HTML format.
  
 %define ntpdocdir %{_datadir}/doc/%{name}-%{version}
 
+# pool.ntp.org vendor zone which will be used in ntp.conf
+%if 0%{!?vendorzone:1}
+%{?fedora: %define vendorzone fedora.}
+%{?rhel: %define vendorzone rhel.}
+%endif
+
 %prep 
 %setup -q -a 5
 
@@ -165,6 +173,7 @@ This package contains NTP documentation in HTML format.
 %patch10 -p1 -b .htmldoc
 %patch11 -p1 -b .filegen
 %patch12 -p1 -b .sprintf
+%patch13 -p1 -b .editline
 %patch14 -p1 -b .mlock
 %patch15 -p1 -b .clockselect
 %patch16 -p1 -b .nosntp
@@ -181,6 +190,8 @@ This package contains NTP documentation in HTML format.
 %patch28 -p1 -b .nano
 %patch29 -p1 -b .minpoll
 %patch30 -p1 -b .freqmode
+%patch31 -p1 -b .clksrc
+%patch32 -p1 -b .multipacket
 
 # clock_gettime needs -lrt
 sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
@@ -190,20 +201,12 @@ sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
 %patch5 -p1 -b .linkfastmath
 %endif
 
-# replace BSD with advertising code in ntp{dc,q} to allow linking with readline
-for f in include/{ntp_rfc2553,rsa_md5}.h \
-	libntp/{mktime,memmove,md5c,ntp_rfc2553,ntp_random}.c
-do rm -f $f; touch $f; done
-ln -sf md5.h include/rsa_md5.h
-ln -sf md5.c libntp/md5c.c
-%patch13 -p1 -b .bsdadv
-
 for f in COPYRIGHT; do
 	iconv -f iso8859-1 -t utf8 -o ${f}{_,} && touch -r ${f}{,_} && mv -f ${f}{_,}
 done
 
 %build
-export CFLAGS="$RPM_OPT_FLAGS"
+export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
 if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev/null; then
 	./pietest && export CFLAGS="$CFLAGS -pie -fPIE"
 	rm -f pietest
@@ -260,7 +263,9 @@ pushd $RPM_BUILD_ROOT
 mkdir -p .%{_sysconfdir}/{ntp/crypto,sysconfig,dhcp/dhclient.d} .%{_initrddir}
 mkdir -p .%{_localstatedir}/{lib/ntp,log/ntpstats}
 touch .%{_localstatedir}/lib/ntp/drift
-sed -e 's|ETCNTP|%{_sysconfdir}/ntp|' -e 's|VARNTP|%{_localstatedir}/lib/ntp|' \
+sed -e 's|VENDORZONE\.|%{vendorzone}|' \
+	-e 's|ETCNTP|%{_sysconfdir}/ntp|' \
+	-e 's|VARNTP|%{_localstatedir}/lib/ntp|' \
 	< %{SOURCE1} > .%{_sysconfdir}/ntp.conf
 touch -r %{SOURCE1} .%{_sysconfdir}/ntp.conf
 install -p -m600 %{SOURCE2} .%{_sysconfdir}/ntp/keys
@@ -360,6 +365,15 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Tue Jul 21 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p7-3
+- handle system time jumps better
+- don't wake up every second for refclocks without timer
+- don't crash in ntpstat when unknown clock type is received (#505564)
+- make ntpstat process first packet in multipacket response
+- switch to editline
+- set pool.ntp.org vendor zone in spec (#512711)
+- compile with -fno-strict-aliasing
+ 
 * Thu May 28 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p7-2
 - fix frequency calculation when starting with no drift file
 - reduce phase adjustments beyond Allan intercept in daemon PLL
