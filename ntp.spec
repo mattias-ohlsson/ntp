@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.4p7
-Release: 4%{?dist}
+Release: 5%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -365,6 +365,9 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Fri Aug 21 2009 Tomas Mraz <tmraz@redhat.com> - 4.2.4p7-5
+- rebuilt with new openssl
+
 * Sat Jul 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.2.4p7-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
