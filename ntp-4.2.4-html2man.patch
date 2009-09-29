@@ -1,6 +1,6 @@
 --- ntp-4.2.4/scripts/html2man.in.html2man	2006-06-06 22:17:10.000000000 +0200
 +++ ntp-4.2.4/scripts/html2man.in	2007-01-08 12:47:31.000000000 +0100
-@@ -23,10 +23,10 @@
+@@ -23,10 +23,11 @@
  	     'ntpq' => ['ntpq', 8, 'ntpd(8), ntpdc(8)'],
  	     'ntpdate' => ['ntpdate', 8, 'ntpd(8)'],
  	     'ntpdc' => ['ntpdc', 8, 'ntpd(8)'],
@@ -9,6 +9,7 @@
  	     'ntptrace' => ['ntptrace', 8, 'ntpd(8)'],
  	     'keygen' => ['ntp-keygen', 8, 'ntpd(8), ntp_auth(5)'],
 -	     'confopt' => ['ntp.conf', 5, 'ntpd(8)'],
++	     'tickadj' => ['tickadj', 8, 'ntpd(8)'],
 +	     'confopt' => ['ntp.conf', 5, 'ntpd(8), ntp_auth(5), ntp_mon(5), ntp_acc(5), ntp_clock(5), ntp_misc(5)'],
  	     'authopt' => ['ntp_auth', 5, 'ntp.conf(5), ntpd(8)'],
  	     'monopt' => ['ntp_mon', 5, 'ntp.conf(5)'],

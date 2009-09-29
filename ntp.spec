@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.4p7
-Release: 5%{?dist}
+Release: 6%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -104,6 +104,8 @@ Patch30: ntp-4.2.4p7-freqmode.patch
 Patch31: ntpstat-0.2-clksrc.patch
 # process first packet in multipacket response
 Patch32: ntpstat-0.2-multipacket.patch
+# fix precision calculation on fast CPUs
+Patch33: ntp-4.2.4p7-getprecision.patch
 
 URL: http://www.ntp.org
 Requires(post): /sbin/chkconfig
@@ -192,6 +194,7 @@ This package contains NTP documentation in HTML format.
 %patch30 -p1 -b .freqmode
 %patch31 -p1 -b .clksrc
 %patch32 -p1 -b .multipacket
+%patch33 -p1 -b .getprecision
 
 # clock_gettime needs -lrt
 sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
@@ -343,6 +346,7 @@ fi
 %{_mandir}/man8/ntpq.8*
 %{_mandir}/man8/ntpstat.8*
 %{_mandir}/man8/ntptime.8*
+%{_mandir}/man8/tickadj.8*
 
 %files perl
 %defattr(-,root,root)
@@ -365,6 +369,10 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Tue Sep 29 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p7-6
+- generate tickadj man page (#526161)
+- fix precision calculation on fast CPUs
+
 * Fri Aug 21 2009 Tomas Mraz <tmraz@redhat.com> - 4.2.4p7-5
 - rebuilt with new openssl
 
