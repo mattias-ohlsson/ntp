@@ -32,11 +32,9 @@ prog=ntpd
 lockfile=/var/lock/subsys/$prog
 
 start() {
-	# Check that networking is up.
+	[ "$EUID" != "0" ] && exit 4
 	[ "$NETWORKING" = "no" ] && exit 1
-
 	[ -x /usr/sbin/ntpd ] || exit 5
-
 	[ -f /etc/sysconfig/ntpd ] || exit 6
 	. /etc/sysconfig/ntpd
 
@@ -50,6 +48,7 @@ start() {
 }
 
 stop() {
+	[ "$EUID" != "0" ] && exit 4
         echo -n $"Shutting down $prog: "
 	killproc $prog
 	RETVAL=$?

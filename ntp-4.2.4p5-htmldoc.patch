@@ -113,6 +113,42 @@ diff -up ntp-4.2.4p5/html/monopt.html.htmldoc ntp-4.2.4p5/html/monopt.html
  							<dd>Enables or disables the recording function.
  						</dl>
  				</dl>
+diff -up ntp-4.2.4p7/html/ntp-wait.html.htmldoc ntp-4.2.4p7/html/ntp-wait.html
+--- ntp-4.2.4p7/html/ntp-wait.html.htmldoc	2009-10-21 15:33:41.000000000 +0200
++++ ntp-4.2.4p7/html/ntp-wait.html	2009-10-21 15:51:18.000000000 +0200
+@@ -0,0 +1,32 @@
++<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
++<html>
++	<head>
++		<meta http-equiv="content-type" content="text/html;charset=iso-8859-1">
++		<meta name="generator" content="HTML Tidy, see www.w3.org">
++		<title>ntp-wait - waits until ntpd is in synchronized state</title>
++		<link href="scripts/style.css" type="text/css" rel="stylesheet">
++	</head>
++	<body>
++		<h3><tt>ntp-wait</tt> - waits until ntpd is in synchronized state</h3>
++		<hr>
++		<h4>Synopsis</h4>
++		<p><tt>ntp-wait [ -fv ] [ -n <i>tries</i> ] [ -s <i>seconds</i> ]</tt></p>
++		<h4>Description</h4>
++		<p>The <tt>ntp-wait</tt> program blocks until ntpd is in synchronized state.
++		This can be useful at boot time, to delay the boot sequence
++		until after "ntpd -g" has set the time.
++		<h4>Command Line Options</h4>
++		<dl>
++			<dt><tt>-f</tt>
++			<dd>Return a non-zero exit code if the state is unknown.
++			<dt><tt>-n <i>tries</i></tt>
++			<dd>Number of tries before giving up. The default is 1000.
++			<dt><tt>-s <i>seconds</i></tt>
++			<dd>Seconds to sleep between tries. The default is 6 seconds.
++			<dt><tt>-v</tt>
++			<dd>Be verbose.
++		</dl>
++		<script type="text/javascript" language="javascript" src="scripts/footer.txt"></script>
++	</body>
++
++</html>
 diff -up ntp-4.2.4p5/html/ntpd.html.htmldoc ntp-4.2.4p5/html/ntpd.html
 --- ntp-4.2.4p5/html/ntpd.html.htmldoc	2006-12-28 13:02:57.000000000 +0100
 +++ ntp-4.2.4p5/html/ntpd.html	2008-08-18 12:31:59.000000000 +0200

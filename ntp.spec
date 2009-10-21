@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.4p7
-Release: 6%{?dist}
+Release: 7%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -352,6 +352,7 @@ fi
 %defattr(-,root,root)
 %{_sbindir}/ntp-wait
 %{_sbindir}/ntptrace
+%{_mandir}/man8/ntp-wait.8*
 %{_mandir}/man8/ntptrace.8*
 
 %files -n ntpdate
@@ -369,6 +370,10 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Wed Oct 21 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p7-7
+- add ntp-wait man page (#526161)
+- fix init scripts (#527987)
+
 * Tue Sep 29 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p7-6
 - generate tickadj man page (#526161)
 - fix precision calculation on fast CPUs
