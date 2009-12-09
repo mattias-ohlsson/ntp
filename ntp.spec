@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
-Version: 4.2.4p7
-Release: 7%{?dist}
+Version: 4.2.4p8
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -65,13 +65,13 @@ Patch11: ntp-4.2.4p2-filegen.patch
 # ntpbz #738
 Patch12: ntp-4.2.4-sprintf.patch
 # use editline instead of readline
-Patch13: ntp-4.2.4p7-editline.patch
+Patch13: ntp-4.2.4p8-editline.patch
 # add option -m to lock memory
-Patch14: ntp-4.2.4p7-mlock.patch
+Patch14: ntp-4.2.4p8-mlock.patch
 # fixed in 4.2.5
 Patch15: ntp-4.2.4p2-clockselect.patch
 # don't build sntp
-Patch16: ntp-4.2.4p7-nosntp.patch
+Patch16: ntp-4.2.4p8-nosntp.patch
 # ntpbz #802
 Patch17: ntp-4.2.4p7-sleep.patch
 # ntpbz #779, #823
@@ -80,12 +80,10 @@ Patch18: ntp-4.2.4p7-bcast.patch
 Patch19: ntp-4.2.4p0-retcode.patch
 # ntpbz #397
 Patch20: ntp-4.2.4p2-noif.patch
-# force IPv6 support
-Patch21: ntp-4.2.4p7-ipv6.patch
 # align buffer for control messages
 Patch22: ntp-4.2.4p4-cmsgalign.patch
 # force use of clock_gettime
-Patch23: ntp-4.2.4p7-gettime.patch
+Patch23: ntp-4.2.4p8-gettime.patch
 # reload resolv.conf after failure in name resolution
 Patch24: ntp-4.2.4p4-resinit.patch
 # ntpbz #992
@@ -183,7 +181,6 @@ This package contains NTP documentation in HTML format.
 %patch18 -p1 -b .bcast
 %patch19 -p1 -b .retcode
 %patch20 -p1 -b .noif
-%patch21 -p1 -b .ipv6
 %patch22 -p1 -b .cmsgalign
 %patch24 -p1 -b .resinit
 %patch25 -p1 -b .rtnetlink
@@ -370,6 +367,9 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Wed Dec 09 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p8-1
+- update to 4.2.4p8 (#545557, CVE-2009-3563)
+
 * Wed Oct 21 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p7-7
 - add ntp-wait man page (#526161)
 - fix init scripts (#527987)

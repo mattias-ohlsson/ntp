@@ -1,0 +1,32 @@
+diff -up ntp-4.2.4p8/Makefile.in.nosntp ntp-4.2.4p8/Makefile.in
+--- ntp-4.2.4p8/Makefile.in.nosntp	2009-12-08 14:07:31.000000000 +0100
++++ ntp-4.2.4p8/Makefile.in	2009-12-08 17:59:39.000000000 +0100
+@@ -246,7 +246,7 @@ ACLOCAL_AMFLAGS = -I m4 -I libopts/m4
+ NULL = 
+ SUBDIRS = $(am__append_1) scripts include ElectricFence @ARLIB_DIR@ \
+ 	libntp libparse ntpd ntpdate ntpdc ntpq parseutil adjtimed \
+-	clockstuff kernel sntp util $(NULL)
++	clockstuff kernel util $(NULL)
+ DIST_SUBDIRS = \
+ 	scripts		\
+ 	include		\
+@@ -263,7 +263,6 @@ DIST_SUBDIRS = \
+ 	adjtimed	\
+ 	clockstuff	\
+ 	kernel		\
+-	sntp		\
+ 	util		\
+ 	$(NULL)
+ 
+diff -up ntp-4.2.4p8/configure.nosntp ntp-4.2.4p8/configure
+--- ntp-4.2.4p8/configure.nosntp	2009-12-08 17:59:39.000000000 +0100
++++ ntp-4.2.4p8/configure	2009-12-08 18:01:09.000000000 +0100
+@@ -25770,7 +25770,7 @@ ac_config_files="$ac_config_files script
+ ac_config_files="$ac_config_files util/Makefile"
+ 
+ 
+-subdirs="$subdirs sntp"
++subdirs="$subdirs"
+ 
+ 
+ cat >confcache <<\_ACEOF

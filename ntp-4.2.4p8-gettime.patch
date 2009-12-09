@@ -1,0 +1,14 @@
+diff -up ntp-4.2.4p8/configure.gettime ntp-4.2.4p8/configure
+--- ntp-4.2.4p8/configure.gettime	2009-12-08 18:04:54.000000000 +0100
++++ ntp-4.2.4p8/configure	2009-12-08 18:06:07.000000000 +0100
+@@ -20221,6 +20221,10 @@ case "$host" in
+     ;;
+  *) for ac_func in clock_gettime clock_settime
+ do :
++  cat >>confdefs.h <<_ACEOF
++#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
++_ACEOF
++  continue
+   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+ eval as_val=\$$as_ac_var
