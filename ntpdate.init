@@ -35,7 +35,7 @@ start() {
 	    # step-tickers doesn't specify a server,
 	    # use servers from ntp.conf instead
 	    tickers=$(awk '$1=="peer"||$1=="server"{print $2}' $ntpconf | \
-		egrep -v '127\.127\.[0-9]+\.[0-9]+')
+		grep -Ev '127\.127\.[0-9]+\.[0-9]+')
 	fi
 
 	if ! echo "$tickers" | grep -qi '[a-z0-9]'; then

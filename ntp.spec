@@ -1,14 +1,15 @@
 Summary: The NTP daemon and utilities
 Name: ntp
-Version: 4.2.4p8
-Release: 1%{?dist}
+Version: 4.2.6p1
+%define rc_ver -RC5
+Release: 0.1.rc5%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
 # include/ntif.h (not used) : BSD
 # include/rsa_md5.h : BSD with advertising
 # include/ntp_rfc2553.h : BSD with advertising
-# libisc/inet_aton.c (not used) : BSD with advertising
+# lib/isc/inet_aton.c (not used) : BSD with advertising
 # libntp/md5c.c : BSD with advertising
 # libntp/mktime.c : BSD with advertising
 # libntp/ntp_random.c : BSD with advertising
@@ -25,10 +26,9 @@ Release: 1%{?dist}
 # ntpd/refclock_palisade.h : BSD with advertising
 # ntpstat-0.2/ : GPLv2
 # util/ansi2knr.c (not used) : GPL+
-# sntp/ (not packaged) : MSNTP
 License: (MIT and BSD and BSD with advertising) and GPLv2
 Group: System Environment/Daemons
-Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
+Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}%{?rc_ver}.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
@@ -39,71 +39,42 @@ Source7: ntpdate.init
 Source8: ntp.cryptopw
 Source9: ntpdate.sysconfig
 Source10: ntp.dhclient
+# taken from git://git.enneenne.com/pps-tools
+Source11: timepps.h
 
-# ntpbz #628, #1073
-Patch1: ntp-4.2.4p4-kernel.patch
-# add support for dropping root to ntpdate
-Patch2: ntp-4.2.4p0-droproot.patch
-# ntpbz #812
-Patch3: ntp-4.2.4-groups.patch
-# ntpbz #1170
-Patch4: ntp-4.2.4p7-daemonpll.patch
-# link ntpd with -ffast-math on ia64
-Patch5: ntp-4.2.4-linkfastmath.patch
-# ntpbz #1134
-Patch6: ntp-4.2.4p2-tentative.patch
-# ntpbz #897
-Patch7: ntp-4.2.4p2-noseed.patch
-# ntpbz #830
-Patch8: ntp-4.2.4p4-multilisten.patch
-# fix script used to generate man pages
-Patch9: ntp-4.2.4-html2man.patch
-# ntpbz #898
-Patch10: ntp-4.2.4p5-htmldoc.patch
-# fixed in 4.2.5
-Patch11: ntp-4.2.4p2-filegen.patch
-# ntpbz #738
-Patch12: ntp-4.2.4-sprintf.patch
-# use editline instead of readline
-Patch13: ntp-4.2.4p8-editline.patch
-# add option -m to lock memory
-Patch14: ntp-4.2.4p8-mlock.patch
-# fixed in 4.2.5
-Patch15: ntp-4.2.4p2-clockselect.patch
-# don't build sntp
-Patch16: ntp-4.2.4p8-nosntp.patch
 # ntpbz #802
-Patch17: ntp-4.2.4p7-sleep.patch
-# ntpbz #779, #823
-Patch18: ntp-4.2.4p7-bcast.patch
-# ntpbz #759
-Patch19: ntp-4.2.4p0-retcode.patch
-# ntpbz #397
-Patch20: ntp-4.2.4p2-noif.patch
+Patch1: ntp-4.2.6p1-sleep.patch
+# add support for dropping root to ntpdate
+Patch2: ntp-4.2.6p1-droproot.patch
+# ntpbz #779
+Patch3: ntp-4.2.6p1-bcast.patch
 # align buffer for control messages
-Patch22: ntp-4.2.4p4-cmsgalign.patch
-# force use of clock_gettime
-Patch23: ntp-4.2.4p8-gettime.patch
-# reload resolv.conf after failure in name resolution
-Patch24: ntp-4.2.4p4-resinit.patch
+Patch4: ntp-4.2.6p1-cmsgalign.patch
+# link ntpd with -ffast-math on ia64
+Patch5: ntp-4.2.6p1-linkfastmath.patch
+# ntpbz #1134
+Patch6: ntp-4.2.6p1-tentative.patch
+# ntpbz #759
+Patch7: ntp-4.2.6p1-retcode.patch
 # ntpbz #992
-Patch25: ntp-4.2.4p5-rtnetlink.patch
-# don't log STA_MODE (PLL/FLL) changes
-Patch26: ntp-4.2.4p7-stamode.patch
-# ntpbz #808
-Patch27: ntp-4.2.4p5-driftonexit.patch
+Patch8: ntp-4.2.6p1-rtnetlink.patch
+# fix script used to generate man pages
+Patch9: ntp-4.2.6p1-html2man.patch
+# ntpbz #898
+Patch10: ntp-4.2.6p1-htmldoc.patch
 # add missing nanokernel macros
-Patch28: ntp-4.2.4p7-nano.patch
-# allow minpoll 3 as in 4.2.5
-Patch29: ntp-4.2.4p7-minpoll.patch
-# fix frequency mode, backported from 4.2.5
-Patch30: ntp-4.2.4p7-freqmode.patch
-# handle unknown clock types
-Patch31: ntpstat-0.2-clksrc.patch
-# process first packet in multipacket response
-Patch32: ntpstat-0.2-multipacket.patch
+Patch11: ntp-4.2.6p1-nano.patch
 # fix precision calculation on fast CPUs
-Patch33: ntp-4.2.4p7-getprecision.patch
+Patch12: ntp-4.2.4p7-getprecision.patch
+# ntpbz #1408
+Patch13: ntp-4.2.6p1-logdefault.patch
+# add option -m to lock memory
+Patch14: ntp-4.2.6p1-mlock.patch
+
+# handle unknown clock types
+Patch50: ntpstat-0.2-clksrc.patch
+# process first packet in multipacket response
+Patch51: ntpstat-0.2-multipacket.patch
 
 URL: http://www.ntp.org
 Requires(post): /sbin/chkconfig
@@ -159,47 +130,34 @@ This package contains NTP documentation in HTML format.
 %{?rhel: %define vendorzone rhel.}
 %endif
 
-%prep 
-%setup -q -a 5
+%prep
+%setup -q -a 5 -n %{name}-%{version}%{?rc_ver}
 
-%patch1 -p1 -b .kernel
+cp %{SOURCE11} include
+
+%patch1 -p1 -b .sleep
 %patch2 -p1 -b .droproot
-%patch3 -p1 -b .groups
-%patch4 -p1 -b .daemonpll
-%patch6 -p1 -b .tentative
-%patch7 -p1 -b .noseed
-%patch8 -p1 -b .multilisten
-%patch9 -p1 -b .html2man
-%patch10 -p1 -b .htmldoc
-%patch11 -p1 -b .filegen
-%patch12 -p1 -b .sprintf
-%patch13 -p1 -b .editline
-%patch14 -p1 -b .mlock
-%patch15 -p1 -b .clockselect
-%patch16 -p1 -b .nosntp
-%patch17 -p1 -b .sleep
-%patch18 -p1 -b .bcast
-%patch19 -p1 -b .retcode
-%patch20 -p1 -b .noif
-%patch22 -p1 -b .cmsgalign
-%patch24 -p1 -b .resinit
-%patch25 -p1 -b .rtnetlink
-%patch26 -p1 -b .stamode
-%patch27 -p1 -b .driftonexit
-%patch28 -p1 -b .nano
-%patch29 -p1 -b .minpoll
-%patch30 -p1 -b .freqmode
-%patch31 -p1 -b .clksrc
-%patch32 -p1 -b .multipacket
-%patch33 -p1 -b .getprecision
-
-# clock_gettime needs -lrt
-sed -i.gettime 's|^LIBS = @LIBS@|& -lrt|' ntp{d,q,dc,date}/Makefile.in
-%patch23 -p1 -b .gettime
-
+%patch3 -p1 -b .bcast
+%patch4 -p1 -b .cmsgalign
 %ifarch ia64
 %patch5 -p1 -b .linkfastmath
 %endif
+%patch6 -p1 -b .tentative
+%patch7 -p1 -b .retcode
+%patch8 -p1 -b .rtnetlink
+%patch9 -p1 -b .html2man
+%patch10 -p1 -b .htmldoc
+%patch11 -p1 -b .nano
+%patch12 -p1 -b .getprecision
+%patch13 -p1 -b .logdefault
+%patch14 -p1 -b .mlock
+
+# set default path to sntp KoD database
+sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/*.{1,c}
+
+# ntpstat patches
+%patch50 -p1 -b .clksrc
+%patch51 -p1 -b .multipacket
 
 for f in COPYRIGHT; do
 	iconv -f iso8859-1 -t utf8 -o ${f}{_,} && touch -r ${f}{,_} && mv -f ${f}{_,}
@@ -211,11 +169,12 @@ if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev
 	./pietest && export CFLAGS="$CFLAGS -pie -fPIE"
 	rm -f pietest
 fi
+export CPPFLAGS="-Iinclude"
 %configure \
 	--sysconfdir=%{_sysconfdir}/ntp/crypto \
 	--with-openssl-libdir=%{_libdir} \
 	--enable-all-clocks --enable-parse-clocks \
-	--enable-linuxcaps
+	--enable-ntp-signd=%{_localstatedir}/run/ntp_signd
 echo '#define KEYFILE "%{_sysconfdir}/ntp/keys"' >> ntpdate/ntpdate.h
 echo '#define NTP_VAR "%{_localstatedir}/log/ntpstats/"' >> config.h
 
@@ -238,6 +197,8 @@ rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT bindir=%{_sbindir} install
 
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man{5,8}
+sed -i 's/sntp\.1/sntp\.8/' $RPM_BUILD_ROOT%{_mandir}/man1/sntp.1
+mv $RPM_BUILD_ROOT%{_mandir}/man{1/sntp.1,8/sntp.8}
 rm -rf $RPM_BUILD_ROOT%{_mandir}/man1
 
 pushd ntpstat-0.2
@@ -254,7 +215,7 @@ mkdir -p $RPM_BUILD_ROOT%{ntpdocdir}
 cp -p COPYRIGHT ChangeLog NEWS $RPM_BUILD_ROOT%{ntpdocdir}
 
 # prepare html documentation
-find html | egrep '\.(html|css|txt|jpg|gif)$' | grep -v '/build/\|sntp' | \
+find html | grep -E '\.(html|css|txt|jpg|gif)$' | grep -v '/build/\|sntp' | \
 	cpio -pmd $RPM_BUILD_ROOT%{ntpdocdir}
 find $RPM_BUILD_ROOT%{ntpdocdir} -type f | xargs chmod 644
 find $RPM_BUILD_ROOT%{ntpdocdir} -type d | xargs chmod 755
@@ -262,7 +223,7 @@ find $RPM_BUILD_ROOT%{ntpdocdir} -type d | xargs chmod 755
 pushd $RPM_BUILD_ROOT
 mkdir -p .%{_sysconfdir}/{ntp/crypto,sysconfig,dhcp/dhclient.d} .%{_initrddir}
 mkdir -p .%{_localstatedir}/{lib/ntp,log/ntpstats}
-touch .%{_localstatedir}/lib/ntp/drift
+touch .%{_localstatedir}/lib/ntp/{drift,sntp-kod}
 sed -e 's|VENDORZONE\.|%{vendorzone}|' \
 	-e 's|ETCNTP|%{_sysconfdir}/ntp|' \
 	-e 's|VARNTP|%{_localstatedir}/lib/ntp|' \
@@ -324,16 +285,18 @@ fi
 %{_sbindir}/ntpdc
 %{_sbindir}/ntpq
 %{_sbindir}/ntptime
+%{_sbindir}/sntp
 %{_sbindir}/tickadj
 %{_initrddir}/ntpd
 %config(noreplace) %{_sysconfdir}/sysconfig/ntpd
-%config(noreplace) %{_sysconfdir}/ntp.conf
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp.conf
 %dir %attr(750,root,ntp) %{_sysconfdir}/ntp/crypto
 %config(noreplace) %{_sysconfdir}/ntp/crypto/pw
 %dir %{_sysconfdir}/dhcp/dhclient.d
 %{_sysconfdir}/dhcp/dhclient.d/ntp.sh
 %dir %attr(-,ntp,ntp) %{_localstatedir}/lib/ntp
 %ghost %attr(644,ntp,ntp) %{_localstatedir}/lib/ntp/drift
+%ghost %{_localstatedir}/lib/ntp/sntp-kod
 %dir %attr(-,ntp,ntp) %{_localstatedir}/log/ntpstats
 %{_bindir}/ntpstat
 %{_mandir}/man5/*.5*
@@ -343,6 +306,7 @@ fi
 %{_mandir}/man8/ntpq.8*
 %{_mandir}/man8/ntpstat.8*
 %{_mandir}/man8/ntptime.8*
+%{_mandir}/man8/sntp.8*
 %{_mandir}/man8/tickadj.8*
 
 %files perl
@@ -367,6 +331,14 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Fri Mar 19 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p1-0.1.rc5
+- update to 4.2.6p1-RC5
+- support NTPSERVERARGS variable in dhclient script (#558110)
+- don't use deprecated egrep (#548182)
+- don't verify ntp.conf (#481151)
+- compile with PPS API support
+- include new sntp
+
 * Wed Dec 09 2009 Miroslav Lichvar <mlichvar@redhat.com> 4.2.4p8-1
 - update to 4.2.4p8 (#545557, CVE-2009-3563)
 

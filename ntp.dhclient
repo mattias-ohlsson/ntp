@@ -37,11 +37,11 @@ ntp_replace_conf() {
 ntp_config() {
     if [ ! "${PEERNTP}" = "no" ] && [ -n "${new_ntp_servers}" ] &&
         [ -e ${CONF} ] && [ -d ${SAVEDIR} ]; then
-        local conf=$(egrep -v '^server .*  # added by /sbin/dhclient-script$' < ${CONF})
+        local conf=$(grep -v '^server .*  # added by /sbin/dhclient-script$' < ${CONF})
 
         conf=$(echo "$conf"
             for s in ${new_ntp_servers}; do
-                echo "server ${s}  # added by /sbin/dhclient-script"
+                echo "server ${s} ${NTPSERVERARGS}  # added by /sbin/dhclient-script"
             done)
 
         [ -f ${SAVECONF} ] || touch ${SAVECONF}
@@ -51,7 +51,7 @@ ntp_config() {
 
 ntp_restore() {
     if [ -e ${CONF} ] && [ -f ${SAVECONF} ]; then
-        local conf=$(egrep -v '^server .*  # added by /sbin/dhclient-script$' < ${CONF})
+        local conf=$(grep -v '^server .*  # added by /sbin/dhclient-script$' < ${CONF})
 
         ntp_replace_conf "$conf"
         rm -f ${SAVECONF}

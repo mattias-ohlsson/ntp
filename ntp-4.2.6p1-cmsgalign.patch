@@ -1,8 +1,8 @@
-diff -up ntp-4.2.4p4/ntpd/ntp_io.c.cmsgalign ntp-4.2.4p4/ntpd/ntp_io.c
---- ntp-4.2.4p4/ntpd/ntp_io.c.cmsgalign	2008-03-10 20:01:21.000000000 +0100
-+++ ntp-4.2.4p4/ntpd/ntp_io.c	2008-03-10 20:04:02.000000000 +0100
-@@ -2933,8 +2933,8 @@ read_network_packet(SOCKET fd, struct in
- 	msghdr.msg_namelen    = sizeof(rb->recv_srcadr);
+diff -up ntp-4.2.6p1/ntpd/ntp_io.c.cmsgalign ntp-4.2.6p1/ntpd/ntp_io.c
+--- ntp-4.2.6p1/ntpd/ntp_io.c.cmsgalign	2010-03-04 18:28:53.000000000 +0100
++++ ntp-4.2.6p1/ntpd/ntp_io.c	2010-03-04 18:30:34.000000000 +0100
+@@ -3194,8 +3194,8 @@ read_network_packet(
+ 	msghdr.msg_namelen    = fromlen;
  	msghdr.msg_iov        = &iovec;
  	msghdr.msg_iovlen     = 1;
 -	msghdr.msg_control    = (void *)&control;

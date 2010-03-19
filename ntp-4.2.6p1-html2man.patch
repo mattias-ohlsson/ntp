@@ -1,6 +1,7 @@
---- ntp-4.2.4/scripts/html2man.in.html2man	2006-06-06 22:17:10.000000000 +0200
-+++ ntp-4.2.4/scripts/html2man.in	2007-01-08 12:47:31.000000000 +0100
-@@ -23,10 +23,12 @@ $MANDIR = "./man";
+diff -up ntp-4.2.6p1/scripts/html2man.in.html2man ntp-4.2.6p1/scripts/html2man.in
+--- ntp-4.2.6p1/scripts/html2man.in.html2man	2006-06-06 22:17:10.000000000 +0200
++++ ntp-4.2.6p1/scripts/html2man.in	2010-03-12 12:27:32.000000000 +0100
+@@ -23,28 +23,28 @@ $MANDIR = "./man";
  	     'ntpq' => ['ntpq', 8, 'ntpd(8), ntpdc(8)'],
  	     'ntpdate' => ['ntpdate', 8, 'ntpd(8)'],
  	     'ntpdc' => ['ntpdc', 8, 'ntpd(8)'],
@@ -15,9 +16,16 @@
  	     'authopt' => ['ntp_auth', 5, 'ntp.conf(5), ntpd(8)'],
  	     'monopt' => ['ntp_mon', 5, 'ntp.conf(5)'],
  	     'accopt' => ['ntp_acc', 5, 'ntp.conf(5)'],
-@@ -34,17 +34,8 @@
+ 	     'clockopt' => ['ntp_clock', 5, 'ntp.conf(5)'],
  	     'miscopt' => ['ntp_misc', 5, 'ntp.conf(5)']);
  
++%table_headers = (
++    'ntpd' => 'l l l l.',
++    'ntpq' => 'l l.',
++    'monopt' => 'l l l.',
++    'authopt' => 'c c c c c c.'
++);
++
  # Disclaimer to go in SEE ALSO section of the man page
 -$seealso_disclaimer = 'These man pages are automatically hacked from the main NTP ' .
 -    'documentation pages, which are maintained in HTML format.  These files are ' .
@@ -35,7 +43,7 @@
  
  mkdir $MANDIR, 0777;
  mkdir "$MANDIR/man8", 0777;
-@@ -64,7 +55,8 @@
+@@ -64,7 +64,8 @@ sub process {
      $fileinfo = $manfiles{$filename};
  
      $p = HTML::TokeParser->new("$filename.html") || die "Can't open $filename.html: $!";
@@ -45,7 +53,7 @@
  	|| die "Can't open: $!";
  
      $p->get_tag("title");
-@@ -73,7 +65,6 @@
+@@ -73,7 +74,6 @@ sub process {
  
      # Setup man header
      print MANOUT ".TH " . $fileinfo->[0] . " " . $fileinfo->[1] .  "\n";
@@ -53,7 +61,7 @@
      print MANOUT ".SH NAME\n";
      $pat = $fileinfo->[0];
      if ($name =~ /$pat/) {
-@@ -81,10 +72,12 @@
+@@ -81,10 +81,13 @@ sub process {
  	# Add the manpage name, if not in the HTML title already
  	print MANOUT "$fileinfo->[0] - ";
      }
@@ -66,10 +74,11 @@
 +    $deflevel = 0;
 +    $pre = 0;
 +    $ignore = 0;
++    $first_td = 1;
      # Now start scanning.  We basically print everything after translating some tags.
      # $token->[0] has "T", "S", "E" for Text, Start, End
      # $token->[1] has the tag name, or text (for "T" case)
-@@ -92,19 +85,37 @@
+@@ -92,19 +95,37 @@ sub process {
      while (my $token = $p->get_token) {
  	if($token->[0] eq "T") {
  	    my $text = $token->[1];
@@ -98,9 +107,9 @@
  	    if($token->[1] eq "h4") {
  		my $text = uc($p->get_trimmed_text("/h4"));
 -		print MANOUT ".SH $text\n";
-+		# ignore these two sections in ntpd.html
++		# ignore these sections in ntpd.html
 +		if ($filename eq "ntpd" &&
-+		    ($text eq "FILES" || $text eq "CONFIGURATION OPTIONS")) {
++		    ($text eq "CONFIGURATION OPTIONS")) {
 +			$ignore = 1;
 +			close(MANOUT);
 +			open(MANOUT, ">/dev/null");
@@ -113,7 +122,7 @@
  	    }
  	    if($token->[1] eq "tt") {
  		push @fontstack, "tt";
-@@ -118,22 +129,30 @@
+@@ -118,22 +139,42 @@ sub process {
  		my $text = $p->get_trimmed_text("/address");
  		print MANOUT "\n.SH AUTHOR\n$text\n";
  	    }
@@ -142,6 +151,18 @@
 +	    if($token->[1] eq "pre") {
 +		print MANOUT "\n.nf";
 +		$pre = 1;
++	    }
++	    if($token->[1] eq "table") {
++		print MANOUT "\n.TS\n";
++		print MANOUT "expand allbox tab(%);\n";
++		print MANOUT $table_headers{$filename};
++		print MANOUT "\n";
++	    }
++	    if($token->[1] eq "td") {
++		if ($first_td == 0) {
++		    print MANOUT " % ";
++		}
++		$first_td = 0;
  	    }
  	}
  	elsif($token->[0] eq "E") {
@@ -151,7 +172,7 @@
  		$tag = 1;
  	    }
  	    if($token->[1] eq "tt") {
-@@ -157,15 +176,27 @@
+@@ -157,15 +198,34 @@ sub process {
  		print MANOUT "$fontswitch";
  	    }
  	    if($token->[1] eq "dl") {
@@ -171,6 +192,13 @@
 +	    if($token->[1] eq "pre") {
 +		print MANOUT "\n.fi";
 +		$pre = 0;
++	    }
++	    if($token->[1] eq "table") {
++		print MANOUT ".TE\n";
++	    }
++	    if($token->[1] eq "tr") {
++		print MANOUT "\n";
++		$first_td = 1;
 +	    }
  	}
      }
