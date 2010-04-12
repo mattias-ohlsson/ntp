@@ -1,8 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p1
-%define rc_ver -RC5
-Release: 0.1.rc5%{?dist}
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -28,7 +27,7 @@ Release: 0.1.rc5%{?dist}
 # util/ansi2knr.c (not used) : GPL+
 License: (MIT and BSD and BSD with advertising) and GPLv2
 Group: System Environment/Daemons
-Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}%{?rc_ver}.tar.gz
+Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
@@ -131,7 +130,7 @@ This package contains NTP documentation in HTML format.
 %endif
 
 %prep
-%setup -q -a 5 -n %{name}-%{version}%{?rc_ver}
+%setup -q -a 5
 
 cp %{SOURCE11} include
 
@@ -331,6 +330,9 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Mon Apr 12 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p1-1
+- update to 4.2.6p1
+
 * Fri Mar 19 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p1-0.1.rc5
 - update to 4.2.6p1-RC5
 - support NTPSERVERARGS variable in dhclient script (#558110)
