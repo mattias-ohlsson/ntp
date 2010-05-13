@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p1
-Release: 1%{?dist}
+Release: 2%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -74,6 +74,10 @@ Patch14: ntp-4.2.6p1-mlock.patch
 Patch50: ntpstat-0.2-clksrc.patch
 # process first packet in multipacket response
 Patch51: ntpstat-0.2-multipacket.patch
+# use current system variable names
+Patch52: ntpstat-0.2-sysvars.patch
+# print synchronization distance instead of dispersion
+Patch53: ntpstat-0.2-maxerror.patch
 
 URL: http://www.ntp.org
 Requires(post): /sbin/chkconfig
@@ -157,6 +161,8 @@ sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/*.{1,c}
 # ntpstat patches
 %patch50 -p1 -b .clksrc
 %patch51 -p1 -b .multipacket
+%patch52 -p1 -b .sysvars
+%patch53 -p1 -b .maxerror
 
 for f in COPYRIGHT; do
 	iconv -f iso8859-1 -t utf8 -o ${f}{_,} && touch -r ${f}{,_} && mv -f ${f}{_,}
@@ -330,6 +336,11 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Thu May 13 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p1-2
+- update ntpstat to use current system variable names (#588067)
+- print synchronization distance instead of dispersion in ntpstat
+- clarify ntpd -q description
+
 * Mon Apr 12 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p1-1
 - update to 4.2.6p1
 
