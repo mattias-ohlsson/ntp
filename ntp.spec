@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
-Version: 4.2.6p1
-Release: 2%{?dist}
+Version: 4.2.6p2
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -52,7 +52,7 @@ Patch4: ntp-4.2.6p1-cmsgalign.patch
 # link ntpd with -ffast-math on ia64
 Patch5: ntp-4.2.6p1-linkfastmath.patch
 # ntpbz #1134
-Patch6: ntp-4.2.6p1-tentative.patch
+Patch6: ntp-4.2.6p2-tentative.patch
 # ntpbz #759
 Patch7: ntp-4.2.6p1-retcode.patch
 # ntpbz #992
@@ -60,7 +60,7 @@ Patch8: ntp-4.2.6p1-rtnetlink.patch
 # fix script used to generate man pages
 Patch9: ntp-4.2.6p1-html2man.patch
 # ntpbz #898
-Patch10: ntp-4.2.6p1-htmldoc.patch
+Patch10: ntp-4.2.6p2-htmldoc.patch
 # add missing nanokernel macros
 Patch11: ntp-4.2.6p1-nano.patch
 # fix precision calculation on fast CPUs
@@ -68,7 +68,7 @@ Patch12: ntp-4.2.4p7-getprecision.patch
 # ntpbz #1408
 Patch13: ntp-4.2.6p1-logdefault.patch
 # add option -m to lock memory
-Patch14: ntp-4.2.6p1-mlock.patch
+Patch14: ntp-4.2.6p2-mlock.patch
 
 # handle unknown clock types
 Patch50: ntpstat-0.2-clksrc.patch
@@ -323,6 +323,7 @@ fi
 
 %files -n ntpdate
 %defattr(-,root,root)
+%doc COPYRIGHT
 %{_initrddir}/ntpdate
 %config(noreplace) %{_sysconfdir}/sysconfig/ntpdate
 %dir %{_sysconfdir}/ntp
@@ -336,6 +337,10 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Tue Jul 13 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p2-1
+- update to 4.2.6p2
+- add COPYRIGHT to ntpdate subpackage
+
 * Thu May 13 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p1-2
 - update ntpstat to use current system variable names (#588067)
 - print synchronization distance instead of dispersion in ntpstat
