@@ -44,8 +44,17 @@ start() {
 	fi
 
 	echo -n $"$prog: Synchronizing with time server: "
-	/usr/sbin/ntpdate $OPTIONS $tickers &> /dev/null
-	RETVAL=$?
+
+	[ -z "$RETRIES" ] && RETRIES=2
+	retry=0
+	while true; do
+		/usr/sbin/ntpdate -U ntp -s -b $OPTIONS $tickers &> /dev/null
+		RETVAL=$?
+		[ $RETVAL -eq 0 ] || [ $retry -ge "$RETRIES" ] && break
+		sleep $[10 * (1 << $retry)]
+		retry=$[$retry + 1]
+	done
+
 	[ $RETVAL -eq 0 ] && success || failure
 	echo
 	if [ $RETVAL -eq 0 ]; then
