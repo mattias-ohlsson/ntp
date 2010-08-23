@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p2
-Release: 1%{?dist}
+Release: 2%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -352,6 +352,11 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Mon Aug 23 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p2-2
+- add support for systemd (#617328)
+- retry few times in ntpdate init script before giving up (#445229)
+- add fourth pool server to default ntp.conf and use iburst
+
 * Tue Jul 13 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p2-1
 - update to 4.2.6p2
 - add COPYRIGHT to ntpdate subpackage
