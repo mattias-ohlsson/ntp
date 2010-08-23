@@ -38,11 +38,11 @@ start() {
 	[ -f /etc/sysconfig/ntpd ] || exit 6
 	. /etc/sysconfig/ntpd
 
-        # Start daemons.
-        echo -n $"Starting $prog: "
-        daemon $prog $OPTIONS
+	# Start daemon.
+	echo -n $"Starting $prog: "
+	daemon $prog -u ntp:ntp -p /var/run/ntpd.pid $OPTIONS
 	RETVAL=$?
-        echo
+	echo
 	[ $RETVAL -eq 0 ] && touch $lockfile
 	return $RETVAL
 }

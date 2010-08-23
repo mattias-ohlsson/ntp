@@ -40,6 +40,8 @@ Source9: ntpdate.sysconfig
 Source10: ntp.dhclient
 # taken from git://git.enneenne.com/pps-tools
 Source11: timepps.h
+Source12: ntpd.service
+Source13: ntpdate.service
 
 # ntpbz #802
 Patch1: ntp-4.2.6p1-sleep.patch
@@ -80,9 +82,9 @@ Patch52: ntpstat-0.2-sysvars.patch
 Patch53: ntpstat-0.2-maxerror.patch
 
 URL: http://www.ntp.org
-Requires(post): /sbin/chkconfig
-Requires(preun): /sbin/chkconfig /sbin/service
-Requires(postun): /sbin/service
+Requires(post): /sbin/chkconfig /bin/systemctl
+Requires(preun): /sbin/chkconfig /sbin/service /bin/systemctl
+Requires(postun): /sbin/service /bin/systemctl
 Requires: ntpdate = %{version}-%{release}
 BuildRequires: libcap-devel openssl-devel libedit-devel perl-HTML-Parser
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -110,8 +112,8 @@ This package contains perl scripts ntp-wait and ntptrace.
 Summary: Utility to set the date and time via NTP
 Group: Applications/System
 Requires(pre): shadow-utils 
-Requires(post): /sbin/chkconfig
-Requires(preun): /sbin/chkconfig /sbin/service
+Requires(post): /sbin/chkconfig /bin/systemctl
+Requires(preun): /sbin/chkconfig /sbin/service /bin/systemctl
 
 %description -n ntpdate
 ntpdate is a program for retrieving the date and time from
@@ -227,7 +229,7 @@ find $RPM_BUILD_ROOT%{ntpdocdir} -type d | xargs chmod 755
 
 pushd $RPM_BUILD_ROOT
 mkdir -p .%{_sysconfdir}/{ntp/crypto,sysconfig,dhcp/dhclient.d} .%{_initrddir}
-mkdir -p .%{_localstatedir}/{lib/ntp,log/ntpstats}
+mkdir -p .%{_localstatedir}/{lib/ntp,log/ntpstats} ./lib/systemd/system
 touch .%{_localstatedir}/lib/ntp/{drift,sntp-kod}
 sed -e 's|VENDORZONE\.|%{vendorzone}|' \
 	-e 's|ETCNTP|%{_sysconfdir}/ntp|' \
@@ -242,6 +244,8 @@ install -p -m644 %{SOURCE9} .%{_sysconfdir}/sysconfig/ntpdate
 install -p -m644 %{SOURCE6} .%{_sysconfdir}/ntp/step-tickers
 install -p -m600 %{SOURCE8} .%{_sysconfdir}/ntp/crypto/pw
 install -p -m755 %{SOURCE10} .%{_sysconfdir}/dhcp/dhclient.d/ntp.sh
+install -p -m644 %{SOURCE12} ./lib/systemd/system/ntpd.service
+install -p -m644 %{SOURCE13} ./lib/systemd/system/ntpdate.service
 popd
 
 %clean
@@ -253,14 +257,20 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add ntpd
+/sbin/chkconfig ntpd && systemctl enable ntpd.service &> /dev/null ||
+	systemctl daemon-reload &> /dev/null
 :
 
 %post -n ntpdate
 /sbin/chkconfig --add ntpdate
+/sbin/chkconfig ntpdate && systemctl enable ntpdate.service &> /dev/null ||
+	systemctl daemon-reload &> /dev/null
 :
 
 %preun
 if [ "$1" -eq 0 ]; then
+	systemctl disable ntpd.service &> /dev/null
+	systemctl stop ntpd.service &> /dev/null
 	/sbin/service ntpd stop &> /dev/null
 	/sbin/chkconfig --del ntpd
 fi
@@ -268,6 +278,8 @@ fi
 
 %preun -n ntpdate
 if [ "$1" -eq 0 ]; then
+	systemctl disable ntpdate.service &> /dev/null
+	systemctl stop ntpdate.service &> /dev/null
 	/sbin/service ntpdate stop &> /dev/null
 	/sbin/chkconfig --del ntpdate
 fi
@@ -275,7 +287,8 @@ fi
 
 %postun
 if [ "$1" -ge 1 ]; then
-	/sbin/service ntpd condrestart &> /dev/null
+	systemctl try-restart ntpd.service &> /dev/null ||
+		/sbin/service ntpd condrestart &> /dev/null
 fi
 :
 
@@ -313,6 +326,7 @@ fi
 %{_mandir}/man8/ntptime.8*
 %{_mandir}/man8/sntp.8*
 %{_mandir}/man8/tickadj.8*
+/lib/systemd/system/ntpd.service
 
 %files perl
 %defattr(-,root,root)
@@ -331,6 +345,7 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
 %{_sbindir}/ntpdate
 %{_mandir}/man8/ntpdate.8*
+/lib/systemd/system/ntpdate.service
 
 %files doc
 %defattr(-,root,root)

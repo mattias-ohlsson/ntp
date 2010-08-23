@@ -30,7 +30,8 @@ ntp_replace_conf() {
         if [ $? -eq 1 ]; then
             echo "$1" > ${CONF}
             restorecon ${CONF} >/dev/null 2>&1
-            service ntpd condrestart >/dev/null 2>&1
+            systemctl try-restart ntpd.service > /dev/null 2>&1 ||
+                service ntpd condrestart > /dev/null 2>&1
         fi
 }
 
