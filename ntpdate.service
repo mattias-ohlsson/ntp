@@ -3,9 +3,9 @@ Description=Set time via NTP
 After=syslog.target network.target
 
 [Service]
-Type=finish
+Type=oneshot
 ExecStart=/etc/init.d/ntpdate start
-ValidNoProcess=yes
+RemainAfterExit=yes
 
 [Install]
 WantedBy=multi-user.target
