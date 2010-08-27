@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p2
-Release: 3%{?dist}
+Release: 4%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -352,6 +352,9 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Fri Aug 27 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p2-4
+- fix default ntpdate sysconfig options (#445229)
+
 * Thu Aug 26 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p2-3
 - update ntpdate service (#627395)
 
