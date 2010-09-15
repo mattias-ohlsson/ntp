@@ -82,9 +82,9 @@ Patch52: ntpstat-0.2-sysvars.patch
 Patch53: ntpstat-0.2-maxerror.patch
 
 URL: http://www.ntp.org
-Requires(post): /sbin/chkconfig /bin/systemctl
-Requires(preun): /sbin/chkconfig /sbin/service /bin/systemctl
-Requires(postun): /sbin/service /bin/systemctl
+Requires(post): /sbin/chkconfig
+Requires(preun): /sbin/chkconfig /sbin/service
+Requires(postun): /sbin/service
 Requires: ntpdate = %{version}-%{release}
 BuildRequires: libcap-devel openssl-devel libedit-devel perl-HTML-Parser
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -112,8 +112,8 @@ This package contains perl scripts ntp-wait and ntptrace.
 Summary: Utility to set the date and time via NTP
 Group: Applications/System
 Requires(pre): shadow-utils 
-Requires(post): /sbin/chkconfig /bin/systemctl
-Requires(preun): /sbin/chkconfig /sbin/service /bin/systemctl
+Requires(post): /sbin/chkconfig
+Requires(preun): /sbin/chkconfig /sbin/service
 
 %description -n ntpdate
 ntpdate is a program for retrieving the date and time from
