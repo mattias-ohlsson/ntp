@@ -60,7 +60,7 @@ Patch7: ntp-4.2.6p1-retcode.patch
 # ntpbz #992
 Patch8: ntp-4.2.6p1-rtnetlink.patch
 # fix script used to generate man pages
-Patch9: ntp-4.2.6p1-html2man.patch
+Patch9: ntp-4.2.6p2-html2man.patch
 # ntpbz #898
 Patch10: ntp-4.2.6p2-htmldoc.patch
 # add missing nanokernel macros
