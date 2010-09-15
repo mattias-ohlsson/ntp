@@ -257,13 +257,15 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add ntpd
-/sbin/chkconfig ntpd && systemctl enable ntpd.service &> /dev/null ||
+/sbin/chkconfig ntpd &> /dev/null &&
+	systemctl enable ntpd.service &> /dev/null ||
 	systemctl daemon-reload &> /dev/null
 :
 
 %post -n ntpdate
 /sbin/chkconfig --add ntpdate
-/sbin/chkconfig ntpdate && systemctl enable ntpdate.service &> /dev/null ||
+/sbin/chkconfig ntpdate &> /dev/null &&
+	systemctl enable ntpdate.service &> /dev/null ||
 	systemctl daemon-reload &> /dev/null
 :
 
