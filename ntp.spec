@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p2
-Release: 6%{?dist}
+Release: 7%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -71,6 +71,8 @@ Patch12: ntp-4.2.4p7-getprecision.patch
 Patch13: ntp-4.2.6p1-logdefault.patch
 # add option -m to lock memory
 Patch14: ntp-4.2.6p2-mlock.patch
+# allow -u and -p options to be used twice (#639101)
+Patch15: ntp-4.2.6p2-multiopts.patch
 
 # handle unknown clock types
 Patch50: ntpstat-0.2-clksrc.patch
@@ -156,6 +158,7 @@ cp %{SOURCE11} include
 %patch12 -p1 -b .getprecision
 %patch13 -p1 -b .logdefault
 %patch14 -p1 -b .mlock
+%patch15 -p1 -b .multiopts
 
 # set default path to sntp KoD database
 sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/*.{1,c}
@@ -354,6 +357,9 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Fri Oct 01 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p2-7
+- allow -u and -p options to be used twice (#639101)
+
 * Wed Sep 29 2010 jkeating - 4.2.6p2-6
 - Rebuilt for gcc bug 634757
 
