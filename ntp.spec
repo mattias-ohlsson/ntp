@@ -80,6 +80,8 @@ Patch17: ntp-4.2.6p3-broadcastdelay.patch
 Patch18: ntp-4.2.6p3-delaycalib.patch
 # ntpbz #1695
 Patch19: ntp-4.2.6p3-ntpdaterecv.patch
+# ntpbz #1719
+Patch20: ntp-4.2.6p3-mvkeygen.patch
 
 # handle unknown clock types
 Patch50: ntpstat-0.2-clksrc.patch
@@ -169,6 +171,7 @@ cp %{SOURCE11} include
 %patch17 -p1 -b .broadcastdelay
 %patch18 -p1 -b .delaycalib
 %patch19 -p1 -b .ntpdaterecv
+%patch20 -p1 -b .mvkeygen
 
 # set default path to sntp KoD database
 sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/{sntp.1,main.c}
