@@ -370,6 +370,16 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Thu Nov 25 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p3-0.1.rc10
+- update to 4.2.6p3-RC10
+- fix system peer unmarking when unreachable
+- fix broadcastdelay option
+- fix automatic broadcast delay calibration
+- fix ntp-keygen -V crash
+- avoid unnecessary timeout in ntpdate
+- drop nano patch
+- convert ChangeLog to UTF-8
+
 * Fri Oct 01 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p2-7
 - allow -u and -p options to be used twice (#639101)
 
