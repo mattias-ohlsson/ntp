@@ -76,6 +76,8 @@ Patch15: ntp-4.2.6p2-multiopts.patch
 Patch16: ntp-4.2.6p3-nosyspeer.patch
 # ntpbz #1670
 Patch17: ntp-4.2.6p3-broadcastdelay.patch
+# ntpbz #1671
+Patch18: ntp-4.2.6p3-delaycalib.patch
 
 # handle unknown clock types
 Patch50: ntpstat-0.2-clksrc.patch
@@ -163,6 +165,7 @@ cp %{SOURCE11} include
 %patch15 -p1 -b .multiopts
 %patch16 -p1 -b .nosyspeer
 %patch17 -p1 -b .broadcastdelay
+%patch18 -p1 -b .delaycalib
 
 # set default path to sntp KoD database
 sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/{sntp.1,main.c}
