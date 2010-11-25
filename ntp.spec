@@ -72,6 +72,8 @@ Patch13: ntp-4.2.6p1-logdefault.patch
 Patch14: ntp-4.2.6p2-mlock.patch
 # allow -u and -p options to be used twice (#639101)
 Patch15: ntp-4.2.6p2-multiopts.patch
+# ntpbz #1554
+Patch16: ntp-4.2.6p3-nosyspeer.patch
 
 # handle unknown clock types
 Patch50: ntpstat-0.2-clksrc.patch
@@ -157,6 +159,7 @@ cp %{SOURCE11} include
 %patch13 -p1 -b .logdefault
 %patch14 -p1 -b .mlock
 %patch15 -p1 -b .multiopts
+%patch16 -p1 -b .nosyspeer
 
 # set default path to sntp KoD database
 sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/{sntp.1,main.c}
