@@ -182,7 +182,7 @@ sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/{sntp.1,main
 %patch52 -p1 -b .sysvars
 %patch53 -p1 -b .maxerror
 
-for f in COPYRIGHT; do
+for f in COPYRIGHT ChangeLog; do
 	iconv -f iso8859-1 -t utf8 -o ${f}{_,} && touch -r ${f}{,_} && mv -f ${f}{_,}
 done
 
