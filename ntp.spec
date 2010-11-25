@@ -63,8 +63,6 @@ Patch8: ntp-4.2.6p1-rtnetlink.patch
 Patch9: ntp-4.2.6p2-html2man.patch
 # ntpbz #898
 Patch10: ntp-4.2.6p2-htmldoc.patch
-# add missing nanokernel macros
-Patch11: ntp-4.2.6p1-nano.patch
 # fix precision calculation on fast CPUs
 Patch12: ntp-4.2.4p7-getprecision.patch
 # ntpbz #1408
@@ -154,7 +152,6 @@ cp %{SOURCE11} include
 %patch8 -p1 -b .rtnetlink
 %patch9 -p1 -b .html2man
 %patch10 -p1 -b .htmldoc
-%patch11 -p1 -b .nano
 %patch12 -p1 -b .getprecision
 %patch13 -p1 -b .logdefault
 %patch14 -p1 -b .mlock
