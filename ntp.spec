@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
-Version: 4.2.6p2
-Release: 7%{?dist}
+Version: 4.2.6p3
+Release: 0.1.rc10%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -27,7 +27,8 @@ Release: 7%{?dist}
 # util/ansi2knr.c (not used) : GPL+
 License: (MIT and BSD and BSD with advertising) and GPLv2
 Group: System Environment/Daemons
-Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
+#Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
+Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}-RC10.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
@@ -136,7 +137,7 @@ This package contains NTP documentation in HTML format.
 %endif
 
 %prep
-%setup -q -a 5
+%setup -q -a 5 -n ntp-%{version}-RC10
 
 cp %{SOURCE11} include
 
@@ -158,7 +159,7 @@ cp %{SOURCE11} include
 %patch15 -p1 -b .multiopts
 
 # set default path to sntp KoD database
-sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/*.{1,c}
+sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/{sntp.1,main.c}
 
 # ntpstat patches
 %patch50 -p1 -b .clksrc
