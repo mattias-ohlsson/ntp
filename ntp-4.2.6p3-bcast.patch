@@ -1,6 +1,6 @@
-diff -up ntp-4.2.6p1/ntpd/ntp_io.c.bcast ntp-4.2.6p1/ntpd/ntp_io.c
---- ntp-4.2.6p1/ntpd/ntp_io.c.bcast	2009-12-09 08:36:37.000000000 +0100
-+++ ntp-4.2.6p1/ntpd/ntp_io.c	2010-03-05 14:49:25.000000000 +0100
+diff -up ntp-4.2.6p3/ntpd/ntp_io.c.bcast ntp-4.2.6p3/ntpd/ntp_io.c
+--- ntp-4.2.6p3/ntpd/ntp_io.c.bcast	2010-12-25 10:40:36.000000000 +0100
++++ ntp-4.2.6p3/ntpd/ntp_io.c	2011-01-05 17:46:13.820049150 +0100
 @@ -151,6 +151,8 @@ int ninterfaces;			/* Total number of in
  
  int disable_dynamic_updates;		/* scan interfaces once only */
@@ -10,7 +10,7 @@ diff -up ntp-4.2.6p1/ntpd/ntp_io.c.bcast ntp-4.2.6p1/ntpd/ntp_io.c
  #ifdef REFCLOCK
  /*
   * Refclock stuff.	We keep a chain of structures with data concerning
-@@ -1937,6 +1939,17 @@ set_reuseaddr(
+@@ -2254,6 +2256,17 @@ set_reuseaddr(
  #endif /* ! SO_EXCLUSIVEADDRUSE */
  }
  
@@ -28,7 +28,7 @@ diff -up ntp-4.2.6p1/ntpd/ntp_io.c.bcast ntp-4.2.6p1/ntpd/ntp_io.c
  /*
   * This is just a wrapper around an internal function so we can
   * make other changes as necessary later on
-@@ -2374,6 +2387,7 @@ io_setbclient(void)
+@@ -2659,6 +2672,7 @@ io_setbclient(void)
  		}
  	}
  	set_reuseaddr(0);
@@ -36,15 +36,15 @@ diff -up ntp-4.2.6p1/ntpd/ntp_io.c.bcast ntp-4.2.6p1/ntpd/ntp_io.c
  	if (nif > 0)
  		DPRINTF(1, ("io_setbclient: Opened broadcast clients\n"));
  	else if (!nif)
-@@ -2405,6 +2419,7 @@ io_unsetbclient(void)
- 
- 		socket_broadcast_disable(interf, &interf->sin);
+@@ -2685,6 +2699,7 @@ io_unsetbclient(void)
+ 			continue;
+ 		socket_broadcast_disable(ep, &ep->sin);
  	}
 +	set_pktinfo(0);
  }
  
  /*
-@@ -3130,7 +3145,8 @@ read_network_packet(
+@@ -3392,7 +3407,8 @@ read_network_packet(
  #ifdef HAVE_TIMESTAMP
  	struct msghdr msghdr;
  	struct iovec iovec;
@@ -54,7 +54,7 @@ diff -up ntp-4.2.6p1/ntpd/ntp_io.c.bcast ntp-4.2.6p1/ntpd/ntp_io.c
  #endif
  
  	/*
-@@ -3141,7 +3157,7 @@ read_network_packet(
+@@ -3403,7 +3419,7 @@ read_network_packet(
  	 */
  
  	rb = get_free_recv_buffer();
@@ -63,7 +63,7 @@ diff -up ntp-4.2.6p1/ntpd/ntp_io.c.bcast ntp-4.2.6p1/ntpd/ntp_io.c
  		char buf[RX_BUFF_SIZE];
  		sockaddr_u from;
  
-@@ -3201,6 +3217,27 @@ read_network_packet(
+@@ -3463,6 +3479,27 @@ read_network_packet(
  		return (buflen);
  	}
  

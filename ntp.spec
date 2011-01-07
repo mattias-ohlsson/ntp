@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p3
-Release: 0.1.rc10%{?dist}
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -27,8 +27,7 @@ Release: 0.1.rc10%{?dist}
 # util/ansi2knr.c (not used) : GPL+
 License: (MIT and BSD and BSD with advertising) and GPLv2
 Group: System Environment/Daemons
-#Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
-Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}-RC10.tar.gz
+Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
@@ -49,17 +48,17 @@ Patch1: ntp-4.2.6p1-sleep.patch
 # add support for dropping root to ntpdate
 Patch2: ntp-4.2.6p1-droproot.patch
 # ntpbz #779
-Patch3: ntp-4.2.6p1-bcast.patch
+Patch3: ntp-4.2.6p3-bcast.patch
 # align buffer for control messages
 Patch4: ntp-4.2.6p1-cmsgalign.patch
 # link ntpd with -ffast-math on ia64
 Patch5: ntp-4.2.6p1-linkfastmath.patch
 # ntpbz #1134
-Patch6: ntp-4.2.6p2-tentative.patch
+Patch6: ntp-4.2.6p3-tentative.patch
 # ntpbz #759
 Patch7: ntp-4.2.6p1-retcode.patch
 # ntpbz #992
-Patch8: ntp-4.2.6p1-rtnetlink.patch
+Patch8: ntp-4.2.6p3-rtnetlink.patch
 # fix script used to generate man pages
 Patch9: ntp-4.2.6p2-html2man.patch
 # ntpbz #898
@@ -69,7 +68,7 @@ Patch12: ntp-4.2.4p7-getprecision.patch
 # ntpbz #1408
 Patch13: ntp-4.2.6p1-logdefault.patch
 # add option -m to lock memory
-Patch14: ntp-4.2.6p2-mlock.patch
+Patch14: ntp-4.2.6p3-mlock.patch
 # allow -u and -p options to be used twice (#639101)
 Patch15: ntp-4.2.6p2-multiopts.patch
 # ntpbz #1554
@@ -80,8 +79,6 @@ Patch17: ntp-4.2.6p3-broadcastdelay.patch
 Patch18: ntp-4.2.6p3-delaycalib.patch
 # ntpbz #1695
 Patch19: ntp-4.2.6p3-ntpdaterecv.patch
-# ntpbz #1719
-Patch20: ntp-4.2.6p3-mvkeygen.patch
 
 # handle unknown clock types
 Patch50: ntpstat-0.2-clksrc.patch
@@ -147,7 +144,7 @@ This package contains NTP documentation in HTML format.
 %endif
 
 %prep
-%setup -q -a 5 -n ntp-%{version}-RC10
+%setup -q -a 5
 
 cp %{SOURCE11} include
 
@@ -171,7 +168,6 @@ cp %{SOURCE11} include
 %patch17 -p1 -b .broadcastdelay
 %patch18 -p1 -b .delaycalib
 %patch19 -p1 -b .ntpdaterecv
-%patch20 -p1 -b .mvkeygen
 
 # set default path to sntp KoD database
 sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/{sntp.1,main.c}
@@ -370,6 +366,9 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Fri Jan 07 2011 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p3-1
+- update to 4.2.6p3
+
 * Thu Nov 25 2010 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p3-0.1.rc10
 - update to 4.2.6p3-RC10
 - fix system peer unmarking when unreachable
