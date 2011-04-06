@@ -193,6 +193,7 @@ if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev
 	rm -f pietest
 fi
 export CPPFLAGS="-Iinclude"
+export LDFLAGS="-Wl,-z,relro,-z,now"
 %configure \
 	--sysconfdir=%{_sysconfdir}/ntp/crypto \
 	--with-openssl-libdir=%{_libdir} \
