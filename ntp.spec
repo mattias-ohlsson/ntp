@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p3
-Release: 2%{?dist}
+Release: 3%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -371,6 +371,11 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Wed Apr 06 2011 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p3-3
+- pull in time-sync.target from ntpdate.service (Lennart Poettering)
+- link with -Wl,-z,relro,-z,now options
+- fix typo in ntpq man page (#664525)
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.2.6p3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
