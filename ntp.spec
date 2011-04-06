@@ -8,8 +8,11 @@ Release: 2%{?dist}
 # include/ntif.h (not used) : BSD
 # include/rsa_md5.h : BSD with advertising
 # include/ntp_rfc2553.h : BSD with advertising
+# lib/isc/commandline.c (not used) : BSD with advertising
 # lib/isc/inet_aton.c (not used) : BSD with advertising
-# libntp/md5c.c : BSD with advertising
+# lib/isc/strtoul.c (not used) : BSD with advertising
+# lib/isc/unix/file.c : BSD with advertising
+# lib/isc/inet_aton.c (not used) : BSD with advertising
 # libntp/mktime.c : BSD with advertising
 # libntp/ntp_random.c : BSD with advertising
 # libntp/memmove.c : BSD with advertising
@@ -32,6 +35,7 @@ Source1: ntp.conf
 Source2: ntp.keys
 Source3: ntpd.init
 Source4: ntpd.sysconfig
+# http://people.redhat.com/rkeech/#ntpstat
 Source5: ntpstat-0.2.tgz
 Source6: ntp.step-tickers
 Source7: ntpdate.init
