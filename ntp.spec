@@ -274,17 +274,21 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add ntpd
-/sbin/chkconfig ntpd &> /dev/null &&
-	systemctl enable ntpd.service &> /dev/null ||
-	systemctl daemon-reload &> /dev/null
-:
+/bin/systemctl daemon-reload &> /dev/null || :
+
+%triggerun -- ntp < 4.2.6p3-3
+if /sbin/chkconfig --level 3 ntpd ; then
+	/bin/systemctl enable ntpd.service &> /dev/null || :
+fi
 
 %post -n ntpdate
 /sbin/chkconfig --add ntpdate
-/sbin/chkconfig ntpdate &> /dev/null &&
-	systemctl enable ntpdate.service &> /dev/null ||
-	systemctl daemon-reload &> /dev/null
-:
+/bin/systemctl daemon-reload &> /dev/null || :
+
+%triggerun -- ntpdate < 4.2.6p3-3
+if /sbin/chkconfig --level 3 ntpdate ; then
+	/bin/systemctl enable ntpdate.service &> /dev/null || :
+fi
 
 %preun
 if [ "$1" -eq 0 ]; then
