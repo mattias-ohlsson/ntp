@@ -45,6 +45,7 @@ Source10: ntp.dhclient
 Source11: timepps.h
 Source12: ntpd.service
 Source13: ntpdate.service
+Source14: ntp-wait.service
 
 # ntpbz #802
 Patch1: ntp-4.2.6p1-sleep.patch
@@ -264,6 +265,7 @@ install -p -m600 %{SOURCE8} .%{_sysconfdir}/ntp/crypto/pw
 install -p -m755 %{SOURCE10} .%{_sysconfdir}/dhcp/dhclient.d/ntp.sh
 install -p -m644 %{SOURCE12} ./lib/systemd/system/ntpd.service
 install -p -m644 %{SOURCE13} ./lib/systemd/system/ntpdate.service
+install -p -m644 %{SOURCE14} ./lib/systemd/system/ntp-wait.service
 popd
 
 %clean
@@ -357,6 +359,7 @@ fi
 %{_sbindir}/ntptrace
 %{_mandir}/man8/ntp-wait.8*
 %{_mandir}/man8/ntptrace.8*
+/lib/systemd/system/ntp-wait.service
 
 %files -n ntpdate
 %defattr(-,root,root)
