@@ -33,12 +33,11 @@ Group: System Environment/Daemons
 Source0: http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-%{version}.tar.gz
 Source1: ntp.conf
 Source2: ntp.keys
-Source3: ntpd.init
 Source4: ntpd.sysconfig
 # http://people.redhat.com/rkeech/#ntpstat
 Source5: ntpstat-0.2.tgz
 Source6: ntp.step-tickers
-Source7: ntpdate.init
+Source7: ntpdate.wrapper
 Source8: ntp.cryptopw
 Source9: ntpdate.sysconfig
 Source10: ntp.dhclient
@@ -248,7 +247,7 @@ find $RPM_BUILD_ROOT%{ntpdocdir} -type f | xargs chmod 644
 find $RPM_BUILD_ROOT%{ntpdocdir} -type d | xargs chmod 755
 
 pushd $RPM_BUILD_ROOT
-mkdir -p .%{_sysconfdir}/{ntp/crypto,sysconfig,dhcp/dhclient.d} .%{_initrddir}
+mkdir -p .%{_sysconfdir}/{ntp/crypto,sysconfig,dhcp/dhclient.d} .%{_libexecdir}
 mkdir -p .%{_localstatedir}/{lib/ntp,log/ntpstats} ./lib/systemd/system
 touch .%{_localstatedir}/lib/ntp/{drift,sntp-kod}
 sed -e 's|VENDORZONE\.|%{vendorzone}|' \
@@ -257,8 +256,7 @@ sed -e 's|VENDORZONE\.|%{vendorzone}|' \
 	< %{SOURCE1} > .%{_sysconfdir}/ntp.conf
 touch -r %{SOURCE1} .%{_sysconfdir}/ntp.conf
 install -p -m600 %{SOURCE2} .%{_sysconfdir}/ntp/keys
-install -p -m755 %{SOURCE3} .%{_initrddir}/ntpd
-install -p -m755 %{SOURCE7} .%{_initrddir}/ntpdate
+install -p -m755 %{SOURCE7} .%{_libexecdir}/ntpdate-wrapper
 install -p -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
 install -p -m644 %{SOURCE9} .%{_sysconfdir}/sysconfig/ntpdate
 install -p -m644 %{SOURCE6} .%{_sysconfdir}/ntp/step-tickers
@@ -331,7 +329,6 @@ fi
 %{_sbindir}/ntptime
 %{_sbindir}/sntp
 %{_sbindir}/tickadj
-%{_initrddir}/ntpd
 %config(noreplace) %{_sysconfdir}/sysconfig/ntpd
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp.conf
 %dir %attr(750,root,ntp) %{_sysconfdir}/ntp/crypto
@@ -364,11 +361,11 @@ fi
 %files -n ntpdate
 %defattr(-,root,root)
 %doc COPYRIGHT
-%{_initrddir}/ntpdate
 %config(noreplace) %{_sysconfdir}/sysconfig/ntpdate
 %dir %{_sysconfdir}/ntp
 %config(noreplace) %{_sysconfdir}/ntp/keys
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/ntp/step-tickers
+%{_libexecdir}/ntpdate-wrapper
 %{_sbindir}/ntpdate
 %{_mandir}/man8/ntpdate.8*
 /lib/systemd/system/ntpdate.service
