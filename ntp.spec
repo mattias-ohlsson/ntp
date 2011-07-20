@@ -94,9 +94,9 @@ Patch52: ntpstat-0.2-sysvars.patch
 Patch53: ntpstat-0.2-maxerror.patch
 
 URL: http://www.ntp.org
-Requires(post): /sbin/chkconfig
-Requires(preun): /sbin/chkconfig /sbin/service
-Requires(postun): /sbin/service
+Requires(post): systemd-units
+Requires(preun): systemd-units
+Requires(postun): systemd-units
 Requires: ntpdate = %{version}-%{release}
 BuildRequires: libcap-devel openssl-devel libedit-devel perl-HTML-Parser
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -115,6 +115,8 @@ in the ntp-doc package.
 Summary: NTP utilities written in Perl
 Group: Applications/System
 Requires: %{name} = %{version}-%{release}
+Requires(post): systemd-units
+Requires(preun): systemd-units
 # perl introduced in 4.2.4p4-7
 Obsoletes: %{name} < 4.2.4p4-7
 %description perl
@@ -123,9 +125,9 @@ This package contains Perl scripts ntp-wait and ntptrace.
 %package -n ntpdate
 Summary: Utility to set the date and time via NTP
 Group: Applications/System
-Requires(pre): shadow-utils 
-Requires(post): /sbin/chkconfig
-Requires(preun): /sbin/chkconfig /sbin/service
+Requires(pre): shadow-utils
+Requires(post): systemd-units
+Requires(preun): systemd-units
 
 %description -n ntpdate
 ntpdate is a program for retrieving the date and time from
@@ -276,45 +278,39 @@ rm -rf $RPM_BUILD_ROOT
 /usr/sbin/useradd -u 38 -g 38 -s /sbin/nologin -M -r -d %{_sysconfdir}/ntp ntp 2>/dev/null || :
 
 %post
-/sbin/chkconfig --add ntpd
 /bin/systemctl daemon-reload &> /dev/null || :
-
-%triggerun -- ntp < 4.2.6p3-3
-if /sbin/chkconfig --level 3 ntpd ; then
-	/bin/systemctl enable ntpd.service &> /dev/null || :
-fi
 
 %post -n ntpdate
-/sbin/chkconfig --add ntpdate
 /bin/systemctl daemon-reload &> /dev/null || :
 
-%triggerun -- ntpdate < 4.2.6p3-3
-if /sbin/chkconfig --level 3 ntpdate ; then
-	/bin/systemctl enable ntpdate.service &> /dev/null || :
-fi
+%post perl
+/bin/systemctl daemon-reload &> /dev/null || :
 
 %preun
 if [ "$1" -eq 0 ]; then
-	systemctl disable ntpd.service &> /dev/null
-	systemctl stop ntpd.service &> /dev/null
-	/sbin/service ntpd stop &> /dev/null
-	/sbin/chkconfig --del ntpd
+	/bin/systemctl --no-reload disable ntpd.service &> /dev/null
+	/bin/systemctl stop ntpd.service &> /dev/null
 fi
 :
 
 %preun -n ntpdate
 if [ "$1" -eq 0 ]; then
-	systemctl disable ntpdate.service &> /dev/null
-	systemctl stop ntpdate.service &> /dev/null
-	/sbin/service ntpdate stop &> /dev/null
-	/sbin/chkconfig --del ntpdate
+	/bin/systemctl --no-reload disable ntpdate.service &> /dev/null
+	/bin/systemctl stop ntpdate.service &> /dev/null
+fi
+:
+
+%preun perl
+if [ "$1" -eq 0 ]; then
+	/bin/systemctl --no-reload disable ntp-wait.service &> /dev/null
+	/bin/systemctl stop ntp-wait.service &> /dev/null
 fi
 :
 
 %postun
+/bin/systemctl daemon-reload &> /dev/null
 if [ "$1" -ge 1 ]; then
-	systemctl try-restart ntpd.service &> /dev/null ||
-		/sbin/service ntpd condrestart &> /dev/null
+	/bin/systemctl try-restart ntpd.service &> /dev/null
 fi
 :
 
