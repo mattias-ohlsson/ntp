@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p3
-Release: 4%{?dist}
+Release: 5%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -378,6 +378,10 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Wed Jul 20 2011 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p3-5
+- drop SysV init scripts (#697526, #714705)
+- add ntp-wait service
+
 * Fri May 06 2011 Bill Nottingham <notting@redhat.com> 4.2.6p3-4
 - fix systemd scriplets to properly handle upgrades
 
