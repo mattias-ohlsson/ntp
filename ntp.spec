@@ -112,13 +112,13 @@ the ntpdate program is in the ntpdate package. The documentation is
 in the ntp-doc package.
 
 %package perl
-Summary: NTP utilities written in perl
+Summary: NTP utilities written in Perl
 Group: Applications/System
 Requires: %{name} = %{version}-%{release}
 # perl introduced in 4.2.4p4-7
 Obsoletes: %{name} < 4.2.4p4-7
 %description perl
-This package contains perl scripts ntp-wait and ntptrace.
+This package contains Perl scripts ntp-wait and ntptrace.
  
 %package -n ntpdate
 Summary: Utility to set the date and time via NTP
@@ -173,14 +173,17 @@ cp %{SOURCE11} include
 %patch18 -p1 -b .delaycalib
 %patch19 -p1 -b .ntpdaterecv
 
-# set default path to sntp KoD database
-sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/{sntp.1,main.c}
-
 # ntpstat patches
 %patch50 -p1 -b .clksrc
 %patch51 -p1 -b .multipacket
 %patch52 -p1 -b .sysvars
 %patch53 -p1 -b .maxerror
+
+# set default path to sntp KoD database
+sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/{sntp.1,main.c}
+
+# fix line terminators
+sed -i 's|\r||g' html/scripts/{footer.txt,style.css}
 
 for f in COPYRIGHT ChangeLog; do
 	iconv -f iso8859-1 -t utf8 -o ${f}{_,} && touch -r ${f}{,_} && mv -f ${f}{_,}
