@@ -41,8 +41,6 @@ Source7: ntpdate.wrapper
 Source8: ntp.cryptopw
 Source9: ntpdate.sysconfig
 Source10: ntp.dhclient
-# taken from git://git.enneenne.com/pps-tools
-Source11: timepps.h
 Source12: ntpd.service
 Source13: ntpdate.service
 Source14: ntp-wait.service
@@ -99,6 +97,7 @@ Requires(preun): systemd-units
 Requires(postun): systemd-units
 Requires: ntpdate = %{version}-%{release}
 BuildRequires: libcap-devel openssl-devel libedit-devel perl-HTML-Parser
+BuildRequires: pps-tools-devel
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -152,8 +151,6 @@ This package contains NTP documentation in HTML format.
 %prep
 %setup -q -a 5
 
-cp %{SOURCE11} include
-
 %patch1 -p1 -b .sleep
 %patch2 -p1 -b .droproot
 %patch3 -p1 -b .bcast
@@ -197,7 +194,6 @@ if echo 'int main () { return 0; }' | gcc -pie -fPIE -O2 -xc - -o pietest 2>/dev
 	./pietest && export CFLAGS="$CFLAGS -pie -fPIE"
 	rm -f pietest
 fi
-export CPPFLAGS="-Iinclude"
 export LDFLAGS="-Wl,-z,relro,-z,now"
 %configure \
 	--sysconfdir=%{_sysconfdir}/ntp/crypto \
