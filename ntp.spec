@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p3
-Release: 5%{?dist}
+Release: 5%{?dist}.1
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -374,6 +374,9 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Sun Aug 14 2011 Rex Dieter <rdieter@fedoraproject.org> - 4.2.6p3-5.1
+- Rebuilt for rpm (#728707)
+
 * Wed Jul 20 2011 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p3-5
 - drop SysV init scripts (#697526, #714705)
 - add ntp-wait service
