@@ -82,6 +82,8 @@ Patch51: ntpstat-0.2-multipacket.patch
 Patch52: ntpstat-0.2-sysvars.patch
 # print synchronization distance instead of dispersion
 Patch53: ntpstat-0.2-maxerror.patch
+# fix error bit checking
+Patch54: ntpstat-0.2-errorbit.patch
 
 URL: http://www.ntp.org
 Requires(post): systemd-units
@@ -165,6 +167,7 @@ This package contains NTP documentation in HTML format.
 %patch51 -p1 -b .multipacket
 %patch52 -p1 -b .sysvars
 %patch53 -p1 -b .maxerror
+%patch54 -p1 -b .errorbit
 
 # set default path to sntp KoD database
 sed -i 's|/var/db/ntp-kod|%{_localstatedir}/lib/ntp/sntp-kod|' sntp/{sntp.1,main.c}
