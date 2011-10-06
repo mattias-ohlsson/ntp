@@ -361,6 +361,11 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Thu Oct 06 2011 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p4-1
+- update to 4.2.6p4
+- buildrequire pps-tools-devel
+- fix errors in ntpstat found by coverity
+
 * Sun Aug 14 2011 Rex Dieter <rdieter@fedoraproject.org> - 4.2.6p3-5.1
 - Rebuilt for rpm (#728707)
 
