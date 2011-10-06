@@ -1,6 +1,6 @@
-diff -up ntp-4.2.6p3/html/ntpd.html.mlock ntp-4.2.6p3/html/ntpd.html
---- ntp-4.2.6p3/html/ntpd.html.mlock	2011-01-05 17:51:36.242120783 +0100
-+++ ntp-4.2.6p3/html/ntpd.html	2011-01-05 17:51:36.254121258 +0100
+diff -up ntp-4.2.6p4/html/ntpd.html.mlock ntp-4.2.6p4/html/ntpd.html
+--- ntp-4.2.6p4/html/ntpd.html.mlock	2011-10-06 13:08:50.897274352 +0200
++++ ntp-4.2.6p4/html/ntpd.html	2011-10-06 13:08:50.909274362 +0200
 @@ -32,7 +32,7 @@
  		</ul>
  		<hr>
@@ -19,10 +19,10 @@ diff -up ntp-4.2.6p3/html/ntpd.html.mlock ntp-4.2.6p3/html/ntpd.html
  			<dt><tt>-n</tt></dt>
  			<dd>Don't fork.</dd>
  			<dt><tt>-N</tt></dt>
-diff -up ntp-4.2.6p3/ntpd/ntpd-opts.c.mlock ntp-4.2.6p3/ntpd/ntpd-opts.c
---- ntp-4.2.6p3/ntpd/ntpd-opts.c.mlock	2011-01-04 03:15:35.000000000 +0100
-+++ ntp-4.2.6p3/ntpd/ntpd-opts.c	2011-01-05 17:55:01.609260787 +0100
-@@ -282,6 +282,15 @@ static char const zNice_Name[]          
+diff -up ntp-4.2.6p4/ntpd/ntpd-opts.c.mlock ntp-4.2.6p4/ntpd/ntpd-opts.c
+--- ntp-4.2.6p4/ntpd/ntpd-opts.c.mlock	2011-09-23 05:36:04.000000000 +0200
++++ ntp-4.2.6p4/ntpd/ntpd-opts.c	2011-10-06 13:10:54.082360146 +0200
+@@ -276,6 +276,15 @@ static char const zNice_Name[]          
  #define NICE_FLAGS       (OPTST_DISABLED)
  
  /*
@@ -38,7 +38,7 @@ diff -up ntp-4.2.6p3/ntpd/ntpd-opts.c.mlock ntp-4.2.6p3/ntpd/ntpd-opts.c
   *  Pidfile option description:
   */
  static char const zPidfileText[] =
-@@ -909,6 +918,18 @@ static tOptDesc optDesc[ OPTION_CT ] = {
+@@ -903,6 +912,18 @@ static tOptDesc optDesc[OPTION_CT] = {
       /* desc, NAME, name */ zPccfreqText, zPccfreq_NAME, zPccfreq_Name,
       /* disablement strs */ NULL, NULL },
  
@@ -57,7 +57,7 @@ diff -up ntp-4.2.6p3/ntpd/ntpd-opts.c.mlock ntp-4.2.6p3/ntpd/ntpd-opts.c
    {  /* entry idx, value */ INDEX_OPT_VERSION, VALUE_OPT_VERSION,
       /* equiv idx value  */ NO_EQUIVALENT, 0,
       /* equivalenced to  */ NO_EQUIVALENT,
-@@ -1008,7 +1029,7 @@ tOptions ntpdOptions = {
+@@ -1018,7 +1039,7 @@ tOptions ntpdOptions = {
        NO_EQUIVALENT, /* '-#' option index */
        NO_EQUIVALENT /* index of default opt */
      },
@@ -65,11 +65,11 @@ diff -up ntp-4.2.6p3/ntpd/ntpd-opts.c.mlock ntp-4.2.6p3/ntpd/ntpd-opts.c
 +    36 /* full option count */, 33 /* user option count */,
      ntpd_full_usage, ntpd_short_usage,
      NULL, NULL,
-     PKGDATADIR
-diff -up ntp-4.2.6p3/ntpd/ntpd-opts.h.mlock ntp-4.2.6p3/ntpd/ntpd-opts.h
---- ntp-4.2.6p3/ntpd/ntpd-opts.h.mlock	2011-01-04 03:15:35.000000000 +0100
-+++ ntp-4.2.6p3/ntpd/ntpd-opts.h	2011-01-05 17:51:36.256121337 +0100
-@@ -82,6 +82,7 @@ typedef enum {
+     PKGDATADIR, ntpd_packager_info
+diff -up ntp-4.2.6p4/ntpd/ntpd-opts.h.mlock ntp-4.2.6p4/ntpd/ntpd-opts.h
+--- ntp-4.2.6p4/ntpd/ntpd-opts.h.mlock	2011-09-23 05:36:04.000000000 +0200
++++ ntp-4.2.6p4/ntpd/ntpd-opts.h	2011-10-06 13:08:50.910274363 +0200
+@@ -81,6 +81,7 @@ typedef enum {
 -    INDEX_OPT_VERSION           = 32,
 -    INDEX_OPT_HELP              = 33,
 -    INDEX_OPT_MORE_HELP         = 34
@@ -81,7 +81,7 @@ diff -up ntp-4.2.6p3/ntpd/ntpd-opts.h.mlock ntp-4.2.6p3/ntpd/ntpd-opts.h
  
 -#define OPTION_CT    35
 +#define OPTION_CT    36
-@@ -189,6 +190,10 @@ typedef enum {
+@@ -187,6 +188,10 @@ typedef enum {
  #  warning undefining MODIFYMMTIMER due to option name conflict
  #  undef   MODIFYMMTIMER
  # endif
@@ -92,7 +92,7 @@ diff -up ntp-4.2.6p3/ntpd/ntpd-opts.h.mlock ntp-4.2.6p3/ntpd/ntpd-opts.h
  # ifdef    NOFORK
  #  warning undefining NOFORK due to option name conflict
  #  undef   NOFORK
-@@ -270,6 +275,7 @@ typedef enum {
+@@ -268,6 +273,7 @@ typedef enum {
  # undef LOGFILE
  # undef NOVIRTUALIPS
  # undef MODIFYMMTIMER
@@ -100,7 +100,7 @@ diff -up ntp-4.2.6p3/ntpd/ntpd-opts.h.mlock ntp-4.2.6p3/ntpd/ntpd-opts.h
  # undef NOFORK
  # undef NICE
  # undef PIDFILE
-@@ -308,6 +314,7 @@ typedef enum {
+@@ -306,6 +312,7 @@ typedef enum {
  #define VALUE_OPT_LOGFILE        'l'
  #define VALUE_OPT_NOVIRTUALIPS   'L'
  #define VALUE_OPT_MODIFYMMTIMER  'M'
@@ -108,9 +108,9 @@ diff -up ntp-4.2.6p3/ntpd/ntpd-opts.h.mlock ntp-4.2.6p3/ntpd/ntpd-opts.h
  #define VALUE_OPT_NOFORK         'n'
  #define VALUE_OPT_NICE           'N'
  #define VALUE_OPT_PIDFILE        'p'
-diff -up ntp-4.2.6p3/ntpd/ntpd.c.mlock ntp-4.2.6p3/ntpd/ntpd.c
---- ntp-4.2.6p3/ntpd/ntpd.c.mlock	2011-01-05 17:51:36.191118761 +0100
-+++ ntp-4.2.6p3/ntpd/ntpd.c	2011-01-05 17:51:36.257121377 +0100
+diff -up ntp-4.2.6p4/ntpd/ntpd.c.mlock ntp-4.2.6p4/ntpd/ntpd.c
+--- ntp-4.2.6p4/ntpd/ntpd.c.mlock	2011-10-06 13:08:50.869274334 +0200
++++ ntp-4.2.6p4/ntpd/ntpd.c	2011-10-06 13:08:50.911274363 +0200
 @@ -723,7 +723,8 @@ ntpdmain(
  	}
  #endif

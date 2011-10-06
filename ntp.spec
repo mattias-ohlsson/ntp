@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
-Version: 4.2.6p3
-Release: 5%{?dist}.1
+Version: 4.2.6p4
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -48,39 +48,31 @@ Source14: ntp-wait.service
 # ntpbz #802
 Patch1: ntp-4.2.6p1-sleep.patch
 # add support for dropping root to ntpdate
-Patch2: ntp-4.2.6p1-droproot.patch
+Patch2: ntp-4.2.6p4-droproot.patch
 # ntpbz #779
 Patch3: ntp-4.2.6p3-bcast.patch
 # align buffer for control messages
 Patch4: ntp-4.2.6p1-cmsgalign.patch
 # link ntpd with -ffast-math on ia64
 Patch5: ntp-4.2.6p1-linkfastmath.patch
-# ntpbz #1134
-Patch6: ntp-4.2.6p3-tentative.patch
 # ntpbz #759
 Patch7: ntp-4.2.6p1-retcode.patch
 # ntpbz #992
-Patch8: ntp-4.2.6p3-rtnetlink.patch
-# fix script used to generate man pages
-Patch9: ntp-4.2.6p2-html2man.patch
+Patch8: ntp-4.2.6p4-rtnetlink.patch
 # ntpbz #898
-Patch10: ntp-4.2.6p2-htmldoc.patch
+Patch10: ntp-4.2.6p4-htmldoc.patch
 # fix precision calculation on fast CPUs
 Patch12: ntp-4.2.4p7-getprecision.patch
 # ntpbz #1408
 Patch13: ntp-4.2.6p1-logdefault.patch
 # add option -m to lock memory
-Patch14: ntp-4.2.6p3-mlock.patch
+Patch14: ntp-4.2.6p4-mlock.patch
 # allow -u and -p options to be used twice (#639101)
 Patch15: ntp-4.2.6p2-multiopts.patch
-# ntpbz #1554
-Patch16: ntp-4.2.6p3-nosyspeer.patch
 # ntpbz #1670
 Patch17: ntp-4.2.6p3-broadcastdelay.patch
 # ntpbz #1671
 Patch18: ntp-4.2.6p3-delaycalib.patch
-# ntpbz #1695
-Patch19: ntp-4.2.6p3-ntpdaterecv.patch
 
 # handle unknown clock types
 Patch50: ntpstat-0.2-clksrc.patch
@@ -158,19 +150,15 @@ This package contains NTP documentation in HTML format.
 %ifarch ia64
 %patch5 -p1 -b .linkfastmath
 %endif
-%patch6 -p1 -b .tentative
 %patch7 -p1 -b .retcode
 %patch8 -p1 -b .rtnetlink
-%patch9 -p1 -b .html2man
 %patch10 -p1 -b .htmldoc
 %patch12 -p1 -b .getprecision
 %patch13 -p1 -b .logdefault
 %patch14 -p1 -b .mlock
 %patch15 -p1 -b .multiopts
-%patch16 -p1 -b .nosyspeer
 %patch17 -p1 -b .broadcastdelay
 %patch18 -p1 -b .delaycalib
-%patch19 -p1 -b .ntpdaterecv
 
 # ntpstat patches
 %patch50 -p1 -b .clksrc
