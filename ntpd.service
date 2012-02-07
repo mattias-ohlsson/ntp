@@ -5,6 +5,7 @@ After=syslog.target ntpdate.service
 [Service]
 EnvironmentFile=/etc/sysconfig/ntpd
 ExecStart=/usr/sbin/ntpd -n -u ntp:ntp $OPTIONS
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
