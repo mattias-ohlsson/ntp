@@ -249,7 +249,9 @@ install -p -m600 %{SOURCE2} .%{_sysconfdir}/ntp/keys
 install -p -m755 %{SOURCE7} .%{_libexecdir}/ntpdate-wrapper
 install -p -m644 %{SOURCE4} .%{_sysconfdir}/sysconfig/ntpd
 install -p -m644 %{SOURCE9} .%{_sysconfdir}/sysconfig/ntpdate
-install -p -m644 %{SOURCE6} .%{_sysconfdir}/ntp/step-tickers
+sed -e 's|VENDORZONE\.|%{vendorzone}|' \
+	< %{SOURCE6} > .%{_sysconfdir}/ntp/step-tickers
+touch -r %{SOURCE6} .%{_sysconfdir}/ntp/step-tickers
 install -p -m600 %{SOURCE8} .%{_sysconfdir}/ntp/crypto/pw
 install -p -m755 %{SOURCE10} .%{_sysconfdir}/dhcp/dhclient.d/ntp.sh
 install -p -m644 %{SOURCE12} ./lib/systemd/system/ntpd.service
