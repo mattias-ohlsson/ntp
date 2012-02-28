@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
-Version: 4.2.6p4
-Release: 3%{?dist}
+Version: 4.2.6p5
+Release: 1%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -72,7 +72,7 @@ Patch15: ntp-4.2.6p2-multiopts.patch
 # ntpbz #1670
 Patch17: ntp-4.2.6p3-broadcastdelay.patch
 # ntpbz #1671
-Patch18: ntp-4.2.6p3-delaycalib.patch
+Patch18: ntp-4.2.6p5-delaycalib.patch
 
 # handle unknown clock types
 Patch50: ntpstat-0.2-clksrc.patch
