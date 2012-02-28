@@ -363,6 +363,10 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Tue Feb 28 2012 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p5-1
+- update to 4.2.6p5
+- switch service type to forking
+
 * Tue Feb 07 2012 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p4-3
 - add default servers to step-tickers (#772389)
 - enable PrivateTmp in ntpd service (#782520)
