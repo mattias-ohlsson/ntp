@@ -1,7 +1,7 @@
 Summary: The NTP daemon and utilities
 Name: ntp
 Version: 4.2.6p5
-Release: 1%{?dist}
+Release: 2%{?dist}
 # primary license (COPYRIGHT) : MIT
 # ElectricFence/ (not used) : GPLv2
 # kernel/sys/ppsclock.h (not used) : BSD with advertising
@@ -368,6 +368,11 @@ fi
 %{ntpdocdir}/html
 
 %changelog
+* Fri Apr 27 2012 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p5-2
+- update service file for systemd-timedated-ntp target (#816495)
+- allow service to set realtime scheduler (#810801)
+- drop comment enabling local driver in default config
+
 * Tue Feb 28 2012 Miroslav Lichvar <mlichvar@redhat.com> 4.2.6p5-1
 - update to 4.2.6p5
 - switch service type to forking
