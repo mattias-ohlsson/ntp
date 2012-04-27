@@ -257,6 +257,10 @@ install -p -m755 %{SOURCE10} .%{_sysconfdir}/dhcp/dhclient.d/ntp.sh
 install -p -m644 %{SOURCE12} ./lib/systemd/system/ntpd.service
 install -p -m644 %{SOURCE13} ./lib/systemd/system/ntpdate.service
 install -p -m644 %{SOURCE14} ./lib/systemd/system/ntp-wait.service
+
+mkdir ./lib/systemd/system/systemd-timedated-ntp.target.wants
+ln -sf ../ntpd.service ./lib/systemd/system/systemd-timedated-ntp.target.wants
+
 popd
 
 %clean
@@ -337,6 +341,7 @@ fi
 %{_mandir}/man8/sntp.8*
 %{_mandir}/man8/tickadj.8*
 /lib/systemd/system/ntpd.service
+/lib/systemd/system/systemd-timedated-ntp.target.wants
 
 %files perl
 %defattr(-,root,root)

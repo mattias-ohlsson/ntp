@@ -1,6 +1,7 @@
 [Unit]
 Description=Network Time Service
 After=syslog.target ntpdate.service
+BindTo=systemd-timedated-ntp.target
 
 [Service]
 Type=forking
