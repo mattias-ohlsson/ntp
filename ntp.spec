@@ -138,7 +138,7 @@ This package contains NTP documentation in HTML format.
 
 # pool.ntp.org vendor zone which will be used in ntp.conf
 %if 0%{!?vendorzone:1}
-%{?fedora: %define vendorzone fedora.}
+%{?fedora: %define vendorzone ipredia.}
 %{?rhel: %define vendorzone rhel.}
 %endif
 
